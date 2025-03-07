@@ -335,6 +335,7 @@ const logout = () => {
 const startExam = (examId) => {
   alert(`開始測驗：${examId}`);
   const exam = exams.value.find((exam) => exam.id === examId);
+  router.push("/testing");
   exam.status = "completed";
 };
 </script>

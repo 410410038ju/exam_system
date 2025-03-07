@@ -9,6 +9,7 @@ import ManageQuestionBankTypes from "../views/admin/ManageQuestionBankTypes.vue"
 import OpenExam from "../views/admin/OpenExam.vue";
 import ViewExamRecords from "../views/admin/ViewExamRecords.vue";
 import CreateQuestionData from "../views/admin/create_question/CreateQuestionData.vue";
+import Testing from "../views/user/testing.vue";
 
 const routes = [
   {
@@ -71,6 +72,12 @@ const routes = [
     name: "CreateQuestionData",
     component: CreateQuestionData,
     meta: { title: "出題" },
+  },
+  {
+    path: "/testing",
+    name: "Testing",
+    component: Testing,
+    meta: { title: "測驗" },
   },
 ];
 
