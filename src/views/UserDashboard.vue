@@ -335,7 +335,7 @@ const logout = () => {
 const startExam = (examId) => {
   alert(`開始測驗：${examId}`);
   const exam = exams.value.find((exam) => exam.id === examId);
-  router.push("/testing");
+  // router.push("/testing");
   exam.status = "completed";
 };
 </script>
@@ -501,7 +501,7 @@ label {
   margin-top: 20px;
   padding: 20px;
   background-color: #fff;
-  border-radius: 10px;
+  top: 200px;
   box-shadow: 0 0 15px rgba(0, 0, 0, 0.1); /* 加入陰影效果 */
 }
 

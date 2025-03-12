@@ -620,7 +620,8 @@ button {
 }
 
 .search-btn:hover {
-  background-color: #ffc7c7;
+  background-color: #007bff;
+  color: white;
 }
 
 /* 表單內容 */
