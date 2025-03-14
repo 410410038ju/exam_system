@@ -124,7 +124,7 @@ export default {
 <script setup>
 import { ref, onMounted, onBeforeUnmount } from 'vue';
 import { useRouter } from 'vue-router';
-import cheerImage from '@/assets/images/cheer.png';
+import cheerImage from '../assets/images/cheer.png';
 
 const router = useRouter();
 const cheerImageRef = ref(cheerImage);

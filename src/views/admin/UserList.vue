@@ -52,11 +52,24 @@
               />
             </label>
           </div>
+
+          <div class="form-group">
+            <label>
+              <span>人員密碼：</span>
+              <input
+                type="password"
+                v-model="newUser.password"
+                placeholder="輸入人員密碼"
+              />
+            </label>
+          </div>
+
           <div class="form-group">
             <label>
               <span>人員權限：</span>
               <select v-model="newUser.role">
                 <option value="User">User</option>
+                <option value="Manager">Manager</option>
                 <option value="Admin">Admin</option>
               </select>
             </label>
@@ -94,11 +107,24 @@
               />
             </label>
           </div>
+
+          <div class="form-group">
+            <label>
+              <span>人員密碼：</span>
+              <input
+                type="password"
+                v-model="editUserData.password"
+                placeholder="輸入新密碼"
+              />
+            </label>
+          </div>
+
           <div class="form-group">
             <label>
               <span>人員權限：</span>
               <select v-model="editUserData.role">
                 <option value="User">User</option>
+                <option value="Manager">Manager</option>
                 <option value="Admin">Admin</option>
               </select>
             </label>
@@ -107,9 +133,6 @@
             <button class="button" @click="saveChanges">保存更改</button>
             <button class="button cancel-btn" @click="closeEditModal">
               取消
-            </button>
-            <button class="button reset-password-btn" @click="resetPassword">
-              重設密碼
             </button>
           </div>
         </div>
@@ -503,6 +526,7 @@ const originalUserId = ref(""); // 定義變數來保存原始的使用者 ID
 const editUserData = reactive({
   name: "",
   id: "",
+  password: "",
   role: "User",
 });
 const showModal = ref(false);
@@ -510,6 +534,7 @@ const showEditModal = ref(false);
 const newUser = reactive({
   name: "",
   id: "",
+  password: "",
   role: "User",
   locked: false,
   failedAttempts: 0,
@@ -579,7 +604,6 @@ const addUser = () => {
     return;
   }
 
-  newUser.password = "1111";
   newUser.locked = false;
   newUser.failedAttempts = 0;
 
@@ -589,6 +613,7 @@ const addUser = () => {
   Object.assign(newUser, {
     name: "",
     id: "",
+    password: "",
     role: "User",
     locked: false,
     failedAttempts: 0,
@@ -672,6 +697,7 @@ const cancelEdit = () => {
   closeEditModal();
 };
 
+/* 重設密碼
 const resetPassword = () => {
   const user = users.value.find((user) => user.id === editUserData.id);
   if (user) {
@@ -680,6 +706,7 @@ const resetPassword = () => {
     alert("密碼已重設為 1111");
   }
 };
+*/
 
 const deleteUser = (id) => {
   const inputId = prompt(`請輸入要刪除的人員編號：`);
@@ -1112,21 +1139,6 @@ h2 {
 
 .export-btn:hover {
   background-color: #554305;
-}
-
-/* 重設密碼按鈕 */
-.reset-password-btn {
-  background-color: #4caf50; /* 綠色背景 */
-  color: white; /* 文字顏色 */
-  padding: 10px 20px; /* 內邊距 */
-  border: none; /* 去除邊框 */
-  border-radius: 5px; /* 圓角邊框 */
-  cursor: pointer; /* 游標顯示為手型 */
-  transition: background-color 0.3s ease, transform 0.2s ease; /* 添加過渡效果 */
-}
-
-.reset-password-btn:hover {
-  background-color: #3f9143; /* 懸停時背景色變深 */
 }
 
 /* 搜尋欄位容器 */

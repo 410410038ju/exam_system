@@ -1,11 +1,7 @@
 <template>
   <div id="home-app" class="container">
     <div class="left-section">
-      <img
-        src="https://i.imgur.com/K0nB0VU.jpeg"
-        alt="圖片描述"
-        class="image"
-      />
+      <img src="../assets/images/water.jpg" alt="圖片描述" class="image" />
     </div>
 
     <div class="right-section">
@@ -281,6 +277,8 @@ const login = () => {
 
     if (user.role === "User") {
       router.push("/user");
+    } else if (user.role === "Manager") {
+      router.push("/admin");
     } else if (user.role === "Admin") {
       router.push("/admin");
     }
@@ -357,8 +355,8 @@ const changePassword = () => {
 
 // 生命週期的處理
 onMounted(() => {
-  document.body.style.backgroundImage =
-    "url('https://i.imgur.com/T63tNyz.jpeg')";
+  // document.body.style.backgroundImage = "url('../assets/images/home.png')";
+  document.body.style.backgroundImage = "url('https://i.imgur.com/3IbGwzc.jpeg')";
   document.body.style.backgroundSize = "cover";
   document.body.style.backgroundPosition = "center";
   document.body.style.backgroundRepeat = "no-repeat";
@@ -408,7 +406,6 @@ body {
   align-items: center;
 }*/
 
-
 #home-app {
   display: flex;
   justify-content: center;
@@ -419,14 +416,12 @@ body {
 
 .container {
   height: 500px;
-  max-width: 80%; 
-  margin: 0; 
+  max-width: 80%;
+  margin: 0;
   border: 2rem solid #8fffff;
   border-radius: 12px;
   background-color: #8fffff;
 }
-
-
 
 .left-section,
 .right-section {
@@ -537,4 +532,3 @@ h3 {
 }
 */
 </style>
-
