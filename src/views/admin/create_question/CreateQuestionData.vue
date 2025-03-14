@@ -174,8 +174,9 @@
       <div class="question-content">
         <div class="examInfo">
           <div class="info">業務種類：{{ examInfo.category }}</div>
-          <div class="info">測驗範圍：{{ examInfo.chapter }} {{ examInfo.section }}</div>
-          <div class="info">題目數量：{{ examInfo.questions }}</div>
+          <div class="info">
+            測驗範圍：{{ examInfo.chapter }} {{ examInfo.section }}
+          </div>
         </div>
         <h2>已提交題目</h2>
         <table
@@ -225,7 +226,6 @@ import { ref, reactive, onMounted } from "vue";
 const router = useRouter();
 
 const currentQuestionCount = ref(0);
-const maxQuestions = ref(0);
 const questionType = ref("true-false");
 const trueFalseQuestionText = ref("");
 const trueFalseAnswer = ref("true");
@@ -286,17 +286,24 @@ const submitQuestion = () => {
 };*/
 
 const submitQuestion = () => {
-  if (currentQuestionCount.value >= maxQuestions.value) {
-    alert("已達到最大題數，無法再提交題目！");
-    return;
-  }
+  // if (currentQuestionCount.value >= maxQuestions.value) {
+  //   alert("已達到最大題數，無法再提交題目！");
+  //   return;
+  // }
 
   let question = {
     type: questionType.value,
     text: "",
     options: null,
     correctAnswer: null,
+    creatorId: null,
   };
+
+  // 取得出題者的 ID
+  const loggedInUser = JSON.parse(localStorage.getItem("loggedInUser"));
+  if (loggedInUser) {
+    question.creatorId = loggedInUser.id; // 將出題者 ID 設定到題目中
+  }
 
   if (questionType.value === "true-false") {
     question.text = trueFalseQuestionText.value;
@@ -351,12 +358,10 @@ const submitQuestion = () => {
   changeQuestionType(); // 清空表單
 };
 
+// 結束出題
 const endCreateQuestion = () => {
-  if (currentQuestionCount.value >= maxQuestions.value) {
-    router.push("/create_question");
-  } else {
-    alert("請先達到最大題數再結束出題！");
-  }
+  localStorage.setItem("examInfo", JSON.stringify({}));
+  router.push("/create_question");
 };
 
 /*
@@ -380,7 +385,6 @@ onMounted(() => {
   if (storedExamInfo) {
     // 更新 examInfo 和 maxQuestions
     Object.assign(examInfo, storedExamInfo);
-    maxQuestions.value = parseInt(storedExamInfo.questions);
   } else {
     alert("無法讀取考試資訊！");
   }

@@ -27,9 +27,9 @@
       </div>
 
       <!-- 新增人員的懸浮視窗 (Modal) -->
-      <div v-if="showModal" class="modal-overlay" @click="closeModal">
+      <div v-if="showModal" class="modal-overlay" @click="closeAddModal">
         <div class="modal-content" @click.stop>
-          <button class="close-btn" @click="closeModal">x</button>
+          <button class="close-btn" @click="closeAddModal">x</button>
           <h2>新增人員</h2>
           <br />
           <div class="form-group">
@@ -69,14 +69,18 @@
               <span>人員權限：</span>
               <select v-model="newUser.role">
                 <option value="User">User</option>
-                <option value="Manager">Manager</option>
-                <option value="Admin">Admin</option>
+                <option value="Manager" v-if="currentUserRole === 'Admin'">
+                  Manager
+                </option>
+                <option value="Admin" v-if="currentUserRole === 'Admin'">
+                  Admin
+                </option>
               </select>
             </label>
           </div>
           <div class="modal-actions">
             <button class="button" @click="addUser">確定</button>
-            <button class="button cancel-btn" @click="closeModal">取消</button>
+            <button class="button cancel-btn" @click="closeAddModal">取消</button>
           </div>
         </div>
       </div>
@@ -124,8 +128,12 @@
               <span>人員權限：</span>
               <select v-model="editUserData.role">
                 <option value="User">User</option>
-                <option value="Manager">Manager</option>
-                <option value="Admin">Admin</option>
+                <option value="Manager" v-if="currentUserRole === 'Admin'">
+                  Manager
+                </option>
+                <option value="Admin" v-if="currentUserRole === 'Admin'">
+                  Admin
+                </option>
               </select>
             </label>
           </div>
@@ -175,15 +183,30 @@
             <td>{{ user.locked ? "是" : "否" }}</td>
             <td>
               <div class="button-container">
-                <button class="button edit-btn" @click="editUser(user.id)">
-                  修改
+                <button
+                  v-if="canModifyUser(user.role)"
+                  class="button edit-btn"
+                  @click="editUser(user.id)"
+                >
+                  編輯
                 </button>
-                <button class="button delete-btn" @click="deleteUser(user.id)">
+                <button
+                  v-if="canModifyUser(user.role)"
+                  class="button delete-btn"
+                  @click="deleteUser(user.id)"
+                >
                   刪除
                 </button>
-                <button @click="unlockUser(user)" class="button unlock-btn">
+                <button
+                  v-if="canModifyUser(user.role)"
+                  class="button unlock-btn"
+                  @click="unlockUser(user)"
+                >
                   解除鎖定
                 </button>
+                <span v-if="!canModifyUser(user.role)" style="color: red"
+                  >沒有權限</span
+                >
               </div>
             </td>
           </tr>
@@ -514,8 +537,12 @@ export default {
 <!-- vue 3 -->
 <script setup>
 import { ref, reactive, computed, onMounted, watch } from "vue";
+import { useRouter } from "vue-router"; // 引入 Vue Router
 import AdminNavBar from "../../components/AdminNavBar.vue";
 import * as XLSX from "xlsx";
+
+// 初始化 Vue Router
+const router = useRouter();
 
 // 使用 ref 和 reactive 定義狀態
 const users = ref([]);
@@ -540,6 +567,16 @@ const newUser = reactive({
   failedAttempts: 0,
 });
 const filteredUsers = ref([]);
+const loggedInUser = JSON.parse(localStorage.getItem("loggedInUser"));
+const currentUserRole = ref(loggedInUser?.role || "Manager");
+
+// 檢查登入狀況
+const checkLogin = () => {
+  if (!loggedInUser) {
+    alert("你尚未登入");
+    router.push("/"); // 跳轉到 Home.vue（根路由）
+  }
+};
 
 // 排序過後的使用者列表
 const sortedUsers = computed(() => {
@@ -591,9 +628,22 @@ const searchUsers = () => {
   }
 };
 
+// 計算是否可以編輯/刪除使用者
+const canModifyUser = (role) => {
+  if (currentUserRole.value === "Admin") return true;
+  if (currentUserRole.value === "Manager" && role === "User") return true;
+  return false;
+};
+
 const addUser = () => {
-  if (!newUser.name || !newUser.id) {
+  if (!newUser.name || !newUser.id || !newUser.password) {
     alert("請輸入完整資料！");
+    return;
+  }
+
+  // 如果登入的是 Manager，角色必須是 User
+  if (currentUserRole.value === "Manager" && newUser.role !== "User") {
+    alert("您只能新增 User 權限的人員！");
     return;
   }
 
@@ -621,9 +671,10 @@ const addUser = () => {
 
   loadUsers();
   filteredUsers.value = users.value;
-  closeModal();
+  closeAddModal();
 };
 
+// 編輯人員資料
 const editUser = (id) => {
   if (id === "admin") {
     alert("無法修改系統管理員帳號！");
@@ -664,6 +715,11 @@ const editUser = (id) => {
 const saveChanges = () => {
   if (!editUserData || !editUserData.id) {
     alert("請輸入有效的人員編號！");
+    return;
+  }
+
+  if (currentUserRole.value === "Manager" && editUserData.role !== "User") {
+    alert("無法更改人員權限");
     return;
   }
 
@@ -740,11 +796,12 @@ const updateUserData = (user) => {
   }
 };
 
-const closeModal = () => {
+const closeAddModal = () => {
   showModal.value = false;
   Object.assign(newUser, {
     name: "",
     id: "",
+    password: "",
     role: "User",
   });
 };
@@ -757,11 +814,12 @@ const exportToExcel = () => {
   const ws = XLSX.utils.table_to_sheet(document.getElementById("user-table"));
   const wb = XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(wb, ws, "人員資料");
-  XLSX.writeFile(wb, "user_data.xlsx");
+  XLSX.writeFile(wb, "線上測驗系統人員資料.xlsx");
 };
 
 // 初始化
 onMounted(() => {
+  checkLogin();
   loadUsers();
   filteredUsers.value = users.value;
 });

@@ -71,7 +71,7 @@
         </select>
       </div>
 
-      <div class="form-group">
+      <!-- <div class="form-group">
         <div class="form-container">
           <label for="exam-questions" class="form-label">題目數量</label>
         </div>
@@ -82,7 +82,7 @@
           class="form-input"
           min="1"
         />
-      </div>
+      </div> -->
 
       <!-- 出題者(只做template) 
       <div class="form-group">
@@ -242,11 +242,11 @@ const router = useRouter(); // 使用 useRouter 來取得 router
 const selectedCategory = ref("");
 const selectedChapter = ref("");
 const selectedSection = ref("");
-const questions = ref("");
+// const questions = ref("");
 const categories = ref([]);
 const chapters = ref([]);
 const sections = ref([]);
-const creator = ref("");
+// const creator = ref("");
 const examData = JSON.parse(localStorage.getItem("examData")) || {
   存款篇: {
     第一章通則: [
@@ -387,7 +387,7 @@ const addChapter = () => {
 // 新增節
 const addSection = () => {
   if (!selectedCategory.value || !selectedChapter.value) {
-    alert("請先選擇業務種類與章節！");
+    alert("請先選擇業務種類與章！");
     return;
   }
   const newSection = prompt("請輸入新的節名稱:");
@@ -408,14 +408,12 @@ const addSection = () => {
   }
 };
 
-// 進入問題頁面
+// 進入出題頁面
 const proceedToQuestions = () => {
   if (
     !selectedCategory.value ||
     !selectedChapter.value ||
-    !selectedSection.value ||
-    !questions.value
-  ) {
+    !selectedSection.value ) {
     alert("請填寫所有考試資訊！");
     return;
   }
@@ -424,21 +422,14 @@ const proceedToQuestions = () => {
     category: selectedCategory.value,
     chapter: selectedChapter.value,
     section: selectedSection.value,
-    questions: questions.value,
   };
   localStorage.setItem("examInfo", JSON.stringify(examInfo));
   // 跳轉到考題頁面
   router.push("/create_question_data");
 };
 
-// 登出
-const logout = () => {
-  localStorage.removeItem("loggedInUser");
-  sessionStorage.clear();
-  $router.push("/login");
-};
-
 onMounted(() => {
+  localStorage.setItem("examInfo", JSON.stringify({}));
   populateChapters();
 });
 </script>
