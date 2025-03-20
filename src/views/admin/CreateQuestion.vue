@@ -3,7 +3,7 @@
     <AdminNavBar />
 
     <div class="content">
-      <h1>設定考試資訊</h1>
+      <h1>請選擇題庫範圍</h1>
 
       <div class="form-group">
         <div class="form-container">
@@ -246,7 +246,7 @@ const selectedSection = ref("");
 const categories = ref([]);
 const chapters = ref([]);
 const sections = ref([]);
-// const creator = ref("");
+
 const examData = JSON.parse(localStorage.getItem("examData")) || {
   存款篇: {
     第一章通則: [
@@ -414,7 +414,7 @@ const proceedToQuestions = () => {
     !selectedCategory.value ||
     !selectedChapter.value ||
     !selectedSection.value ) {
-    alert("請填寫所有考試資訊！");
+    alert("請填寫所有選項！");
     return;
   }
 

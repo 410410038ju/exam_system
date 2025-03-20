@@ -125,6 +125,15 @@ export default {
 import { ref, onMounted, onBeforeUnmount } from 'vue';
 import { useRouter } from 'vue-router';
 import cheerImage from '../assets/images/cheer.png';
+const loggedInUser = JSON.parse(localStorage.getItem("loggedInUser"));
+
+// 檢查登入狀況
+const checkLogin = () => {
+  if (!loggedInUser) {
+    alert("你尚未登入");
+    router.push("/"); // 跳轉到 Home.vue（根路由）
+  }
+};
 
 const router = useRouter();
 const cheerImageRef = ref(cheerImage);
@@ -142,6 +151,7 @@ const logout = () => {
 };
 
 onMounted(() => {
+  checkLogin();
   document.body.style.backgroundImage =
     "url('https://i.imgur.com/l7KF7dm.png')";
   document.body.style.backgroundSize = 'cover';

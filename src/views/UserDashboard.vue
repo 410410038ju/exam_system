@@ -349,6 +349,13 @@ const startExam = (examId) => {
 .profile-page {
   background-color: #f4f4f9; /* 淺灰背景 */
   background-attachment: fixed;
+  position: absolute;
+  top: 100px;
+  left: 0;
+  right: 0;
+  width: 100%;
+  margin: 0 auto; 
+  height: calc(100vh - 100px);
 }
 
 /* 頁面頭部 */
@@ -498,35 +505,46 @@ label {
 
 /* 表格區域 */
 .table-container {
-  margin-top: 20px;
   padding: 20px;
   background-color: #fff;
-  top: 200px;
-  box-shadow: 0 0 15px rgba(0, 0, 0, 0.1); /* 加入陰影效果 */
 }
 
 /* 調整表格 */
 table {
   width: 100%;
   border-collapse: collapse;
-  background-color: #ffffff; /* 淺灰色背景 */
+  background-color: #ffffff; 
+  table-layout: fixed;
+}
+
+table th, table td {
+  word-wrap: break-word;
+  height: 70px; 
 }
 
 /* 表格表頭 */
 table th {
-  padding: 15px;
+  padding: 10px;
   background-color: #42b883; /* 綠色背景 */
   color: white;
   text-align: center;
-  font-size: 18px;
+  font-size: 20px;
 }
 
 /* 表格單元格 */
 table td {
-  padding: 12px;
+  padding: 10px;
   border: 1px solid #ddd;
   text-align: center;
-  font-size: 14px;
+  font-size: 16px;
+}
+
+table th:nth-child(1), table td:nth-child(1) {
+  width: 120px; /* 例如考試名稱列 */
+}
+
+table th:nth-child(5), table td:nth-child(5) {
+  width: 300px; /* 例如考試名稱列 */
 }
 
 /* 提高按鈕的可讀性 */

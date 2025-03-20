@@ -136,36 +136,159 @@
     <div v-if="editingQuestion" class="modal-overlay" @click="cancelEdit">
       <div class="modal-content" @click.stop>
         <button class="close-btn" @click="cancelEdit">x</button>
-
         <h2>修改題目</h2>
 
-        <div class="form-group">
-          <label for="edit-question-text">題目</label>
+        <!-- 顯示題型 -->
+        <div class="modal-form-group question-type-div">
+          <label>題型</label>
           <input
             type="text"
-            v-model="editingQuestion.text"
-            placeholder="修改題目"
+            :value="getQuestionType(editingQuestion.type)"
+            disabled
+            class="question-type"
           />
         </div>
 
-        <div v-if="editingQuestion.type === 'single-choice'" class="form-group">
-          <label>選項</label>
-          <div v-for="(option, index) in editingQuestion.options" :key="index">
+        <!-- 題目 -->
+        <div class="modal-form-group">
+          <label for="edit-question-text">題目</label>
+          <textarea
+            v-model="editingQuestion.text"
+            placeholder="請輸入題目敘述"
+            required
+            rows="3"
+            cols="30"
+          ></textarea>
+        </div>
+
+        <!-- 是非題 -->
+        <div
+          v-if="editingQuestion.type === 'true-false'"
+          class="form-group option-form-group"
+        >
+          <label>正確答案</label>
+          <div class="answer-group">
+            <!-- 是非題的正確答案選項 -->
             <input
-              type="text"
-              v-model="editingQuestion.options[index]"
-              :placeholder="'選項 ' + (index + 1)"
+              type="radio"
+              id="trueOption"
+              value="是"
+              v-model="editingQuestion.correctAnswer"
             />
+            <label for="trueOption" class="answer-option">是</label>
+
+            <input
+              type="radio"
+              id="falseOption"
+              value="否"
+              v-model="editingQuestion.correctAnswer"
+            />
+            <label for="falseOption" class="answer-option">否</label>
           </div>
         </div>
 
-        <div class="form-group">
+        <!-- 單選題 -->
+        <div
+          v-if="editingQuestion.type === 'single-choice'"
+          class="form-group option-form-group"
+        >
+          <!-- 單選題選項編輯 -->
+          <div
+            v-for="(option, index) in editingQuestion.options"
+            :key="index"
+            class="option-group"
+          >
+            <label
+              :for="'single-choice-option' + (index + 1)"
+              class="option-label"
+              >選項 {{ index + 1 }}</label
+            >
+            <!-- <input
+              type="text"
+              v-model="editingQuestion.options[index]"
+              :placeholder="'選項 ' + (index + 1)"
+              required
+            /> -->
+            <textarea
+              v-model="editingQuestion.options[index]"
+              :placeholder="'選項 ' + (index + 1)"
+              required
+              rows="1"
+              cols="30"
+            ></textarea>
+          </div>
+
+          <!-- 單選題的正確答案 -->
           <label>正確答案</label>
-          <input
-            type="text"
-            v-model="editingQuestion.correctAnswer"
-            placeholder="修改正確答案"
-          />
+          <div class="answer-group">
+            <div
+              v-for="(option, index) in editingQuestion.options"
+              :key="index"
+              class="answer"
+            >
+              <input
+                type="radio"
+                :id="'single-choice-option' + (index + 1)"
+                :value="option"
+                v-model="editingQuestion.correctAnswer"
+              />
+              <label :for="'single-choice-option' + (index + 1)"
+                >選項 {{ index + 1 }}</label
+              >
+            </div>
+          </div>
+        </div>
+
+        <!-- 複選題 -->
+        <div
+          v-if="editingQuestion.type === 'multiple-choice'"
+          class="form-group option-form-group"
+        >
+          <!-- 複選題選項編輯 -->
+          <div
+            v-for="(option, index) in editingQuestion.options"
+            :key="index"
+            class="option-group"
+          >
+            <label
+              :for="'multiple-choice-option' + (index + 1)"
+              class="option-label"
+              >選項 {{ index + 1 }}</label
+            >
+            <!-- <input
+              type="text"
+              v-model="editingQuestion.options[index]"
+              :placeholder="'選項 ' + (index + 1)"
+              required
+            /> -->
+            <textarea
+              v-model="editingQuestion.options[index]"
+              :placeholder="'選項 ' + (index + 1)"
+              required
+              rows="1"
+              cols="30"
+            ></textarea>
+          </div>
+
+          <!-- 複選題的正確答案 -->
+          <label>正確答案</label>
+          <div class="answer-group">
+            <div
+              v-for="(option, index) in editingQuestion.options"
+              :key="index"
+              class="answer"
+            >
+              <input
+                type="checkbox"
+                v-model="editingQuestion.correctAnswer"
+                :value="option"
+                :id="'multiple-choice-option' + (index + 1)"
+              />
+              <label :for="'multiple-choice-option' + (index + 1)">
+                選項 {{ index + 1 }}
+              </label>
+            </div>
+          </div>
         </div>
 
         <div class="modal-actions">
@@ -193,14 +316,29 @@ const searchMode = ref("category-chapter"); // 查詢模式，預設是依業務
 const questions = ref([]);
 const editingQuestion = ref(null);
 const noQuestions = ref(false); // 新增，顯示查無結果訊息
+const isValidEdit = ref(true); // 用來驗證表單的狀態
 
 let examData = {};
+
+// 顯示題型名稱
+const getQuestionType = (type) => {
+  switch (type) {
+    case "true-false":
+      return "是非題";
+    case "single-choice":
+      return "單選題";
+    case "multiple-choice":
+      return "複選題";
+    default:
+      return "未知題型";
+  }
+};
 
 const setSearchMode = (mode) => {
   searchMode.value = mode;
 };
 
-// 當 searchCategory 變更時，更新章節選單
+// 當 searchCategory 變更時，更新章選單
 watch(searchCategory, (newCategory) => {
   if (newCategory && examData[newCategory]) {
     chapters.value = Object.keys(examData[newCategory]);
@@ -257,16 +395,121 @@ const deleteQuestion = (index) => {
   }
 };
 
+/*
 const saveEdit = () => {
+  // 檢查題目與選項是否都已填寫
+  isValidEdit.value =
+    editingQuestion.value.text &&
+    editingQuestion.value.correctAnswer &&
+    editingQuestion.value.options.every((option) => option);
+
+  if (!isValidEdit.value) {
+    alert("請填寫完整題目！");
+    return; // 如果驗證不通過，則不儲存
+  }
+
+  // 以題目內容查找題目
+  // const index = questions.value.findIndex(
+  //   (q) => q.text === editingQuestion.value.text
+  // );
+
+  // 如果有唯一的 ID，可以改為這樣查找題目
   const index = questions.value.findIndex(
-    (q) => q.text === editingQuestion.value.text
+    (q) => q.questionId === editingQuestion.value.questionId
   );
+
   if (index !== -1) {
+    // 更新問題
+    questions.value[index] = { ...editingQuestion.value };
+    updateStoredQuestions();
+
+    // 清空編輯表單
+    editingQuestion.value = null;
+  } else {
+    alert("找不到要修改的題目！");
+  }
+};
+*/
+
+watch(
+  () => editingQuestion.value?.options, // 使用可選鏈接 (?.) 避免 `editingQuestion.value` 為 null
+  (newOptions) => {
+    if (!editingQuestion.value || !newOptions) return; // 確保 `editingQuestion.value` 存在
+
+    const { type, correctAnswer } = editingQuestion.value;
+
+    if (type === "single-choice") {
+      // 單選題：如果原本的正確答案已不存在，則清空
+      if (!newOptions.includes(correctAnswer)) {
+        editingQuestion.value.correctAnswer = "";
+      }
+    } else if (type === "multiple-choice") {
+      // 多選題：過濾掉所有已經刪除的選項
+      editingQuestion.value.correctAnswer = correctAnswer.filter((ans) =>
+        newOptions.includes(ans)
+      );
+    }
+  },
+  { deep: true }
+);
+
+
+const saveEdit = () => {
+  if (!editingQuestion.value) {
+    alert("無編輯中的題目！");
+    return;
+  }
+
+  // 先確保正確答案仍然存在於選項內
+  if (editingQuestion.value.type === "single-choice") {
+    if (
+      !editingQuestion.value.options.includes(
+        editingQuestion.value.correctAnswer
+      )
+    ) {
+      editingQuestion.value.correctAnswer = ""; // 清空錯誤答案
+      alert("正確答案已不存在於選項內，請重新選擇！");
+      return;
+    }
+  } else if (editingQuestion.value.type === "multiple-choice") {
+    editingQuestion.value.correctAnswer =
+      editingQuestion.value.correctAnswer.filter((ans) =>
+        editingQuestion.value.options.includes(ans)
+      );
+
+    if (editingQuestion.value.correctAnswer.length === 0) {
+      alert("正確答案已不存在於選項內，請重新選擇！");
+      return;
+    }
+  }
+
+  // 確保題目和選項都有填寫
+  isValidEdit.value =
+    editingQuestion.value.text &&
+    editingQuestion.value.correctAnswer &&
+    editingQuestion.value.options.length > 0 &&
+    editingQuestion.value.options.every((option) => option.trim() !== "");
+
+  if (!isValidEdit.value) {
+    alert("請填寫完整題目及正確答案！");
+    return;
+  }
+
+  // 以 questionId 查找題目
+  const index = questions.value.findIndex(
+    (q) => q.questionId === editingQuestion.value.questionId
+  );
+
+  if (index !== -1) {
+    // 更新問題
     questions.value[index] = { ...editingQuestion.value };
     updateStoredQuestions();
     editingQuestion.value = null;
+  } else {
+    alert("找不到要修改的題目！");
   }
 };
+
 
 const cancelEdit = () => {
   editingQuestion.value = null;
@@ -283,298 +526,6 @@ onMounted(() => {
 });
 </script>
 
-<!-- 第一版 
-<style scoped>
-.container {
-  padding: 20px;
-}
-
-.form-group {
-  margin-bottom: 15px;
-}
-
-.button {
-  padding: 10px 15px;
-  background-color: #4caf50;
-  color: white;
-  border: none;
-  cursor: pointer;
-}
-
-.button:hover {
-  background-color: #45a049;
-}
-
-.questions-list table {
-  width: 100%;
-  border-collapse: collapse;
-}
-
-.questions-list th,
-.questions-list td {
-  padding: 10px;
-  text-align: center;
-}
-
-.edit-question-container {
-  margin-top: 20px;
-  border-top: 2px solid #ccc;
-  padding-top: 20px;
-}
-</style> -->
-
-<!-- 第二版 
-<style scoped>
-.container {
-  position: absolute;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding: 20px;
-  font-family: Arial, sans-serif;
-  top: 80px;
-  left: 0;
-  right: 0;
-  width: 80%;
-  margin: 0 auto; /* 水平置中 */
-}
-
-/* 修改查詢模式按鈕位置 */
-.search-container {
-  width: 80%;
-  height: 200px;
-  background-color: #f0f0f0;
-  /*background-image: url('../../assets/images/search.png');
-  background-size: cover; 
-  background-position: center; 
-  background-repeat: no-repeat;*/
-  padding: 20px;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-  margin-bottom: 20px;
-  display: flex;
-  align-items: center;
-  justify-content: flex-start;
-  flex-wrap: wrap;
-  gap: 10px;
-  position: relative;
-}
-
-/*.search-container::after {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0, 0, 0, 0.9); 
-  z-index: -1; 
-}*/
-
-/* 修改查詢模式按鈕位置 */
-.search-mode-buttons {
-  flex: 1;
-  display: flex;
-  flex-direction: column; /* 垂直排列 */
-  gap: 10px; /* 控制按鈕間距 */
-  background-color: yellow;
-  padding: 20px;
-}
-
-.search-mode-buttons button {
-  padding: 10px 20px;
-  margin-right: 10px;
-  border: 1px solid #ccc;
-  cursor: pointer;
-  transition: background-color 0.3s ease;
-}
-
-.search-btn {
-  color: black;
-  background-color: white;
-}
-
-.search-content {
-  flex: 4;
-  padding: 10px;
-  background-color: #f48f8f;
-}
-
-h1,
-h2 {
-  text-align: center;
-  color: #333;
-}
-
-h2 {
-  font-size: 24px;
-  margin-bottom: 20px;
-}
-
-.form-group {
-  display: flex;
-  flex-direction: column;
-  margin-bottom: 15px;
-  min-width: 180px;
-  flex: 1; /* 讓所有元素平均分配空間 */
-}
-
-.form-group label {
-  text-align: center;
-}
-
-label {
-  font-weight: bold;
-  margin-bottom: 5px;
-}
-
-select,
-input {
-  padding: 10px;
-  border: 1px solid #ccc;
-  border-radius: 5px;
-  font-size: 16px;
-  width: 100%;
-}
-
-/* 查詢按鈕 */
-.button {
-  background-color: #4caf50;
-  color: white;
-  border: none;
-  padding: 10px 20px;
-  font-size: 16px;
-  border-radius: 5px;
-  cursor: pointer;
-  transition: 0.3s;
-}
-
-.button:hover {
-  background-color: #45a049;
-}
-
-.cancel-btn {
-  background-color: #f44336;
-}
-
-.cancel-btn:hover {
-  background-color: #d32f2f;
-}
-
-/* 題目表格 */
-.question-table {
-  width: 100%;
-  border-collapse: collapse;
-  margin-top: 20px;
-}
-
-.question-table th,
-.question-table td {
-  border: 1px solid #ddd;
-  padding: 10px;
-  text-align: center;
-}
-
-.question-table th {
-  background-color: #f4f4f4;
-  font-weight: bold;
-}
-
-.question-table td {
-  background-color: #fff;
-}
-
-/* 按鈕區 */
-button {
-  padding: 8px 12px;
-  border: none;
-  border-radius: 5px;
-  cursor: pointer;
-  font-size: 14px;
-  transition: 0.3s;
-}
-
-/* 無題目時的提示 */
-.no-questions-message {
-  text-align: center;
-  font-size: 18px;
-  color: #777;
-  margin-top: 20px;
-}
-
-.modal-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(0, 0, 0, 0.5); /* 半透明背景 */
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 999;
-}
-
-.modal-content {
-  position: relative; /* 讓關閉按鈕相對於此容器定位 */
-  background-color: white;
-  padding: 30px;
-  border-radius: 12px; /* 更圓的邊角 */
-  width: 400px;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1); /* 增加陰影的強度 */
-  text-align: center;
-  box-sizing: border-box;
-}
-
-.modal-actions {
-  display: flex;
-  justify-content: space-between;
-  gap: 10px;
-}
-
-.close-btn {
-  position: absolute;
-  top: 10px;
-  right: 10px;
-  background: transparent;
-  border: none;
-  font-size: 20px;
-  cursor: pointer;
-  background-color: white;
-  color: rgb(0, 0, 0);
-}
-
-/* 修改題目區塊 (懸浮視窗) */
-/*.edit-question-container {
-  background: rgba(0, 0, 0, 0.5);
-  background-color: #f7c5c5;
-  padding: 30px;
-  border-radius: 12px; 
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1); 
-  position: fixed; 
-  top: 50%; 
-  left: 50%; 
-  transform: translate(-50%, -50%); 
-  z-index: 1000;
-  width: 80%; 
-  max-width: 800px; 
-  box-sizing: border-box;
-  overflow: hidden;
-}*/
-
-/* 遮罩層 */
-/*.edit-question-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background-color: rgba(0, 0, 0, 0.5);
-  z-index: 999; 
-}*/
-</style>
--->
-
-<!-- 第三版 -->
 <style scoped>
 /* 基本設定 */
 * {
@@ -615,12 +566,13 @@ button {
 }
 
 .search-btn.active {
-  background-color: #007bff;
+  background-color: #9f84bd;
   color: white;
 }
 
 .search-btn:hover {
-  background-color: #007bff;
+  /* background-color: #9f84bd; */
+  background-color: #8a6fa0;
   color: white;
 }
 
@@ -646,17 +598,22 @@ button {
   flex-direction: column;
   align-items: center;
   margin: 10px;
+  width: 100%;
+}
+
+.question-type-div {
+  display: flex;
+  align-items: center;
+  flex-direction: row;
 }
 
 .keyword-group {
   margin-top: 24px;
 }
 
-label {
-  display: block;
-  margin-bottom: 10px;
-  font-weight: bold;
-  font-size: 20px;
+.option-form-group {
+  margin: 0;
+  gap: 5px;
 }
 
 select,
@@ -738,6 +695,51 @@ td button:hover {
   background-color: #0056b3;
 }
 
+h2 {
+  font-size: 24px;
+  margin-bottom: 15px;
+  color: #333;
+}
+
+label {
+  display: block;
+  margin-bottom: 10px;
+  font-weight: bold;
+  font-size: 16px;
+}
+
+textarea,
+input[type="text"] {
+  width: 100%;
+  padding: 10px;
+  font-size: 14px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  transition: border-color 0.3s ease;
+}
+
+textarea {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  font-size: 1rem;
+  background-color: #f9f9f9;
+  transition: border-color 0.3s ease;
+  height: auto; /* 調整高度 */
+  line-height: 1.5; /* 保持字距 */
+  text-align: left; /* 讓文字靠左 */
+  vertical-align: top; /* 讓游標顯示在上方 */
+  white-space: pre-wrap; /* 讓文字在超過邊界時自動換行 */
+  word-wrap: break-word; /* 防止長單字超出邊界 */
+  resize: none;
+}
+
+textarea:focus,
+input[type="text"]:focus {
+  border-color: #007bff;
+}
+
 .no-questions-message {
   position: absolute;
   top: 400px;
@@ -775,7 +777,7 @@ td button:hover {
   display: flex;
   justify-content: center;
   align-items: center;
-  z-index: 999;
+  z-index: 9999;
 }
 
 .modal-content {
@@ -783,16 +785,72 @@ td button:hover {
   background-color: white;
   padding: 30px;
   border-radius: 12px; /* 更圓的邊角 */
-  width: 400px;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1); /* 增加陰影的強度 */
+  width: 600px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
   text-align: center;
   box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch; /* 確保內部元素填滿 */
+  text-align: center;
+}
+
+.modal-content label {
+  width: 100%;
+  text-align: left;
+  margin-right: 0;
+}
+
+.modal-content input[type="text"],
+.modal-content textarea {
+  width: 100%; /* 讓輸入框填滿 */
+  padding: 10px;
+  font-size: 14px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  transition: border-color 0.3s ease;
 }
 
 .modal-actions {
   display: flex;
   justify-content: space-between;
-  gap: 10px;
+  align-items: center;
+  gap: 20px;
+  width: 40%;
+  margin: 0 auto;
+}
+
+.modal-actions button {
+  flex: 1;
+  padding: 10px 20px;
+  font-size: 16px;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.modal-actions button:hover {
+  background-color: #0056b3;
+}
+
+.modal-form-group {
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  margin-bottom: 15px;
+}
+
+.modal-form-group label {
+  flex-basis: 15%;
+  margin: 0;
+}
+
+.modal-form-group input,
+.modal-form-group textarea {
+  flex-grow: 1; /* 讓內容區域填滿剩餘空間 */
 }
 
 .close-btn {
@@ -806,6 +864,75 @@ td button:hover {
   cursor: pointer;
   background-color: white;
   color: rgb(0, 0, 0);
+}
+
+.answer-group {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 15px;
+  gap: 12px;
+  width: 100%;
+}
+
+.answer-group input {
+  flex-grow: 1;
+}
+
+.answer {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+}
+
+.answer input {
+  margin: 0; /* 移除默認的 margin */
+}
+
+.answer label {
+  font-size: 16px; /* 調整字型大小 */
+  margin: 0;
+}
+
+.answer-option {
+  margin: 0;
+}
+
+.option-group {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 10px;
+  gap: 12px;
+  width: 100%;
+}
+
+.option-group textarea {
+  width: 900%;
+  padding: 8px;
+  font-size: 14px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+.option-group input:focus {
+  border-color: #007bff;
+}
+
+.option-label {
+  margin: auto;
+  display: inline-block;
+  margin-right: 8px;
+  font-size: 14px;
+}
+
+.cancel-btn {
+  background-color: #ccc;
+}
+
+.cancel-btn:hover {
+  background-color: #bbb;
 }
 
 /* 在小螢幕下，適應視窗大小 */

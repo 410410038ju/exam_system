@@ -109,6 +109,12 @@
                 v-model="editUserData.id"
                 placeholder="輸入人員編號"
               />
+              <!-- <input
+                type="text"
+                v-model="editUserData.id"
+                placeholder="輸入人員編號"
+                readonly
+              /> -->
             </label>
           </div>
 
@@ -713,8 +719,8 @@ const editUser = (id) => {
   }
 };*/
 const saveChanges = () => {
-  if (!editUserData || !editUserData.id) {
-    alert("請輸入有效的人員編號！");
+  if (!editUserData || !editUserData.id || !editUserData.name || !editUserData.password) {
+    alert("請輸入完整資料！");
     return;
   }
 
