@@ -80,7 +80,9 @@
           </div>
           <div class="modal-actions">
             <button class="button" @click="addUser">確定</button>
-            <button class="button cancel-btn" @click="closeAddModal">取消</button>
+            <button class="button cancel-btn" @click="closeAddModal">
+              取消
+            </button>
           </div>
         </div>
       </div>
@@ -719,7 +721,12 @@ const editUser = (id) => {
   }
 };*/
 const saveChanges = () => {
-  if (!editUserData || !editUserData.id || !editUserData.name || !editUserData.password) {
+  if (
+    !editUserData ||
+    !editUserData.id ||
+    !editUserData.name ||
+    !editUserData.password
+  ) {
     alert("請輸入完整資料！");
     return;
   }
@@ -772,6 +779,12 @@ const resetPassword = () => {
 
 const deleteUser = (id) => {
   const inputId = prompt(`請輸入要刪除的人員編號：`);
+
+  // 如果按下取消，則不做任何事情
+  if (inputId === null) {
+    return;
+  }
+
   if (inputId === id) {
     users.value = users.value.filter((user) => user.id !== id);
     localStorage.setItem("users", JSON.stringify(users.value));
