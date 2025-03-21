@@ -68,12 +68,12 @@
             <label>
               <span>人員權限：</span>
               <select v-model="newUser.role">
-                <option value="User">User</option>
-                <option value="Manager" v-if="currentUserRole === 'Admin'">
-                  Manager
+                <option value="EXAM_TAKER">考生</option>
+                <option value="MANAGER" v-if="currentUserRole === 'ADMIN'">
+                  主管
                 </option>
-                <option value="Admin" v-if="currentUserRole === 'Admin'">
-                  Admin
+                <option value="ADMIN" v-if="currentUserRole === 'ADMIN'">
+                  最高管理員
                 </option>
               </select>
             </label>
@@ -135,12 +135,12 @@
             <label>
               <span>人員權限：</span>
               <select v-model="editUserData.role">
-                <option value="User">User</option>
-                <option value="Manager" v-if="currentUserRole === 'Admin'">
-                  Manager
+                <option value="EXAM_TAKER">考生</option>
+                <option value="MANAGER" v-if="currentUserRole === 'ADMIN'">
+                  主管
                 </option>
-                <option value="Admin" v-if="currentUserRole === 'Admin'">
-                  Admin
+                <option value="ADMIN" v-if="currentUserRole === 'ADMIN'">
+                  最高管理員
                 </option>
               </select>
             </label>
@@ -187,7 +187,7 @@
           <tr v-for="user in filteredUsers" :key="user.id">
             <td>{{ user.name }}</td>
             <td>{{ user.id }}</td>
-            <td>{{ user.role }}</td>
+            <td>{{ getRoleName(user.role) }}</td>
             <td>{{ user.locked ? "是" : "否" }}</td>
             <td>
               <div class="button-container">
@@ -562,7 +562,7 @@ const editUserData = reactive({
   name: "",
   id: "",
   password: "",
-  role: "User",
+  role: "EXAM_TAKER",
 });
 const showModal = ref(false);
 const showEditModal = ref(false);
@@ -570,19 +570,33 @@ const newUser = reactive({
   name: "",
   id: "",
   password: "",
-  role: "User",
+  role: "EXAM_TAKER",
   locked: false,
   failedAttempts: 0,
 });
 const filteredUsers = ref([]);
 const loggedInUser = JSON.parse(localStorage.getItem("loggedInUser"));
-const currentUserRole = ref(loggedInUser?.role || "Manager");
+const currentUserRole = ref(loggedInUser?.role || "MANAGER");
 
 // 檢查登入狀況
 const checkLogin = () => {
   if (!loggedInUser) {
     alert("你尚未登入");
     router.push("/"); // 跳轉到 Home.vue（根路由）
+  }
+};
+
+// 人員權限英文轉換中文
+const getRoleName = (role) => {
+  switch (role) {
+    case 'EXAM_TAKER':
+      return '考生';
+    case 'MANAGER':
+      return '主管';
+    case 'ADMIN':
+      return '最高管理員';
+    default:
+      return '未知角色';
   }
 };
 
@@ -638,8 +652,8 @@ const searchUsers = () => {
 
 // 計算是否可以編輯/刪除使用者
 const canModifyUser = (role) => {
-  if (currentUserRole.value === "Admin") return true;
-  if (currentUserRole.value === "Manager" && role === "User") return true;
+  if (currentUserRole.value === "ADMIN") return true;
+  if (currentUserRole.value === "MANAGER" && role === "EXAM_TAKER") return true;
   return false;
 };
 
@@ -650,8 +664,8 @@ const addUser = () => {
   }
 
   // 如果登入的是 Manager，角色必須是 User
-  if (currentUserRole.value === "Manager" && newUser.role !== "User") {
-    alert("您只能新增 User 權限的人員！");
+  if (currentUserRole.value === "MANAGER" && newUser.role !== "EXAM_TAKER") {
+    alert("您只能新增 EXAM_TAKER 權限的人員！");
     return;
   }
 
@@ -672,7 +686,7 @@ const addUser = () => {
     name: "",
     id: "",
     password: "",
-    role: "User",
+    role: "EXAM_TAKER",
     locked: false,
     failedAttempts: 0,
   });
@@ -731,7 +745,7 @@ const saveChanges = () => {
     return;
   }
 
-  if (currentUserRole.value === "Manager" && editUserData.role !== "User") {
+  if (currentUserRole.value === "MANAGER" && editUserData.role !== "EXAM_TAKER") {
     alert("無法更改人員權限");
     return;
   }
@@ -821,7 +835,7 @@ const closeAddModal = () => {
     name: "",
     id: "",
     password: "",
-    role: "User",
+    role: "EXAM_TAKER",
   });
 };
 

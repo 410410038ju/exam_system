@@ -14,25 +14,29 @@
 -->
 
 <template>
-  <div class="container">
-    <!-- 左側標語區 -->
-    <div class="title">
-      <img :src="cheerImage" alt="cheer" class="logo_image" />
-      <div class="text-container">
-        <h1 class="title_text">歡迎來到管理者介面</h1>
-        <p class="subtitle">Welcome to the administrator interface~</p>
+  <div class="background">
+    <div class="container">
+      <!-- 左側標語區 -->
+      <div class="title">
+        <img :src="cheerImage" alt="cheer" class="logo_image" />
+        <div class="text-container">
+          <h1 class="title_text">歡迎來到管理者介面</h1>
+          <p class="subtitle">Welcome to the administrator interface~</p>
+        </div>
       </div>
-    </div>
 
-    <!-- 右側按鈕區 -->
-    <div class="Buttons">
-      <button @click="navigateTo('user_list')">人員管理</button>
-      <button @click="navigateTo('create_question')">新增題庫</button>
-      <button @click="navigateTo('modify_question')">修改題庫</button>
-      <button @click="navigateTo('manage_question_bank_types')">管理題庫類別</button>
-      <button @click="navigateTo('open_exam')">開放測驗</button>
-      <button @click="navigateTo('view_exam_records')">查看測驗紀錄</button>
-      <button @click="logout" class="logout-btn">登出</button>
+      <!-- 右側按鈕區 -->
+      <div class="Buttons">
+        <button @click="navigateTo('user_list')">人員管理</button>
+        <button @click="navigateTo('create_question')">新增題庫</button>
+        <button @click="navigateTo('modify_question')">修改題庫</button>
+        <button @click="navigateTo('manage_question_bank_types')">
+          管理題庫類別
+        </button>
+        <button @click="navigateTo('open_exam')">開放測驗</button>
+        <button @click="navigateTo('view_exam_records')">查看測驗紀錄</button>
+        <button @click="logout" class="logout-btn">登出</button>
+      </div>
     </div>
   </div>
 </template>
@@ -122,9 +126,9 @@ export default {
 -->
 
 <script setup>
-import { ref, onMounted, onBeforeUnmount } from 'vue';
-import { useRouter } from 'vue-router';
-import cheerImage from '../assets/images/cheer.png';
+import { ref, onMounted, onBeforeUnmount } from "vue";
+import { useRouter } from "vue-router";
+import cheerImage from "../assets/images/cheer.png";
 const loggedInUser = JSON.parse(localStorage.getItem("loggedInUser"));
 
 // 檢查登入狀況
@@ -145,28 +149,42 @@ const navigateTo = (page) => {
 
 // 登出方法
 const logout = () => {
-  localStorage.removeItem('loggedInUser');
+  localStorage.removeItem("loggedInUser");
   sessionStorage.clear();
-  router.push('/');
+  router.push("/");
 };
 
 onMounted(() => {
   checkLogin();
-  document.body.style.backgroundImage =
+  /*document.body.style.backgroundImage =
     "url('https://i.imgur.com/l7KF7dm.png')";
-  document.body.style.backgroundSize = 'cover';
-  document.body.style.backgroundPosition = 'center';
-  document.body.style.backgroundRepeat = 'no-repeat';
-  document.body.style.height = '100vh';
+  document.body.style.backgroundSize = "cover";
+  document.body.style.backgroundPosition = "center";
+  document.body.style.backgroundRepeat = "no-repeat";
+  document.body.style.height = "100vh";*/
 });
 
+/*
 onBeforeUnmount(() => {
-  document.body.style.backgroundImage = '';
+  document.body.style.backgroundImage = "";
 });
+*/
 </script>
 
-
 <style scoped>
+.background {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  width: 100%;
+  height: 100%;
+  margin: 0 auto; /* 水平置中 */
+  background-image: url('../assets/images/background.png');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}
 
 /* 主要容器 */
 .container {
@@ -176,7 +194,8 @@ onBeforeUnmount(() => {
   gap: 0px;
   align-items: center;
   width: 85%;
-  margin: 0 auto;
+  height: 100%;
+  margin: auto;
   padding: 20px;
   box-sizing: border-box;
 }

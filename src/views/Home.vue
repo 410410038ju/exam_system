@@ -1,65 +1,69 @@
 <template>
-  <div id="home-app" class="container">
-    <div class="left-section">
-      <img src="../assets/images/water.jpg" alt="圖片描述" class="image" />
-    </div>
-
-    <div class="right-section">
-      <div v-if="!showChangePassword" class="login-container">
-        <h1>歡迎進入考試系統</h1>
-        <br />
-        <label for="username">帳號：</label>
-        <input
-          type="text"
-          v-model="username"
-          placeholder="帳號"
-          class="input-field"
-        />
-
-        <label for="password">密碼：</label>
-        <input
-          type="password"
-          v-model="password"
-          placeholder="密碼"
-          class="input-field"
-        />
-
-        <button @click="login" class="btn-primary">登入</button>
-        <button @click="toggleChangePassword" class="btn-secondary">
-          修改密碼
-        </button>
+  <div class="background">
+    <div id="home-app" class="container">
+      <div class="left-section">
+        <img src="../assets/images/water.jpg" alt="圖片描述" class="image" />
       </div>
 
-      <div v-if="showChangePassword" class="login-container">
-        <h2>修改密碼</h2>
-        <label for="old-password">舊密碼：</label>
-        <input
-          type="password"
-          v-model="oldPassword"
-          placeholder="輸入舊密碼"
-          class="input-field"
-        />
+      <div class="right-section">
+        <div v-if="!showChangePassword" class="login-container">
+          <h1>歡迎進入考試系統</h1>
+          <br />
+          <label for="username">帳號：</label>
+          <input
+            type="text"
+            v-model="username"
+            placeholder="帳號"
+            class="input-field"
+          />
 
-        <label for="new-password">新密碼：</label>
-        <input
-          type="password"
-          v-model="newPassword"
-          placeholder="輸入新密碼"
-          class="input-field"
-        />
+          <label for="password">密碼：</label>
+          <input
+            type="password"
+            v-model="password"
+            placeholder="密碼"
+            class="input-field"
+          />
 
-        <label for="confirm-password">再次輸入新密碼：</label>
-        <input
-          type="password"
-          v-model="confirmPassword"
-          placeholder="再次輸入新密碼"
-          class="input-field"
-        />
+          <button @click="login" class="btn-primary">登入</button>
+          <button @click="toggleChangePassword" class="btn-secondary">
+            修改密碼
+          </button>
+        </div>
 
-        <button @click="changePassword" class="btn-primary">儲存新密碼</button>
-        <button @click="cancelChangePassword" class="btn-secondary">
-          取消
-        </button>
+        <div v-if="showChangePassword" class="login-container">
+          <h2>修改密碼</h2>
+          <label for="old-password">舊密碼：</label>
+          <input
+            type="password"
+            v-model="oldPassword"
+            placeholder="輸入舊密碼"
+            class="input-field"
+          />
+
+          <label for="new-password">新密碼：</label>
+          <input
+            type="password"
+            v-model="newPassword"
+            placeholder="輸入新密碼"
+            class="input-field"
+          />
+
+          <label for="confirm-password">再次輸入新密碼：</label>
+          <input
+            type="password"
+            v-model="confirmPassword"
+            placeholder="再次輸入新密碼"
+            class="input-field"
+          />
+
+          <button @click="changePassword" class="btn-primary">
+            儲存新密碼
+          </button>
+          <button @click="cancelChangePassword" class="btn-secondary">
+            取消
+          </button>
+        </div>
       </div>
     </div>
   </div>
@@ -275,11 +279,11 @@ const login = () => {
     localStorage.setItem("users", JSON.stringify(users));
     localStorage.setItem("loggedInUser", JSON.stringify(user));
 
-    if (user.role === "User") {
+    if (user.role === "EXAM_TAKER") {
       router.push("/user");
-    } else if (user.role === "Manager") {
+    } else if (user.role === "MANAGER") {
       router.push("/admin");
-    } else if (user.role === "Admin") {
+    } else if (user.role === "ADMIN") {
       router.push("/admin");
     }
   } else {
@@ -298,6 +302,61 @@ const login = () => {
   password.value = "";
 };
 
+/* 登入API
+const login = async () => {
+  if (!username.value.trim() || !password.value.trim()) {
+    alert("請輸入帳號和密碼");
+    return;
+  }
+
+  try {
+    const response = await axios.post("http://172.16.46.163/csexam/api/login", {
+      empId: username.value,
+      password: password.value,
+    });
+
+    const data = response.data;
+
+    if (data.code === "0000") {
+      const userData = data.data;
+
+      localStorage.setItem("token", userData.token);
+      localStorage.setItem("loggedInUser", JSON.stringify(userData));
+
+      const roles = userData.roleList.map((role) => role.roleName);
+      if (roles.includes("ADMIN")) {
+        router.push("/admin");
+      } else if (roles.includes("MANAGER")) {
+        router.push("/admin");
+      } else {
+        router.push("/user");
+      }
+    } else {
+      alert(data.message || "登入失敗");
+    }
+  } catch (error) {
+    if (error.response) {
+      if (error.response.data.code === "UE002") {
+        alert(error.response.data.message); //使用者不存在
+      } else if (error.response.data.code === "UE006") {
+        alert(error.response.data.message); //密碼錯誤，剩餘N次機會
+      } else if (error.response.data.code === "UE003") {
+        alert(error.response.data.message); //帳號被鎖住
+      } else if (error.response.data.code === "9999") {
+        alert(error.response.data.message); //系統忙碌中(其他問題)(在密碼被鎖住後，還沒解鎖前，登入第二次(含以後)都會出現這個)
+      } else {
+        alert("錯誤訊息:", error.response.data.message);
+      }
+    } else {
+      alert("發生錯誤，請稍後再試");
+    }
+    console.error("登入失敗:", error);
+  }
+  username.value = "";
+  password.value = "";
+};
+*/
+
 const initializeAdmin = () => {
   let users = JSON.parse(localStorage.getItem("users")) || [];
   const hasAdmin = users.some((user) => user.id === "admin");
@@ -307,7 +366,7 @@ const initializeAdmin = () => {
       name: "系統管理員",
       id: "admin",
       password: "1111",
-      role: "Admin",
+      role: "ADMIN",
       locked: false,
       failedAttempts: 0,
     });
@@ -353,9 +412,8 @@ const changePassword = () => {
   }
 };
 
-// 生命週期的處理
+/* 生命週期的處理
 onMounted(() => {
-  // document.body.style.backgroundImage = "url('../assets/images/home.png')";
   document.body.style.backgroundImage = "url('https://i.imgur.com/3IbGwzc.jpeg')";
   document.body.style.backgroundSize = "cover";
   document.body.style.backgroundPosition = "center";
@@ -366,6 +424,7 @@ onMounted(() => {
 onBeforeUnmount(() => {
   document.body.style.backgroundImage = ""; // 移除背景
 });
+*/
 
 // 呼叫初始化 admin 用戶
 initializeAdmin();
@@ -375,6 +434,7 @@ if (loggedInUserData) {
 }
 </script>
 
+<!-- 原始版本 -->
 <style scoped>
 html,
 body {
@@ -382,7 +442,23 @@ body {
   padding: 0;
   height: 100%;
   width: 100%;
+  background-color: #af198c;
 }
+
+.background {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  width: 100%;
+  height: 100%;
+  margin: 0 auto; /* 水平置中 */
+  background-image: url("../assets/images/home.png");
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
 /*
 #app {
   display: flex;
@@ -411,13 +487,15 @@ body {
   justify-content: center;
   align-items: center;
   width: 100%;
-  margin: 0 auto;
+  margin: auto;
+  position: relative;  /* 讓container能夠被absolute定位 */
+  top: 50%;  /* 距離父元素的50% */
+  transform: translateY(-50%); /* 使元素垂直置中 */
 }
 
 .container {
   height: 500px;
   max-width: 80%;
-  margin: 0;
   border: 2rem solid #8fffff;
   border-radius: 12px;
   background-color: #8fffff;
@@ -532,3 +610,5 @@ h3 {
 }
 */
 </style>
+
+
