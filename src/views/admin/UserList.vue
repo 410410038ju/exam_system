@@ -191,12 +191,14 @@
             <td>{{ user.name }}</td>
             <td>{{ user.id }}</td>
             <td>{{ getRoleName(user.role) }}</td>
-            <td :style="{ color: user.locked ? 'red' : 'black' }">
-              {{ user.locked ? "是" : "否" }}
+            <td :style="{ color: user.locked === 'Y' ? 'red' : 'black' }">
+              {{ user.locked === "Y" ? "是" : "否" }}
             </td>
-            <td>無須變更/需要更改</td>
-            <td>0.0.0.0</td>
-            <td>2025/03/20 12:22:01</td>
+            <td :style="{ color: user.passwordExpiredFlag === 'Y' ? 'red' : 'black' }">
+              {{ user.locked === "Y" ? "需要更改" : "無須變更" }}
+            </td>
+            <td>{{ user.lastLoginIp }}</td>
+            <td>{{ user.createDate }}</td>
             <td>
               <div class="button-container">
                 <button
@@ -642,10 +644,40 @@ const sortTable = (key) => {
   });
 };
 
+
 const loadUsers = () => {
   const storedUsers = JSON.parse(localStorage.getItem("users")) || [];
   users.value = storedUsers;
 };
+
+
+// 讀取所有人員資料API
+/*
+const loadUsers = async () => {
+  try {
+    const response = await axios.get("http://172.16.46.163/csexam/admin/users");
+    const data = response.data;
+
+    if (data.code === "0000") {
+      users.value = data.data.userList.map((user) => ({
+        id: user.empId,
+        name: user.username,
+        role: user.roleList.join(", "), // 角色列表轉為字串
+        locked: user.lockedFlag,
+        createDate: user.createDate,
+        lastLoginIp: user.lastLoginIp,
+        passwordExpiredFlag: user.passwordExpiredFlag
+      }));
+      filteredUsers.value = users.value;
+    } else {
+      alert(data.message || "載入人員資料失敗");
+    }
+  } catch (error) {
+    console.error("載入使用者資料時出錯:", error);
+    alert("載入使用者資料時出錯");
+  }
+};
+*/
 
 const searchUsers = () => {
   if (!searchQuery.value) {
@@ -666,6 +698,7 @@ const canModifyUser = (role) => {
   return false;
 };
 
+// 新增人員
 const addUser = () => {
   if (!newUser.name || !newUser.id || !newUser.password) {
     alert("請輸入完整資料！");
@@ -720,7 +753,7 @@ const addUser = async () => {
   }
 
   const userData = {
-    exmId: newUser.id,
+    empId: newUser.id,
     password: newUser.password,
     username: newUser.name,
     role: newUser.role,
@@ -746,6 +779,8 @@ const addUser = async () => {
         alert(error.response.data.message); //使用者已存在
       } else if (error.response.data.code === "RE001") {
         alert(error.response.data.message); //權限不存在(沒有這個權限名稱)
+      } else if (error.response.data.code === "9999" && error.response.data.message === "上行參數錯誤") {
+        alert(error.response.data.errorReason); //密碼不符合規定
       } else if (error.response.data.code === "9999") {
         alert(error.response.data.message); //系統忙碌中(其他問題)
       } else {
@@ -887,6 +922,56 @@ const deleteUser = (id) => {
     alert("輸入人員編號錯誤");
   }
 };
+
+// 刪除人員API
+/*
+const deleteUser = async (id) => {
+  const verifyEmpid = prompt(`請輸入要刪除的人員編號：`);
+
+  // 如果按下取消，則不做任何事情
+  if (verifyEmpid === null) {
+    return;
+  }
+
+  if (verifyEmpid === id) {
+    try {
+      const response = await axios.post(
+        "http://172.16.46.163/csexam/admin/users/delete",
+        {
+          empId: id,
+          verifyEmpid: verifyEmpid,
+        }
+      );
+
+      // 根據回應結果進行處理
+      // 如果回應狀態是 204，表示刪除成功
+      if (response.status === 204) {
+        // 刪除成功後更新前端資料
+        users.value = users.value.filter((user) => user.id !== id);
+        localStorage.setItem("users", JSON.stringify(users.value));
+        loadUsers();
+        filteredUsers.value = users.value;
+        alert("人員資料已成功刪除！");
+      } else {
+        // 根據回應的錯誤碼處理不同的錯誤情況
+        if (response.data.code === "UE002") {
+          alert("使用者不存在！");
+        } else if (response.data.code === "UE007") {
+          alert("刪除失敗，請確認輸入的員編是否正確！");
+        } else {
+          alert("刪除失敗，請稍後再試！");
+        }
+      }
+    } catch (error) {
+      console.error(error);
+      alert("刪除人員資料時發生錯誤！");
+    }
+  } else {
+    // alert("輸入人員編號錯誤");
+    alert("刪除失敗，請確認輸入的員編是否正確");
+  }
+};
+*/
 
 const unlockUser = (user) => {
   if (!user.locked) {
