@@ -241,6 +241,7 @@ export default {
 <script setup>
 import { ref, reactive, onMounted, onBeforeUnmount } from "vue";
 import { useRouter } from "vue-router";
+import axios from "axios";
 
 const router = useRouter();
 
@@ -320,7 +321,14 @@ const login = async () => {
     if (data.code === "0000") {
       const userData = data.data;
 
-      localStorage.setItem("token", userData.token);
+      
+      // 存儲 token 到 localStorage
+      // localStorage.setItem("token", userData.token);
+      localStorage.setItem('authToken', userData.token);
+    
+      // 設置 axios 預設的 Authorization header
+      axios.defaults.headers['Authorization'] = `Bearer ${userData.token}`;
+    
       localStorage.setItem("loggedInUser", JSON.stringify(userData));
 
       const roles = userData.roleList.map((role) => role.roleName);

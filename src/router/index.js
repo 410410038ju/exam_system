@@ -1,4 +1,4 @@
-import { createRouter, createWebHistory } from "vue-router";
+import { createRouter, createWebHashHistory, createWebHistory } from "vue-router";
 import Home from "../views/Home.vue";
 import AdminDashboard from "../views/AdminDashboard.vue";
 import UserDashboard from "../views/UserDashboard.vue";
@@ -83,6 +83,7 @@ const routes = [
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
+  // history: createWebHashHistory(import.meta.env.BASE_URL), // 使用 Hash #
   routes,
 });
 

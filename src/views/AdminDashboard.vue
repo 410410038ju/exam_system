@@ -151,6 +151,8 @@ const navigateTo = (page) => {
 const logout = () => {
   localStorage.removeItem("loggedInUser");
   sessionStorage.clear();
+  // localStorage.removeItem('authToken');
+  // delete axios.defaults.headers['Authorization'];  // 清除預設 header
   router.push("/");
 };
 

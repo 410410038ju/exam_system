@@ -179,6 +179,9 @@
               </span>
             </th>
             <th>鎖定</th>
+            <th>密碼狀態</th>
+            <th>最近一次登入IP</th>
+            <th>資料建立時間</th>
             <th>操作</th>
           </tr>
         </thead>
@@ -188,7 +191,12 @@
             <td>{{ user.name }}</td>
             <td>{{ user.id }}</td>
             <td>{{ getRoleName(user.role) }}</td>
-            <td>{{ user.locked ? "是" : "否" }}</td>
+            <td :style="{ color: user.locked ? 'red' : 'black' }">
+              {{ user.locked ? "是" : "否" }}
+            </td>
+            <td>無須變更/需要更改</td>
+            <td>0.0.0.0</td>
+            <td>2025/03/20 12:22:01</td>
             <td>
               <div class="button-container">
                 <button
@@ -546,6 +554,7 @@ export default {
 <script setup>
 import { ref, reactive, computed, onMounted, watch } from "vue";
 import { useRouter } from "vue-router"; // 引入 Vue Router
+import axios from "axios";
 import AdminNavBar from "../../components/AdminNavBar.vue";
 import * as XLSX from "xlsx";
 
@@ -589,14 +598,14 @@ const checkLogin = () => {
 // 人員權限英文轉換中文
 const getRoleName = (role) => {
   switch (role) {
-    case 'EXAM_TAKER':
-      return '考生';
-    case 'MANAGER':
-      return '主管';
-    case 'ADMIN':
-      return '最高管理員';
+    case "EXAM_TAKER":
+      return "考生";
+    case "MANAGER":
+      return "主管";
+    case "ADMIN":
+      return "最高管理員";
     default:
-      return '未知角色';
+      return "未知角色";
   }
 };
 
@@ -696,6 +705,73 @@ const addUser = () => {
   closeAddModal();
 };
 
+// 新增人員API
+/*
+const addUser = async () => {
+  if (!newUser.name || !newUser.id || !newUser.password) {
+    alert("請輸入完整資料！");
+    return;
+  }
+
+  // 如果登入的是 Manager
+  if (currentUserRole.value === "MANAGER" && newUser.role !== "EXAM_TAKER") {
+    alert("您只能新增 EXAM_TAKER 權限的人員！");
+    return;
+  }
+
+  const userData = {
+    exmId: newUser.id,
+    password: newUser.password,
+    username: newUser.name,
+    role: newUser.role,
+  };
+
+  try {
+    const response = await axios.post(
+      "http://172.16.46.163/csexam/admin/sign-up",
+      userData
+    );
+
+    const data = response.data;
+
+    if (data.code === "0000") {
+      alert("新增人員成功");
+      loadUsers();
+    } else {
+      alert(data.message || "新增人員失敗");
+    }
+  } catch (error) {
+    if (error.response) {
+      if (error.response.data.code === "UE001") {
+        alert(error.response.data.message); //使用者已存在
+      } else if (error.response.data.code === "RE001") {
+        alert(error.response.data.message); //權限不存在(沒有這個權限名稱)
+      } else if (error.response.data.code === "9999") {
+        alert(error.response.data.message); //系統忙碌中(其他問題)
+      } else {
+        alert("錯誤訊息:", error.response.data.message);
+      }
+    } else {
+      alert("發生錯誤，請稍後再試");
+    }
+    console.error("新增人員失敗:", error);
+  }
+
+  Object.assign(newUser, {
+    name: "",
+    id: "",
+    password: "",
+    role: "EXAM_TAKER",
+    locked: false,
+    failedAttempts: 0,
+  });
+
+  loadUsers();
+  filteredUsers.value = users.value;
+  closeAddModal();
+};
+*/
+
 // 編輯人員資料
 const editUser = (id) => {
   if (id === "admin") {
@@ -745,7 +821,10 @@ const saveChanges = () => {
     return;
   }
 
-  if (currentUserRole.value === "MANAGER" && editUserData.role !== "EXAM_TAKER") {
+  if (
+    currentUserRole.value === "MANAGER" &&
+    editUserData.role !== "EXAM_TAKER"
+  ) {
     alert("無法更改人員權限");
     return;
   }
@@ -1144,7 +1223,7 @@ th span {
   top: 100px;
   left: 0;
   right: 0;
-  width: 80%;
+  width: 90%;
   margin: 0 auto; /* 水平置中 */
 }
 
@@ -1328,7 +1407,7 @@ select {
 #user-table {
   width: 100%;
   border-collapse: collapse;
-  table-layout: fixed; /* 固定表格的列寬 */
+  /* table-layout: fixed;  */
   margin-top: 20px;
 }
 
@@ -1344,7 +1423,7 @@ select {
   background-color: #00bcd4;
   color: white;
   cursor: pointer;
-  width: 25%; /* 固定每一列的寬度 */
+  width: 15%;
   text-align: left;
   padding: 8px;
   border: 1px solid #ddd;
