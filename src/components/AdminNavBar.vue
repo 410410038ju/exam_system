@@ -220,7 +220,18 @@ nav {
           v-model="newPassword"
           placeholder="輸入新密碼"
           class="input-field"
+          :class="{ 'invalid-input': !isPasswordValid }"
+          pattern="^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{12,}$"
+          title="密碼需至少 12 個字元，包含大寫字母、小寫字母和數字"
         />
+        <div v-if="!isPasswordValid" class="message error-message">
+          <i class="fas fa-times-circle" style="color: red"></i>
+          密碼需至少 12 個字元，包含大寫字母、小寫字母和數字
+        </div>
+        <div v-if="isPasswordValid" class="message correct-message">
+          <i class="fas fa-check-circle" style="color: green"></i>
+          密碼符合規定
+        </div>
 
         <label for="confirmPassword">再次輸入新密碼：</label>
         <input
@@ -261,8 +272,9 @@ export default {
 -->
 
 <script setup>
-import { ref, reactive, onMounted } from "vue";
+import { ref, reactive, watch, onMounted } from "vue";
 import { useRouter } from "vue-router";
+import axios from "axios";
 
 const router = useRouter();
 
@@ -270,6 +282,7 @@ const showPasswordModal = ref(false); // 控制修改密碼對話框顯示
 const oldPassword = ref(""); // 舊密碼
 const newPassword = ref(""); // 新密碼
 const confirmPassword = ref(""); // 確認新密碼
+const isPasswordValid = ref(false); // 確認密碼是否符合規定
 
 const loggedInUser = JSON.parse(localStorage.getItem("loggedInUser"));
 
@@ -284,6 +297,11 @@ const checkLogin = () => {
 const modifyPassword = () => {
   showPasswordModal.value = true;
 };
+
+watch(newPassword, () => {
+  const regex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{12,}$/;
+  isPasswordValid.value = regex.test(newPassword.value);
+});
 
 /*
 const saveNewPassword = () => {
@@ -326,7 +344,7 @@ const saveNewPassword = () => {
 
   if (!userId) {
     alert("請先登入");
-    router.push("/");  // 跳轉到首頁
+    router.push("/"); // 跳轉到首頁
     return;
   }
 
@@ -344,6 +362,11 @@ const saveNewPassword = () => {
 
   if (newPassword.value !== confirmPassword.value) {
     alert("新密碼和確認密碼不一致");
+    return;
+  }
+
+  if (!isPasswordValid.value) {
+    alert("密碼不符合要求");
     return;
   }
 
@@ -481,7 +504,7 @@ body {
   display: flex;
   flex-direction: column;
   align-items: center;
-  position: relative; 
+  position: relative;
 }
 
 .modal-content h2 {
@@ -506,6 +529,19 @@ label {
   border: 1px solid #ccc;
   border-radius: 4px;
   font-size: 16px;
+}
+
+.message {
+  width: 340px;
+  margin: 10px 0;
+}
+
+.error-message {
+  color: red;
+}
+
+.correct-message {
+  color: green;
 }
 
 /* 按鈕區域 */

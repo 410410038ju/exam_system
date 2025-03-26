@@ -60,20 +60,15 @@
                 type="password"
                 v-model="newUser.password"
                 placeholder="輸入人員密碼"
-                :class="{ 'invalid-input': !isNewPasswordValid }"
+                :class="{ 'invalid-input': !isPasswordValid }"
                 pattern="^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{12,}$"
-                title="密碼需至少 12 個字元，包含大寫字母、小寫字母和數字"
+                title="密碼需至少 12 個字母，包含大寫字母、小寫字母和數字"
               />
-            </label>
-          </div>
-
-          <div class="form-group">
-            <label>
-              <div v-if="!isNewPasswordValid" class="error-message">
+              <div v-if="!isPasswordValid" class="error-message">
                 <i class="fas fa-times-circle" style="color: red"></i>
-                密碼需至少 12 個字元，包含大寫字母、小寫字母和數字
+                密碼需至少 12 個字母，包含大寫字母、小寫字母和數字
               </div>
-              <div v-if="isNewPasswordValid" class="correct-message">
+              <div v-if="isPasswordValid" class="correct-message">
                 <i class="fas fa-check-circle" style="color: green"></i>
                 密碼符合規定
               </div>
@@ -85,8 +80,12 @@
               <span>人員權限：</span>
               <select v-model="newUser.role">
                 <option value="EXAM_TAKER">考生</option>
-                <option value="MANAGER">主管</option>
-                <option value="ADMIN">最高管理員</option>
+                <option value="MANAGER" v-if="currentUserRole === 'ADMIN'">
+                  主管
+                </option>
+                <option value="ADMIN" v-if="currentUserRole === 'ADMIN'">
+                  最高管理員
+                </option>
               </select>
             </label>
           </div>
@@ -139,20 +138,15 @@
                 type="password"
                 v-model="editUserData.password"
                 placeholder="輸入新密碼"
-                :class="{ 'invalid-input': !isEditPasswordValid }"
+                :class="{ 'invalid-input': !isPasswordValid }"
                 pattern="^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{12,}$"
-                title="密碼需至少 12 個字元，包含大寫字母、小寫字母和數字"
+                title="密碼需至少 12 個字母，包含大寫字母、小寫字母和數字"
               />
-            </label>
-          </div>
-
-          <div class="form-group">
-            <label>
-              <div v-if="!isEditPasswordValid" class="error-message">
+              <div v-if="!isPasswordValid" class="error-message">
                 <i class="fas fa-times-circle" style="color: red"></i>
-                密碼需至少 12 個字元，包含大寫字母、小寫字母和數字
+                密碼需至少 12 個字母，包含大寫字母、小寫字母和數字
               </div>
-              <div v-if="isEditPasswordValid" class="correct-message">
+              <div v-if="isPasswordValid" class="correct-message">
                 <i class="fas fa-check-circle" style="color: green"></i>
                 密碼符合規定
               </div>
@@ -164,8 +158,12 @@
               <span>人員權限：</span>
               <select v-model="editUserData.role">
                 <option value="EXAM_TAKER">考生</option>
-                <option value="MANAGER">主管</option>
-                <option value="ADMIN">最高管理員</option>
+                <option value="MANAGER" v-if="currentUserRole === 'ADMIN'">
+                  主管
+                </option>
+                <option value="ADMIN" v-if="currentUserRole === 'ADMIN'">
+                  最高管理員
+                </option>
               </select>
             </label>
           </div>
@@ -231,18 +229,30 @@
             <td>{{ user.createDate }}</td>
             <td>
               <div class="button-container">
-                <button class="button edit-btn" @click="editUser(user.id)">
+                <button
+                  v-if="canModifyUser(user.role)"
+                  class="button edit-btn"
+                  @click="editUser(user.id)"
+                >
                   編輯
                 </button>
-                <button class="button delete-btn" @click="deleteUser(user.id)">
+                <button
+                  v-if="canModifyUser(user.role)"
+                  class="button delete-btn"
+                  @click="deleteUser(user.id)"
+                >
                   刪除
                 </button>
-                <button class="button unlock-btn" @click="unlockUser(user.id)">
+                <button
+                  v-if="canModifyUser(user.role)"
+                  class="button unlock-btn"
+                  @click="unlockUser(user)"
+                >
                   解除鎖定
                 </button>
-                <!-- <span v-if="!canModifyUser(user.role)" style="color: red"
+                <span v-if="!canModifyUser(user.role)" style="color: red"
                   >沒有權限</span
-                > -->
+                >
               </div>
             </td>
           </tr>
@@ -606,8 +616,7 @@ const newUser = reactive({
 const filteredUsers = ref([]);
 const loggedInUser = JSON.parse(localStorage.getItem("loggedInUser"));
 const currentUserRole = ref(loggedInUser?.role || "MANAGER");
-const isNewPasswordValid = ref(false); // 用來檢查新增人員的密碼是否有效
-const isEditPasswordValid = ref(false); // 用來檢查修改人員的密碼是否有效
+const isPasswordValid = ref(false); // 用來檢查密碼是否有效
 
 // 檢查登入狀況
 const checkLogin = () => {
@@ -617,23 +626,16 @@ const checkLogin = () => {
   }
 };
 
-// 檢查新密碼是否符合要求
-const checkNewPassword = () => {
+// 檢查密碼是否符合要求
+const checkPassword = () => {
   const regex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{12,}$/;
-  isNewPasswordValid.value = regex.test(newUser.password);
+  isPasswordValid.value = regex.test(newUser.password);
+  isPasswordValid.value = regex.test(editUserData.password);
 };
 
-// 檢查編輯的密碼是否符合要求
-const checkEditPassword = () => {
-  const regex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{12,}$/;
-  isEditPasswordValid.value = regex.test(editUserData.password);
-};
-
-// 監聽新密碼變更，並且檢查密碼是否合法
-watch(() => newUser.password, checkNewPassword);
-
-// 監聽編輯密碼變更，並且檢查密碼是否合法
-watch(() => editUserData.password, checkEditPassword);
+// 監聽密碼變更，並且檢查密碼是否合法
+watch(() => newUser.password, checkPassword);
+watch(() => editUserData.password, checkPassword);
 
 // 人員權限英文轉換中文
 const getRoleName = (role) => {
@@ -734,21 +736,27 @@ const searchUsers = () => {
 };
 
 // 計算是否可以編輯/刪除使用者
-// const canModifyUser = (role) => {
-//   if (currentUserRole.value === "ADMIN") return true;
-//   if (currentUserRole.value === "MANAGER" && role === "EXAM_TAKER") return true;
-//   return false;
-// };
+const canModifyUser = (role) => {
+  if (currentUserRole.value === "ADMIN") return true;
+  if (currentUserRole.value === "MANAGER" && role === "EXAM_TAKER") return true;
+  return false;
+};
 
 // 新增人員
 const addUser = () => {
-  if (!isNewPasswordValid.value) {
+  if (!isPasswordValid.value) {
     alert("密碼不符合要求");
     return;
   }
 
   if (!newUser.name || !newUser.id || !newUser.password) {
     alert("請輸入完整資料！");
+    return;
+  }
+
+  // 如果登入的是 Manager，角色必須是 User
+  if (currentUserRole.value === "MANAGER" && newUser.role !== "EXAM_TAKER") {
+    alert("您只能新增 EXAM_TAKER 權限的人員！");
     return;
   }
 
@@ -782,13 +790,19 @@ const addUser = () => {
 // 新增人員API
 /*
 const addUser = async () => {
-  if (!isNewPasswordValid.value) {
+  if (!isPasswordValid.value) {
     alert("密碼不符合要求");
     return;
   }
 
   if (!newUser.name || !newUser.id || !newUser.password) {
     alert("請輸入完整資料！");
+    return;
+  }
+
+  // 如果登入的是 Manager
+  if (currentUserRole.value === "MANAGER" && newUser.role !== "EXAM_TAKER") {
+    alert("您只能新增 EXAM_TAKER 權限的人員！");
     return;
   }
 
@@ -900,7 +914,15 @@ const saveChanges = () => {
     return;
   }
 
-  if (!isEditPasswordValid.value) {
+  if (
+    currentUserRole.value === "MANAGER" &&
+    editUserData.role !== "EXAM_TAKER"
+  ) {
+    alert("無法更改人員權限");
+    return;
+  }
+
+  if (!isPasswordValid.value) {
     alert("密碼不符合要求");
     return;
   }
@@ -1017,7 +1039,7 @@ const deleteUser = async (id) => {
 };
 */
 
-/* 解除鎖定帳號
+// 解除鎖定帳號
 const unlockUser = (user) => {
   if (!user.locked) {
     alert("此帳號沒有被鎖住");
@@ -1027,9 +1049,10 @@ const unlockUser = (user) => {
   user.failedAttempts = 0;
   alert(`帳號 ${user.id} 已解除鎖定`);
   updateUserData(user);
-};*/
+};
 
 // 解鎖帳號API
+/*
 const unlockUser = async (empId) => {
   try {
     const response = await axios.put(
@@ -1061,6 +1084,7 @@ const unlockUser = async (empId) => {
     alert("發生錯誤，請稍後再試");
   }
 };
+*/
 
 const updateUserData = (user) => {
   let usersList = JSON.parse(localStorage.getItem("users")) || [];
@@ -1556,17 +1580,6 @@ select {
   display: block;
   margin-left: auto;
   margin-right: auto; /* 使表單元素水平置中 */
-}
-
-.error-message {
-  width: 100%;
-  text-align: center;
-  font-size: 15px;
-}
-
-.correct-message {
-  width: 100%;
-  text-align: center;
 }
 
 /* Modal 按鈕區塊 */

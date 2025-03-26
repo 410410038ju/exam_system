@@ -128,6 +128,7 @@ export default {
 <script setup>
 import { ref, onMounted, onBeforeUnmount } from "vue";
 import { useRouter } from "vue-router";
+import axios from "axios";
 import cheerImage from "../assets/images/cheer.png";
 const loggedInUser = JSON.parse(localStorage.getItem("loggedInUser"));
 

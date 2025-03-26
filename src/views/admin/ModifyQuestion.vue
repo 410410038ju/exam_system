@@ -302,6 +302,7 @@
 
 <script setup>
 import { ref, reactive, onMounted, watch } from "vue";
+import axios from "axios";
 
 import AdminNavBar from "../../components/AdminNavBar.vue";
 

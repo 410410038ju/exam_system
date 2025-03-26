@@ -234,6 +234,7 @@
 <script setup>
 import { ref, computed, watch, onMounted } from "vue";
 import { useRouter } from "vue-router";
+import axios from "axios";
 import AdminNavBar from "../../components/AdminNavBar.vue";
 
 // 初始化 router

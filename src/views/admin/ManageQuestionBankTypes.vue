@@ -140,6 +140,7 @@
 
 <script setup>
 import { ref, reactive } from "vue";
+import axios from "axios";
 import AdminNavBar from "../../components/AdminNavBar.vue";
 
 const examData = JSON.parse(localStorage.getItem("examData")) || {};

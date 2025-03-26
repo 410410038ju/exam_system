@@ -1096,6 +1096,7 @@ onMounted(() => {
 <script setup>
 import { reactive, ref, computed, onMounted, toRaw } from "vue";
 import AdminNavBar from "../../components/AdminNavBar.vue";
+import axios from "axios";
 
 // 用 reactive 來管理 testData
 const testData = reactive({

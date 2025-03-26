@@ -15,7 +15,8 @@
     <!-- 修改密碼表單 -->
     <div v-if="showPasswordModal" class="modal">
       <div class="modal-content">
-        <h2>修改密碼
+        <h2>
+          修改密碼
           <span @click="cancelChangePassword" class="close-btn">&times;</span>
         </h2>
         <label for="oldPassword">舊密碼：</label>
@@ -32,7 +33,18 @@
           v-model="newPassword"
           placeholder="輸入新密碼"
           class="input-field"
+          :class="{ 'invalid-input': !isPasswordValid }"
+          pattern="^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{12,}$"
+          title="密碼需至少 12 個字元，包含大寫字母、小寫字母和數字"
         />
+        <div v-if="!isPasswordValid" class="message error-message">
+          <i class="fas fa-times-circle" style="color: red"></i>
+          密碼需至少 12 個字元，包含大寫字母、小寫字母和數字
+        </div>
+        <div v-if="isPasswordValid" class="message correct-message">
+          <i class="fas fa-check-circle" style="color: green"></i>
+          密碼符合規定
+        </div>
 
         <label for="confirmPassword">再次輸入新密碼：</label>
         <input
@@ -236,8 +248,9 @@ export default {
 -->
 
 <script setup>
-import { ref, onMounted } from "vue";
+import { ref, watch, onMounted } from "vue";
 import { useRouter } from "vue-router";
+import axios from "axios";
 
 const router = useRouter();
 
@@ -278,6 +291,7 @@ const showPasswordModal = ref(false); // 控制修改密碼對話框顯示
 const oldPassword = ref(""); // 舊密碼
 const newPassword = ref(""); // 新密碼
 const confirmPassword = ref(""); // 確認新密碼
+const isPasswordValid = ref(false); // 確認密碼是否符合規定
 
 onMounted(() => {
   const loggedInUser = JSON.parse(localStorage.getItem("loggedInUser"));
@@ -290,6 +304,11 @@ onMounted(() => {
 const modifyPassword = () => {
   showPasswordModal.value = true;
 };
+
+watch(newPassword, () => {
+  const regex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{12,}$/;
+  isPasswordValid.value = regex.test(newPassword.value);
+});
 
 const saveNewPassword = () => {
   const users = JSON.parse(localStorage.getItem("users")) || [];
@@ -308,6 +327,11 @@ const saveNewPassword = () => {
 
   if (newPassword.value !== confirmPassword.value) {
     alert("新密碼和確認密碼不一致");
+    return;
+  }
+
+  if (!isPasswordValid.value) {
+    alert("密碼不符合要求");
     return;
   }
 
@@ -356,7 +380,7 @@ const startExam = (examId) => {
   left: 0;
   right: 0;
   width: 100%;
-  margin: 0 auto; 
+  margin: 0 auto;
   height: calc(100vh - 100px);
 }
 
@@ -427,7 +451,7 @@ const startExam = (examId) => {
   display: flex;
   flex-direction: column;
   align-items: center;
-  position: relative; 
+  position: relative;
 }
 
 .modal-content h2 {
@@ -452,6 +476,19 @@ label {
   border: 1px solid #ccc;
   border-radius: 4px;
   font-size: 16px;
+}
+
+.message {
+  width: 340px;
+  margin: 10px 0;
+}
+
+.error-message {
+  color: red;
+}
+
+.correct-message {
+  color: green;
 }
 
 /* 按鈕區域 */
@@ -515,13 +552,14 @@ label {
 table {
   width: 100%;
   border-collapse: collapse;
-  background-color: #ffffff; 
+  background-color: #ffffff;
   table-layout: fixed;
 }
 
-table th, table td {
+table th,
+table td {
   word-wrap: break-word;
-  height: 70px; 
+  height: 70px;
 }
 
 /* 表格表頭 */
@@ -541,11 +579,13 @@ table td {
   font-size: 16px;
 }
 
-table th:nth-child(1), table td:nth-child(1) {
+table th:nth-child(1),
+table td:nth-child(1) {
   width: 120px; /* 例如考試名稱列 */
 }
 
-table th:nth-child(5), table td:nth-child(5) {
+table th:nth-child(5),
+table td:nth-child(5) {
   width: 300px; /* 例如考試名稱列 */
 }
 

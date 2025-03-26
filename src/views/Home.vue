@@ -47,7 +47,18 @@
             v-model="newPassword"
             placeholder="輸入新密碼"
             class="input-field"
+            :class="{ 'invalid-input': !isPasswordValid }"
+            pattern="^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{12,}$"
+            title="密碼需至少 12 個字元，包含大寫字母、小寫字母和數字"
           />
+          <div v-if="!isPasswordValid" class="message error-message">
+            <i class="fas fa-times-circle" style="color: red"></i>
+            密碼需至少 12 個字元，包含大寫字母、小寫字母和數字
+          </div>
+          <div v-if="isPasswordValid" class="message correct-message">
+            <i class="fas fa-check-circle" style="color: green"></i>
+            密碼符合規定
+          </div>
 
           <label for="confirm-password">再次輸入新密碼：</label>
           <input
@@ -239,7 +250,7 @@ export default {
 -->
 
 <script setup>
-import { ref, reactive, onMounted, onBeforeUnmount } from "vue";
+import { ref, reactive, onMounted, onBeforeUnmount, watch } from "vue";
 import { useRouter } from "vue-router";
 import axios from "axios";
 
@@ -253,6 +264,7 @@ const newPassword = ref("");
 const confirmPassword = ref("");
 const showChangePassword = ref(false);
 const loggedInUser = ref(null);
+const isPasswordValid = ref(false);
 
 const login = () => {
   if (!username.value.trim() || !password.value.trim()) {
@@ -365,6 +377,7 @@ const login = async () => {
 };
 */
 
+// 有API之後，這個可以刪除
 const initializeAdmin = () => {
   let users = JSON.parse(localStorage.getItem("users")) || [];
   const hasAdmin = users.some((user) => user.id === "admin");
@@ -391,6 +404,13 @@ const cancelChangePassword = () => {
   showChangePassword.value = false;
 };
 
+// 檢查密碼是否符合要求
+// 監聽密碼變更，並且檢查密碼是否合法
+watch(newPassword, () => {
+  const regex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{12,}$/;
+  isPasswordValid.value = regex.test(newPassword.value);
+});
+
 const changePassword = () => {
   if (username.value === "admin") {
     alert("無法修改系統管理員密碼！");
@@ -407,6 +427,11 @@ const changePassword = () => {
 
   if (newPassword.value !== confirmPassword.value) {
     alert("兩次輸入的新密碼不一致，請重新輸入！");
+    return;
+  }
+
+  if (!isPasswordValid.value) {
+    alert("密碼不符合要求");
     return;
   }
 
@@ -433,6 +458,11 @@ onBeforeUnmount(() => {
   document.body.style.backgroundImage = ""; // 移除背景
 });
 */
+
+onMounted(() => {
+  // 刪除 localStorage 中的 authToken
+  localStorage.removeItem("authToken");
+});
 
 // 呼叫初始化 admin 用戶
 initializeAdmin();
@@ -496,8 +526,8 @@ body {
   align-items: center;
   width: 100%;
   margin: auto;
-  position: relative;  /* 讓container能夠被absolute定位 */
-  top: 50%;  /* 距離父元素的50% */
+  position: relative; /* 讓container能夠被absolute定位 */
+  top: 50%; /* 距離父元素的50% */
   transform: translateY(-50%); /* 使元素垂直置中 */
 }
 
@@ -544,6 +574,9 @@ body {
   /*box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);*/
   width: 100%;
   text-align: center;
+  display: flex;
+  flex-direction: column; /* 讓元素垂直排列 */
+  gap: 5px; /* 元素之間的間隔 */
 }
 
 label {
@@ -568,6 +601,23 @@ label {
   outline: none;
   border-color: #42b883;
   box-shadow: 0 0 5px rgba(66, 184, 131, 0.5);
+}
+
+.message {
+  height: 50px;
+}
+
+.error-message {
+  color: red;
+  justify-content: center; /* 水平置中 */
+  align-items: center; 
+}
+
+.correct-message {
+  color: green;
+  /* display: flex;
+  justify-content: center; 
+  align-items: center;  */
 }
 
 button {
@@ -618,5 +668,3 @@ h3 {
 }
 */
 </style>
-
-
