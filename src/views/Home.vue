@@ -26,9 +26,9 @@
           />
 
           <button @click="login" class="btn-primary">登入</button>
-          <button @click="toggleChangePassword" class="btn-secondary">
+          <!-- <button @click="toggleChangePassword" class="btn-secondary">
             修改密碼
-          </button>
+          </button> -->
         </div>
 
         <div v-if="showChangePassword" class="login-container">
@@ -315,7 +315,8 @@ const login = () => {
   password.value = "";
 };
 
-/* 登入API
+// 登入API 
+/*
 const login = async () => {
   if (!username.value.trim() || !password.value.trim()) {
     alert("請輸入帳號和密碼");
@@ -327,6 +328,7 @@ const login = async () => {
       empId: username.value,
       password: password.value,
     });
+    localStorage.setItem('empid', username.value);
 
     const data = response.data;
 
@@ -356,14 +358,16 @@ const login = async () => {
     }
   } catch (error) {
     if (error.response) {
-      if (error.response.data.code === "UE002") {
-        alert(error.response.data.message); //使用者不存在
-      } else if (error.response.data.code === "UE006") {
-        alert(error.response.data.message); //密碼錯誤，剩餘N次機會
-      } else if (error.response.data.code === "UE003") {
-        alert(error.response.data.message); //帳號被鎖住
-      } else if (error.response.data.code === "9999") {
-        alert(error.response.data.message); //系統忙碌中(其他問題)(在密碼被鎖住後，還沒解鎖前，登入第二次(含以後)都會出現這個)
+      if (error.response.data.code === "UE005") {
+        alert(error.response.data.message); 
+        router.push('/change-password');
+      } else if (error.response.data.code) {
+        alert(error.response.data.message); 
+        // UE002 使用者不存在
+        // UE003 帳號被鎖住，找主管解鎖
+        // UE005 密碼過期，需要自行變更密碼
+        // UE006 密碼錯誤，剩餘N次機會
+        // 9999  系統忙碌中(其他問題)
       } else {
         alert("錯誤訊息:", error.response.data.message);
       }
@@ -397,6 +401,7 @@ const initializeAdmin = () => {
 };
 
 const toggleChangePassword = () => {
+  // router.push('/change-password');
   showChangePassword.value = !showChangePassword.value;
 };
 
@@ -462,6 +467,7 @@ onBeforeUnmount(() => {
 onMounted(() => {
   // 刪除 localStorage 中的 authToken
   localStorage.removeItem("authToken");
+  localStorage.removeItem("empid");
 });
 
 // 呼叫初始化 admin 用戶

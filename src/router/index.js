@@ -1,5 +1,6 @@
 import { createRouter, createWebHashHistory, createWebHistory } from "vue-router";
 import Home from "../views/Home.vue";
+import ChangePassword from '../views/ChangePassword.vue'; 
 import AdminDashboard from "../views/AdminDashboard.vue";
 import UserDashboard from "../views/UserDashboard.vue";
 import UserList from "../views/admin/UserList.vue";
@@ -17,6 +18,12 @@ const routes = [
     name: "Home",
     component: Home,
     meta: { title: "首頁" }, //設定標題
+  },
+  {
+    path: '/change-password', 
+    name: 'change-password',
+    component: ChangePassword,
+    meta: { title: "修改密碼" },
   },
   {
     path: "/user",

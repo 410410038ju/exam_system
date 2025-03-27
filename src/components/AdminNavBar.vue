@@ -178,7 +178,7 @@ nav {
             :to="{ name: 'OpenExam' }"
             class="nav-item"
             active-class="active"
-            >開放測驗</router-link
+            >新增考卷</router-link
           >
         </li>
         <li>

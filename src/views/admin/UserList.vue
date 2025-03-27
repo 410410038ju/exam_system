@@ -84,7 +84,7 @@
             <label>
               <span>人員權限：</span>
               <select v-model="newUser.role">
-                <option value="EXAM_TAKER">考生</option>
+                <option value="EXAM_TAKER">客服</option>
                 <option value="MANAGER">主管</option>
                 <option value="ADMIN">最高管理員</option>
               </select>
@@ -163,7 +163,7 @@
             <label>
               <span>人員權限：</span>
               <select v-model="editUserData.role">
-                <option value="EXAM_TAKER">考生</option>
+                <option value="EXAM_TAKER">客服</option>
                 <option value="MANAGER">主管</option>
                 <option value="ADMIN">最高管理員</option>
               </select>
@@ -639,7 +639,7 @@ watch(() => editUserData.password, checkEditPassword);
 const getRoleName = (role) => {
   switch (role) {
     case "EXAM_TAKER":
-      return "考生";
+      return "客服";
     case "MANAGER":
       return "主管";
     case "ADMIN":
@@ -863,6 +863,7 @@ const editUser = (id) => {
     // 記錄原始的 user id
     originalUserId.value = user.id;
     Object.assign(editUserData, user);
+    editUserData.password = "";
     showEditModal.value = true;
   }
 };
@@ -889,6 +890,7 @@ const editUser = (id) => {
     loadUsers(); // 重新加載使用者列表
   }
 };*/
+
 const saveChanges = () => {
   if (
     !editUserData ||
@@ -930,6 +932,61 @@ const saveChanges = () => {
     alert("未找到原始使用者！");
   }
 };
+
+// 編輯人員資料API
+// 目前僅可更改密碼
+/*
+const saveChanges = async () => {
+  if (
+    !editUserData ||
+    !editUserData.id ||
+    !editUserData.name ||
+    !editUserData.password
+  ) {
+    alert("請輸入完整資料！");
+    return;
+  }
+
+  if (!isEditPasswordValid.value) {
+    alert("密碼不符合要求");
+    return;
+  }
+
+  try {
+    const token = localStorage.getItem("authToken"); // 從 localStorage 取得 token
+    const response = await axios.put(
+      "http://172.16.46.163/csexam/admin/users/password",
+      {
+        empId: editUserData.id,
+        newPassword: editUserData.password,
+      },
+      {
+        headers: { Authorization: `Bearer ${token}` },
+      }
+    );
+
+    if (response.data.code === "0000") {
+      alert("密碼更新成功！");
+      closeEditModal(); // 關閉修改視窗
+    } else {
+      alert(response.data.message || "更新失敗，請稍後再試！");
+    }
+  } catch (error) {
+    if (error.response) {
+      if (error.response.data.code) {
+        alert(error.response.data.message); 
+        // UE002 使用者不存在
+        // 9999  系統忙碌中(其他問題)
+      }else {
+        alert("錯誤訊息:", error.response.data.message);
+      }
+    } else {
+      alert("發生錯誤，請稍後再試");
+    }
+    console.error("密碼更新失敗:", error);
+  }
+};
+*/
 
 const cancelEdit = () => {
   closeEditModal();
@@ -991,8 +1048,8 @@ const deleteUser = async (id) => {
       // 如果回應狀態是 204，表示刪除成功
       if (response.status === 204) {
         // 刪除成功後更新前端資料
-        users.value = users.value.filter((user) => user.id !== id);
-        localStorage.setItem("users", JSON.stringify(users.value));
+        // users.value = users.value.filter((user) => user.id !== id);
+        // localStorage.setItem("users", JSON.stringify(users.value));
         loadUsers();
         filteredUsers.value = users.value;
         alert("人員資料已成功刪除！");
@@ -1562,11 +1619,13 @@ select {
   width: 100%;
   text-align: center;
   font-size: 15px;
+  color: red;
 }
 
 .correct-message {
   width: 100%;
   text-align: center;
+  color: green;
 }
 
 /* Modal 按鈕區塊 */

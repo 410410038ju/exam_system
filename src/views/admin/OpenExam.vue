@@ -749,7 +749,7 @@ onMounted(() => {
 
     <div class="content">
       <div class="left-content">
-        <h1>開放測驗</h1>
+        <h1>新增考卷</h1>
 
         <!-- 測驗名稱 -->
         <div class="form-group">
@@ -834,7 +834,7 @@ onMounted(() => {
 
       <!-- 範圍項目 -->
       <div class="right-content">
-        <h2>範圍項目</h2>
+        <h2>本次考試的出題範圍</h2>
         <!-- <button @click="addRangeItem">新增範圍項目</button> -->
         <!-- <div
           class="form-group"
