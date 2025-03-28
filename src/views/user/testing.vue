@@ -1,7 +1,7 @@
 <template>
   <div class="exam-container">
     <header class="exam-header">
-      <button class="back-button">返回測驗</button>
+      <button class="back-button" @click="BacktoExam()">返回測驗</button>
       <h1>單元學習評量</h1>
       <div class="score-info">試卷得分 <span>100</span></div>
     </header>
@@ -50,6 +50,10 @@ const router = useRouter();
 
 const answer1 = ref("分層次");
 const answer2 = ref("分割區域");
+
+const BacktoExam = () => {
+  router.push("/user");
+};
 </script>
 
 

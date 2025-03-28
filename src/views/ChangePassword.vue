@@ -201,7 +201,7 @@ button {
           />
 
           <button @click="changePassword" class="btn-primary">
-            儲存新密碼
+            儲存
           </button>
           <!-- <button @click="cancelChangePassword" class="btn-secondary">
             取消
@@ -299,12 +299,14 @@ const changePassword = async () => {
       }
     );
 
-    alert("密碼已成功更新，請重新登入");
-    router.push("/"); // 修改成功後跳轉到首頁
+    if (response.data.code === "0000") {
+      alert("密碼已成功更新，請重新登入");
+      router.push("/");
+    }
   } catch (error) {
     if (error.response) {
       if (error.response.data.code === "UE006") {
-        alert("舊密碼錯誤", error.response.data.message.slice(-6)); 
+        alert("舊密碼錯誤" + error.response.data.message.slice(-6)); 
         // alert(error.response.data.message.slice(-6));
       } else if (error.response.data.code) {
         alert(error.response.data.message);

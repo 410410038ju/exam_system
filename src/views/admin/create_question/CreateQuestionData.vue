@@ -224,9 +224,9 @@
     <div class="question-container">
       <div class="question-content">
         <div class="examInfo">
-          <div class="info">業務種類：{{ examInfo.category }}</div>
+          <div class="info">業務種類：{{ examInfo.categoryName }}</div>
           <div class="info">
-            測驗範圍：{{ examInfo.chapter }} {{ examInfo.section }}
+            測驗範圍：{{ examInfo.chapterName }} {{ examInfo.partName }}
           </div>
         </div>
         <h2>目前已提交題目</h2>
@@ -425,7 +425,7 @@ const submitQuestion = () => {
   // 讀取 examinfo 並生成 dynamic storage key
   const examinfo = JSON.parse(localStorage.getItem("examInfo"));
   if (examinfo) {
-    const storageKey = `Q${examinfo.category}_${examinfo.chapter}-${examinfo.section}`;
+    const storageKey = `Q${examinfo.categoryId}_${examinfo.chapterId}-${examinfo.partId}`;
     // 讀取已儲存的題目並合併，防止舊題目被覆蓋
     const savedQuestions = JSON.parse(localStorage.getItem(storageKey)) || [];
     savedQuestions.push(question);
@@ -516,6 +516,7 @@ body {
   box-sizing: border-box;
   overflow-y: auto;
   border: 1px solid #ddd;
+  position: relative; 
 }
 
 .createquestion-content {
@@ -639,6 +640,10 @@ input[type="checkbox"] {
 
 /* 按鈕樣式 */
 button.button {
+  position: sticky; 
+  bottom: 20px; /* 讓 div A 置於 div B 的底部 */
+  left: 50%; /* 水平居中 */
+  transform: translateX(-50%); 
   padding: 12px 20px;
   background-color: #4caf50;
   color: white;

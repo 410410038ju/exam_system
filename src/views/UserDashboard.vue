@@ -310,6 +310,7 @@ watch(newPassword, () => {
   isPasswordValid.value = regex.test(newPassword.value);
 });
 
+// 儲存新密碼
 const saveNewPassword = () => {
   const users = JSON.parse(localStorage.getItem("users")) || [];
 
@@ -346,6 +347,69 @@ const saveNewPassword = () => {
   showPasswordModal.value = false;
 };
 
+// 儲存新密碼/修改密碼API
+/*
+const saveNewPassword = async () => {
+
+  const loggedInUser = JSON.parse(localStorage.getItem("loggedInUser"));
+  if (loggedInUser) {
+    const empId = loggedInUser.id;
+  } else {
+    alert("尚未登入！");
+    router.push("/"); // 若找不到 empId，導回首頁
+    return;
+  }
+
+  if (newPassword.value !== confirmPassword.value) {
+    alert("兩次輸入的新密碼不一致，請重新輸入！");
+    return;
+  }
+
+  if (!isPasswordValid.value) {
+    alert("密碼不符合要求");
+    return;
+  }
+
+  try {
+    const response = await axios.put(
+      "http://172.16.46.163/csexam/api/change-password", // 修改密碼的 API
+      {
+        empId: empId, // 傳送 empId
+        oldPassword: oldPassword.value, // 舊密碼
+        newPassword: newPassword.value, // 新密碼
+      }
+    );
+
+    if (response.data.code === "0000") {
+      alert("密碼已成功更新，請重新登入");
+      router.push("/");
+    }
+  } catch (error) {
+    if (error.response) {
+      if (error.response.data.code === "UE006") {
+        alert("舊密碼錯誤" + error.response.data.message.slice(-6));
+        // alert(error.response.data.message.slice(-6));
+      } else if (error.response.data.code) {
+        alert(error.response.data.message);
+        // 針對其他錯誤代碼顯示不同的錯誤訊息
+      } else {
+        alert("錯誤訊息:", error.response.data.message);
+      }
+    } else {
+      alert("發生錯誤，請稍後再試");
+    }
+    console.error("修改密碼失敗", error);
+    alert(error.response?.data?.message || "修改密碼失敗，請稍後再試！");
+  }
+
+  // 清空輸入框內容
+  oldPassword.value = "";
+  newPassword.value = "";
+  confirmPassword.value = "";
+  showPasswordModal.value = false;
+};
+*/
+
 const cancelChangePassword = () => {
   showPasswordModal.value = false;
 };
@@ -361,8 +425,8 @@ const logout = () => {
 const startExam = (examId) => {
   alert(`開始測驗：${examId}`);
   const exam = exams.value.find((exam) => exam.id === examId);
-  // router.push("/testing");
   exam.status = "completed";
+  router.push("/testing");
 };
 </script>
 

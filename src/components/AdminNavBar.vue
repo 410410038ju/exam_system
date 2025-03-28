@@ -335,6 +335,8 @@ const saveNewPassword = () => {
   showPasswordModal.value = false;
 };
 */
+
+// 儲存新密碼
 const saveNewPassword = () => {
   const users = JSON.parse(localStorage.getItem("users")) || [];
 
@@ -381,6 +383,68 @@ const saveNewPassword = () => {
   confirmPassword.value = "";
   showPasswordModal.value = false;
 };
+
+// 儲存新密碼/修改密碼API
+/*
+const saveNewPassword = async () => {
+  // 確認是否有登入
+  const loggedInUser = JSON.parse(localStorage.getItem("loggedInUser"));
+  const userId = loggedInUser ? loggedInUser.id : null;
+
+  if (!userId) {
+    alert("請先登入");
+    router.push("/"); // 跳轉到首頁
+    return;
+  }
+
+  if (newPassword.value !== confirmPassword.value) {
+    alert("新密碼和確認密碼不一致，請重新輸入！");
+    return;
+  }
+
+  if (!isPasswordValid.value) {
+    alert("密碼不符合要求");
+    return;
+  }
+
+  try {
+    const response = await axios.put(
+      "http://172.16.46.163/csexam/api/change-password", // 修改密碼的 API
+      {
+        empId: userId, // 傳送 empId
+        oldPassword: oldPassword.value, // 舊密碼
+        newPassword: newPassword.value, // 新密碼
+      }
+    );
+
+    if (response.data.code === "0000") {
+      alert("密碼已成功更新，請重新登入");
+      router.push("/"); // 修改成功後跳轉到首頁
+    } else {
+      alert(response.data.message || "修改密碼失敗，請稍後再試！");
+    }
+  } catch (error) {
+    if (error.response) {
+      if (error.response.data.code === "UE006") {
+        alert("舊密碼錯誤" + error.response.data.message.slice(-6));
+      } else if (error.response.data.code) {
+        alert(error.response.data.message);
+      } else {
+        alert("錯誤訊息:", error.response.data.message);
+      }
+    } else {
+      alert("發生錯誤，請稍後再試");
+    }
+    console.error("修改密碼失敗", error);
+  }
+
+  // 清空表單
+  oldPassword.value = "";
+  newPassword.value = "";
+  confirmPassword.value = "";
+  showPasswordModal.value = false;
+};
+*/
 
 const cancelChangePassword = () => {
   showPasswordModal.value = false;

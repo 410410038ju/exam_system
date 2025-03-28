@@ -315,21 +315,22 @@ const login = () => {
   password.value = "";
 };
 
-// 登入API 
+// 登入API
 /*
 const login = async () => {
   if (!username.value.trim() || !password.value.trim()) {
     alert("請輸入帳號和密碼");
     return;
   }
+  
+  localStorage.setItem('empid', username.value);
 
   try {
     const response = await axios.post("http://172.16.46.163/csexam/api/login", {
       empId: username.value,
       password: password.value,
     });
-    localStorage.setItem('empid', username.value);
-
+    
     const data = response.data;
 
     if (data.code === "0000") {
@@ -616,7 +617,7 @@ label {
 .error-message {
   color: red;
   justify-content: center; /* 水平置中 */
-  align-items: center; 
+  align-items: center;
 }
 
 .correct-message {

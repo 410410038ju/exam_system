@@ -1,4 +1,4 @@
-<!-- 不需要使用API的程式碼
+<!-- 不需要API的程式碼 -->
 <template>
   <div class="container">
     <AdminNavBar />
@@ -281,8 +281,9 @@ onMounted(() => {
   populateChapters();
 });
 </script>
--->
 
+
+<!-- API 
 <template>
   <div class="container">
     <AdminNavBar />
@@ -327,7 +328,7 @@ onMounted(() => {
           class="form-select"
         >
           <option value="">
-            {{ selectedCategory ? "請選擇章" : "請先選擇業務種類" }}
+            {{ selectedCategoryId ? "請選擇章" : "請先選擇業務種類" }}
           </option>
           <option
             v-for="chapter in filteredChapters"
@@ -352,7 +353,7 @@ onMounted(() => {
           class="form-select"
         >
           <option value="">
-            {{ selectedChapter ? "請選擇節" : "請先選擇章" }}
+            {{ selectedChapterId ? "請選擇節" : "請先選擇章" }}
           </option>
           <option
             v-for="part in filteredParts"
@@ -431,70 +432,6 @@ const examData = JSON.parse(localStorage.getItem("examData")) || {
   },
 };
 
-// 強制設定初始題庫類別
-/*const examData = {
-  存款篇: {
-    第一章通則: [
-      "01-01 存款經辦員應有之認識",
-      "01-02 存款種類",
-      "01-03 開戶",
-      "01-04 印鑑",
-    ],
-    第二章支票存款: ["02-01 性質", "02-02 開戶手續", "02-16 票據嘗識"],
-    附錄: [
-      "一、聯邦商業銀行新台幣存放款利率牌告要點",
-      "二、儲蓄免扣證實施辦法",
-    ],
-  },
-  信託篇: {
-    "第一篇 簽證業務篇": ["第一章 法令依據", "一節 應徵取之文件"],
-    "第二篇 保管業務篇": [
-      "第一章 有價證劵保管業務",
-      "第二章 營業保證金保管業務",
-    ],
-  },
-  外匯篇: {
-    外匯業務手冊: [
-      "第一章：國外通匯及電訊業務 ",
-      "第二章：新台幣與外幣間遠期外匯業務",
-    ],
-  },
-  電子銀行業務: {
-    電子銀行: ["電子銀行服務作業要點"],
-    數位存款: ["數位存款帳戶服務作業要點"],
-  },
-  顧客問題應對手冊: {
-    存款業務: ["開戶問題", "存款實務"],
-    外匯業務: ["外幣存匯業務", "進出口外匯業務"],
-  },
-  其他類型: {
-    重要活動及公文: ["數位存款114年最新活動"],
-  },
-};*/
-// localStorage.setItem("examData",JSON.stringify(examData));
-
-/*
-// 當前資料是從 examData 提取
-categories.value = Object.keys(examData);
-
-// 更新章列表
-const populateChapters = () => {
-  const category = selectedCategory.value;
-  chapters.value = category ? Object.keys(examData[category]) : [];
-  selectedChapter.value = "";
-  sections.value = [];
-  selectedSection.value = "";
-};
-
-// 更新節列表
-const populateSections = () => {
-  const category = selectedCategory.value;
-  const chapter = selectedChapter.value;
-  sections.value = chapter ? examData[category][chapter] : [];
-  selectedSection.value = "";
-};
-*/
-
 // 獲取所有題庫範圍資料
 const fetchData = async () => {
   try {
@@ -544,23 +481,6 @@ const updateParts = () => {
   selectedPartId.value = "";
 };
 
-// 新增業務種類
-/*
-const addCategory = () => {
-  const newCategory = prompt("請輸入新的業務種類名稱:");
-  if (newCategory === null) {
-    return;
-  }
-  if (newCategory && !examData[newCategory]) {
-    examData[newCategory] = {};
-    localStorage.setItem("examData", JSON.stringify(examData));
-    categories.value = Object.keys(examData);
-  } else {
-    alert("此業務種類已存在！");
-  }
-};
-*/
-
 // 新增業務種類API
 const addCategory = async () => {
   const newCategory = prompt("請輸入新的業務種類名稱:");
@@ -593,28 +513,6 @@ const addCategory = async () => {
     alert("新增業務種類時出現錯誤，請稍後再試。");
   }
 };
-
-// 新增章
-/*
-const addChapter = () => {
-  if (!selectedCategory.value) {
-    alert("請先選擇業務種類！");
-    return;
-  }
-  const newChapter = prompt("請輸入新的章名稱:");
-  if (newChapter === null) {
-    return;
-  }
-
-  if (newChapter && !examData[selectedCategory.value][newChapter]) {
-    examData[selectedCategory.value][newChapter] = [];
-    localStorage.setItem("examData", JSON.stringify(examData));
-    populateChapters();
-  } else {
-    alert("此章已存在！");
-  }
-};
-*/
 
 // 新增章API
 const addChapter = async () => {
@@ -651,32 +549,6 @@ const addChapter = async () => {
     alert("新增章時發生錯誤，請稍後再試。");
   }
 };
-
-// 新增節
-/*
-const addSection = () => {
-  if (!selectedCategory.value || !selectedChapter.value) {
-    alert("請先選擇業務種類與章！");
-    return;
-  }
-  const newSection = prompt("請輸入新的節名稱:");
-  if (newSection === null) {
-    return;
-  }
-  if (
-    newSection &&
-    !examData[selectedCategory.value][selectedChapter.value].includes(
-      newSection
-    )
-  ) {
-    examData[selectedCategory.value][selectedChapter.value].push(newSection);
-    localStorage.setItem("examData", JSON.stringify(examData));
-    populateSections();
-  } else {
-    alert("此節已存在！");
-  }
-};
-*/
 
 // 新增節API
 const addPart = async () => {
@@ -716,15 +588,43 @@ const addPart = async () => {
 
 // 進入出題頁面
 const proceedToQuestions = () => {
-  if (!selectedCategoryId.value || !selectedChapterId.value || !selectedPartId.value) {
+  if (
+    !selectedCategoryId.value ||
+    !selectedChapterId.value ||
+    !selectedPartId.value
+  ) {
     alert("請填寫所有選項！");
     return;
   }
-  localStorage.setItem("examInfo", JSON.stringify({
-    category: selectedCategoryId.value,
-    chapter: selectedChapterId.value,
-    section: selectedPartId.value,
-  }));
+
+  // 範圍ID所對應的名稱
+  const categoryName = rangeList.value.find(
+    (cat) => cat.categoryId === selectedCategoryId.value
+  )?.categoryName;
+  const chapterName = rangeList.value
+    .find((cat) => cat.categoryId === selectedCategoryId.value)
+    ?.chapterList.find(
+      (chap) => chap.chapterId === selectedChapterId.value
+    )?.chapterName;
+  const partName = rangeList.value
+    .find((cat) => cat.categoryId === selectedCategoryId.value)
+    ?.chapterList.find((chap) => chap.chapterId === selectedChapterId.value)
+    ?.partList.find((part) => part.partId === selectedPartId.value)?.partName;
+
+  localStorage.setItem(
+    "examInfo",
+    JSON.stringify({
+      // category: selectedCategoryId.value,
+      // chapter: selectedChapterId.value,
+      // section: selectedPartId.value,
+      categoryId: selectedCategoryId.value,
+      chapterId: selectedChapterId.value,
+      partId: selectedPartId.value,
+      categoryName: categoryName,
+      chapterName: chapterName,
+      partName: partName,
+    })
+  );
   router.push("/create_question_data");
 };
 
@@ -734,7 +634,7 @@ onMounted(() => {
   fetchData();
 });
 </script>
-
+-->
 <style scoped>
 /* 容器 */
 .container {

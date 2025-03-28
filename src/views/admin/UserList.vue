@@ -122,13 +122,8 @@
                 type="text"
                 v-model="editUserData.id"
                 placeholder="輸入人員編號"
-              />
-              <!-- <input
-                type="text"
-                v-model="editUserData.id"
-                placeholder="輸入人員編號"
                 readonly
-              /> -->
+              />
             </label>
           </div>
 
@@ -697,7 +692,7 @@ const loadUsers = async () => {
     const response = await axios.get("http://172.16.46.163/csexam/admin/users", {
       headers: { Authorization: `Bearer ${token}` },
     });
-    
+
     const data = response.data;
 
     if (data.code === "0000") {
@@ -891,7 +886,8 @@ const editUser = (id) => {
   }
 };*/
 
-const saveChanges = () => {
+// 編輯人員資料
+/*const saveChanges = () => {
   if (
     !editUserData ||
     !editUserData.id ||
@@ -931,42 +927,58 @@ const saveChanges = () => {
   } else {
     alert("未找到原始使用者！");
   }
-};
+};*/
 
 // 編輯人員資料API
-// 目前僅可更改密碼
+// 員工編號不能修改
 /*
 const saveChanges = async () => {
   if (
     !editUserData ||
     !editUserData.id ||
     !editUserData.name ||
-    !editUserData.password
+    !editUserData.role
   ) {
     alert("請輸入完整資料！");
     return;
   }
 
-  if (!isEditPasswordValid.value) {
+  // 如果密碼不為空，則檢查密碼是否符合規則
+  if (editUserData.password && !isEditPasswordValid.value) {
     alert("密碼不符合要求");
     return;
   }
 
+  const UserDataUpdate = {
+    empId: editUserData.id,
+    username: editUserData.name,
+    role: editUserData.role,
+  };
+
+  if (editUserData.password) {
+    UserDataUpdate.password = editUserData.password; 
+  } else {
+    UserDataUpdate.password = ""; 
+  }
+
   try {
     const token = localStorage.getItem("authToken"); // 從 localStorage 取得 token
-    const response = await axios.put(
-      "http://172.16.46.163/csexam/admin/users/password",
-      {
-        empId: editUserData.id,
-        newPassword: editUserData.password,
-      },
+    const response = await axios.patch(
+      "http://172.16.46.163/csexam/admin/users",
+      // {
+      //   empId: editUserData.id,
+      //   password: editUserData.password,
+      //   username: editUserData.name,
+      //   role: editUserData.role,
+      // },
+      UserDataUpdate,
       {
         headers: { Authorization: `Bearer ${token}` },
       }
     );
 
     if (response.data.code === "0000") {
-      alert("密碼更新成功！");
+      alert("資料更新成功！");
       closeEditModal(); // 關閉修改視窗
     } else {
       alert(response.data.message || "更新失敗，請稍後再試！");
@@ -974,16 +986,18 @@ const saveChanges = async () => {
   } catch (error) {
     if (error.response) {
       if (error.response.data.code) {
-        alert(error.response.data.message); 
+        alert(error.response.data.message);
         // UE002 使用者不存在
+        // UE008 密碼規則不符合
+        // RE001 角色不存在
         // 9999  系統忙碌中(其他問題)
-      }else {
+      } else {
         alert("錯誤訊息:", error.response.data.message);
       }
     } else {
       alert("發生錯誤，請稍後再試");
     }
-    console.error("密碼更新失敗:", error);
+    console.error("資料更新失敗:", error);
   }
 };
 */
