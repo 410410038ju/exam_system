@@ -1,3 +1,4 @@
+<!-- 不用API版本 
 <template>
   <div class="container">
     <AdminNavBar />
@@ -5,7 +6,7 @@
       <div class="header">
         <h1>管理題庫類別</h1>
 
-        <!-- 搜尋欄位 -->
+       
         <div class="search">
           <input
             v-model="searchQuery"
@@ -44,7 +45,7 @@
                 : ['暫無節']"
               :key="`${category}-${chapter}-${sectionIndex}`"
             >
-              <!-- 業務種類 -->
+             
               <td
                 v-if="chapterIndex === 0 && sectionIndex === 0"
                 :rowspan="getCategoryRowSpan(category) || 1"
@@ -75,7 +76,7 @@
                 </div>
               </td>
 
-              <!-- 章 -->
+           
               <td
                 v-if="sectionIndex === 0"
                 :rowspan="
@@ -110,7 +111,7 @@
                 </template>
               </td>
 
-              <!-- 節 -->
+         
               <td>
                 <span>{{ section }}</span>
                 <template v-if="section !== '暫無節'">
@@ -311,47 +312,541 @@ const deleteSection = (category, chapter, index) => {
   }
 };
 </script>
-
-<!--
-<style scoped>
-.container {
-  padding: 20px;
-}
-.content {
-  max-width: 900px;
-  margin: auto;
-}
-.data-table {
-  width: 100%;
-  border-collapse: collapse;
-  margin-top: 20px;
-}
-.data-table th,
-.data-table td {
-  border: 1px solid #ccc;
-  padding: 10px;
-  text-align: left;
-}
-.edit-button,
-.delete-button,
-.form-button {
-  margin-left: 5px;
-}
-
-.search-input {
-  padding: 8px;
-  margin-bottom: 15px;
-  width: 80%;
-  font-size: 14px;
-}
-
-.search-button {
-  padding: 8px 12px;
-  font-size: 14px;
-  cursor: pointer;
-}
-</style>
 -->
+<!-- API -->
+
+<!-- 第一個template(沒測試過)
+<template>
+  <div class="container">
+    <AdminNavBar />
+    <div class="content">
+      <div class="header">
+        <h1>管理題庫類別</h1>
+
+      
+        <div class="search">
+          <input
+            v-model="searchQuery"
+            type="text"
+            placeholder="搜尋業務種類、章、節..."
+            class="search-input"
+          />
+          <button @click="search" class="search-button">搜尋</button>
+        </div>
+      </div>
+
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>
+              業務種類
+              <button @click="addCategory" class="form-button">
+                新增業務種類
+              </button>
+            </th>
+            <th>章</th>
+            <th>節</th>
+          </tr>
+        </thead>
+
+        <tbody v-for="category in rangeList" :key="category.categoryId">
+          <template v-for="(chapter, chapterIndex) in category.chapterList">
+            <tr
+              v-for="(part, partIndex) in chapter.partList"
+              :key="`${category.categoryId}-${chapter.chapterId}-${part.partId}`"
+            >
+             
+              <td
+                v-if="chapterIndex === 0 && partIndex === 0"
+                :rowspan="getCategoryRowSpan(category) || 1"
+              >
+                {{ category.category }}
+                <div class="buttons-container">
+                  <button @click="addChapter(category)" class="form-button">
+                    新增章
+                  </button>
+                  <button @click="editCategory(category)" class="edit-button">
+                    編輯
+                  </button>
+                  <button
+                    @click="deleteCategory(category)"
+                    class="delete-button"
+                  >
+                    刪除
+                  </button>
+                </div>
+              </td>
+
+         
+              <td v-if="partIndex === 0" :rowspan="chapter.partList.length">
+                <span>{{ chapter.chapter }}</span>
+                <div class="buttons-container">
+                  <button
+                    @click="addPart(category, chapter)"
+                    class="form-button"
+                  >
+                    新增節
+                  </button>
+                  <button
+                    @click="editChapter(category, chapter)"
+                    class="edit-button"
+                  >
+                    編輯
+                  </button>
+                  <button
+                    @click="deleteChapter(category, chapter)"
+                    class="delete-button"
+                  >
+                    刪除
+                  </button>
+                </div>
+              </td>
+
+         
+              <td>
+                <span>{{ part.part }}</span>
+                <div class="buttons-container">
+                  <button
+                    @click="editPart(category, chapter, part)"
+                    class="edit-button"
+                  >
+                    編輯
+                  </button>
+                  <button
+                    @click="deletePart(category, chapter, part)"
+                    class="delete-button"
+                  >
+                    刪除
+                  </button>
+                </div>
+              </td>
+            </tr>
+          </template>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</template> 
+-->
+
+<template>
+  <div class="container">
+    <AdminNavBar />
+    <div class="content">
+      <div class="header">
+        <h1>管理題庫類別</h1>
+
+        <!-- 搜尋欄位 -->
+        <div class="search">
+          <input
+            v-model="searchQuery"
+            type="text"
+            placeholder="搜尋業務種類、章、節..."
+            class="search-input"
+          />
+          <button @click="search" class="search-button">搜尋</button>
+        </div>
+      </div>
+
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>
+              業務種類
+              <button @click="addCategory" class="form-button">
+                新增業務種類
+              </button>
+            </th>
+            <th>章</th>
+            <th>節</th>
+          </tr>
+        </thead>
+
+        <tbody v-for="category in rangeList" :key="category.categoryId">
+          <template
+            v-for="(chapter, chapterIndex) in category.chapterList.length
+              ? category.chapterList
+              : [{ chapter: '暫無章', partList: [] }]"
+          >
+            <tr
+              v-for="(part, partIndex) in chapter.partList.length
+                ? chapter.partList
+                : [{ part: '暫無節' }]"
+              :key="`${category.categoryId}-${chapter.chapterId}-${
+                part.partId || part.part
+              }`"
+            >
+              <!-- 業務種類 -->
+              <td
+                v-if="chapterIndex === 0 && partIndex === 0"
+                :rowspan="getCategoryRowSpan(category) || 1"
+              >
+                {{ category.category }}
+                <div class="buttons-container">
+                  <button @click="addChapter(category)" class="form-button">
+                    新增章
+                  </button>
+                  <button @click="editCategory(category)" class="edit-button">
+                    編輯
+                  </button>
+                </div>
+              </td>
+
+              <!-- 章 -->
+              <td
+                v-if="partIndex === 0"
+                :rowspan="chapter.partList.length ? chapter.partList.length : 1"
+              >
+                <span>{{ chapter.chapter }}</span>
+                <div
+                  class="buttons-container"
+                  v-if="chapter.chapter !== '暫無章'"
+                >
+                  <button
+                    @click="addPart(category, chapter)"
+                    class="form-button"
+                  >
+                    新增節
+                  </button>
+                  <button
+                    @click="editChapter(chapter)"
+                    class="edit-button"
+                  >
+                    編輯
+                  </button>
+                </div>
+              </td>
+
+              <!-- 節 -->
+              <td>
+                <span>{{ part.part }}</span>
+                <div class="buttons-container" v-if="part.part !== '暫無節'">
+                  <button
+                    @click="editPart(part)"
+                    class="edit-button"
+                  >
+                    編輯
+                  </button>
+                </div>
+              </td>
+            </tr>
+          </template>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</template>
+
+<script setup>
+import { ref, reactive, onMounted } from "vue";
+import axios from "axios";
+import AdminNavBar from "../../components/AdminNavBar.vue";
+
+const examData = reactive({
+  rangeList: [],
+});
+
+// 使用 ref 來控制過濾結果
+const searchQuery = ref("");
+const filteredCategories = ref([]);
+
+// 定義 API 基礎 URL，方便統一管理
+const BASE_URL = "http://172.16.46.163/csexam";
+
+// 取得 token
+const getAuthHeaders = () => ({
+  headers: {
+    Authorization: `Bearer ${localStorage.getItem("authToken")}`,
+  },
+});
+
+// 獲取題庫範圍資料API
+const fetchExamData = async () => {
+  // const token = localStorage.getItem("authToken");
+
+  try {
+    const response = await axios.get(
+      `${BASE_URL}/admin/question/range`,
+      getAuthHeaders()
+    );
+    if (response.data.code === "0000") {
+      examData.rangeList = response.data.data.rangeList;
+      filteredCategories.value = examData.rangeList;
+    } else {
+      alert("無法取得資料！");
+    }
+  } catch (error) {
+    console.error("錯誤:", error);
+    alert("資料載入失敗");
+  }
+};
+
+// 重新載入頁面
+const refreshCategories = () => {
+  searchQuery.value = ""; // 重置搜尋框
+  filteredCategories.value = [...examData.rangeList]; // 重新設定過濾結果
+};
+
+// 關鍵字搜尋
+const search = () => {
+  const query = searchQuery.value.toLowerCase();
+  if (query) {
+    filteredCategories.value = examData.rangeList.filter((category) => {
+      if (category.category.toLowerCase().includes(query)) return true;
+
+      return category.chapterList.some((chapter) => {
+        if (chapter.chapter.toLowerCase().includes(query)) return true;
+
+        return chapter.partList.some((part) =>
+          part.part.toLowerCase().includes(query)
+        );
+      });
+    });
+  } else {
+    filteredCategories.value = [...examData.rangeList]; // 若搜尋框為空，顯示所有類別
+  }
+};
+
+// 取得每個類別的行數
+const getCategoryRowSpan = (category) => {
+  return category.chapterList.reduce((total, chapter) => {
+    return total + chapter.partList.length;
+  }, 0);
+};
+
+// 新增業務種類API
+const addCategory = async () => {
+  // const token = localStorage.getItem("authToken");
+  const newCategory = prompt("請輸入新的業務種類名稱:");
+  if (
+    newCategory &&
+    !examData.rangeList.some((cat) => cat.category === newCategory)
+  ) {
+    try {
+      const response = await axios.post(
+        `${BASE_URL}/admin/question/range/category`,
+        { category: newCategory },
+        getAuthHeaders()
+      );
+
+      if (response.data.code === "0000") {
+        refreshCategories();
+      } else {
+        alert("新增失敗！");
+      }
+    } catch (error) {
+      console.error("錯誤:", error);
+      alert("新增業務種類失敗");
+    }
+  } else if (!newCategory) {
+    return;
+  } else {
+    alert("此業務種類已存在！");
+  }
+};
+
+// 編輯業務種類API
+const editCategory = async (category) => {
+  // const token = localStorage.getItem("authToken");
+  const newCategoryName = prompt("請輸入新的業務種類名稱:", category.category);
+  if (newCategoryName && newCategoryName !== category.category) {
+    try {
+      const response = await axios.put(
+        `${BASE_URL}/admin/question/range/category/${category.categoryId}`,
+        { category: newCategoryName },
+        getAuthHeaders()
+      );
+      if (response.data.code === "0000") {
+        category.category = newCategoryName;
+        refreshCategories();
+      } else {
+        alert("編輯失敗！");
+      }
+    } catch (error) {
+      console.error("錯誤:", error);
+      alert("編輯業務種類失敗");
+    }
+  } else if (!newCategoryName) {
+    return;
+  } else {
+    alert("此業務種類名稱沒有變動！");
+  }
+};
+
+// 刪除業務種類API
+/* 後端沒做
+const deleteCategory = async (category) => {
+  if (confirm(`確定要刪除 ${category.category} 嗎？`)) {
+    try {
+      const response = await axios.delete(
+        `API_DELETE_CATEGORY/${category.categoryId}`
+      ); // 替換為刪除業務種類的 API URL
+      if (response.data.code === "0000") {
+        const index = examData.rangeList.indexOf(category);
+        if (index > -1) {
+          examData.rangeList.splice(index, 1);
+          refreshCategories();
+        }
+      } else {
+        alert("刪除失敗！");
+      }
+    } catch (error) {
+      console.error("錯誤:", error);
+      alert("刪除業務種類失敗");
+    }
+  }
+};*/
+
+// 新增章API
+const addChapter = async (category) => {
+  // const token = localStorage.getItem("authToken");
+  const newChapter = prompt("請輸入新的章名稱:");
+  if (
+    newChapter &&
+    !category.chapterList.some((chap) => chap.chapter === newChapter)
+  ) {
+    try {
+      const response = await axios.post(
+        `${BASE_URL}/admin/question/range/chapter`,
+        { categoryId: category.categoryId, chapter: newChapter },
+        getAuthHeaders()
+      );
+      if (response.data.code === "0000") {
+        refreshCategories();
+      } else {
+        alert("新增章節失敗: " + response.data.message);
+      }
+    } catch (error) {
+      alert("發生錯誤: " + error.message);
+    }
+  } else if (!newChapter) {
+    return;
+  } else {
+    alert("此章已存在！");
+  }
+};
+
+// 編輯章API
+const editChapter = async (chapter) => {
+  // const token = localStorage.getItem("authToken");
+  const newChapterName = prompt("請輸入新的章名稱:", chapter.chapter);
+  if (newChapterName && newChapterName !== chapter.chapter) {
+    try {
+      const response = await axios.put(
+        `${BASE_URL}/admin/question/chapter/${chapter.chapterId}`,
+        { chapter: newChapterName },
+        getAuthHeaders()
+      );
+      if (response.data.code === "0000") {
+        alert("章節更新成功!");
+        refreshCategories(); // 更新界面顯示
+      } else {
+        alert("更新章節失敗: " + response.data.message);
+      }
+    } catch (error) {
+      alert("發生錯誤: " + error.message);
+    }
+  }
+};
+
+// 刪除章API
+/* 後端沒做
+const deleteChapter = async (category, chapter) => {
+  if (confirm(`確定要刪除 ${chapter} 嗎？`)) {
+    try {
+      const response = await axios.delete(
+        "後端刪除章節的API網址", // 替換為實際 API URL
+        {
+          data: { categoryId: categoryId, chapter: chapter },
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        }
+      );
+      if (response.data.code === "0000") {
+        alert("章節刪除成功!");
+        refreshCategories();
+      } else {
+        alert("刪除章節失敗: " + response.data.message);
+      }
+    } catch (error) {
+      alert("發生錯誤: " + error.message);
+    }
+  }
+};*/
+
+// 新增節API
+const addPart = async (category, chapter) => {
+  const newPart = prompt("請輸入新的節名稱:");
+  if (newPart && !chapter.partList.some((part) => part.part === newPart)) {
+    try {
+      const response = await axios.post(
+        `${BASE_URL}/admin/question/range/part`, // API 路徑統一
+        { chapterId: chapter.chapterId, part: newPart },
+        getAuthHeaders()
+      );
+      if (response.data.code === "0000") {
+        alert("節新增成功!");
+        refreshCategories();
+      } else {
+        alert("新增節失敗: " + response.data.message);
+      }
+    } catch (error) {
+      alert("發生錯誤: " + error.message);
+    }
+  }
+};
+
+// 編輯節
+// 亂七八遭
+const editPart = async (part) => {
+  const newPartName = prompt("請輸入新的節名稱:", part.part);
+
+  if (newPartName && newPartName !== part.part) {
+    try {
+      const response = await axios.put(
+        `${BASE_URL}/admin/question/part/${part.partId}`,
+        { part: newPartName },
+        getAuthHeaders()
+      );
+      if (response.data.code === "0000") {
+        alert("節更新成功!");
+        refreshCategories();
+      } else {
+        alert("更新節失敗: " + response.data.message);
+      }
+    } catch (error) {
+      alert("發生錯誤: " + error.message);
+    }
+  }
+};
+
+// 刪除節API
+/* 後端沒做
+const deleteSection = async (category, chapter, index) => {
+  if (confirm("確定要刪除此節嗎？")) {
+    try {
+      const response = await axios.delete(
+        `${BASE_URL}/section/${chapter.partList[index].partId}`,
+        getAuthHeaders()
+      );
+      if (response.data.code === "0000") {
+        alert("節刪除成功!");
+        refreshCategories();
+      } else {
+        alert("刪除節失敗: " + response.data.message);
+      }
+    } catch (error) {
+      alert("發生錯誤: " + error.message);
+    }
+  }
+};
+*/
+
+onMounted(() => {
+  fetchExamData();
+});
+</script>
 
 <!-- 第一版 -->
 <style scoped>
@@ -501,19 +996,17 @@ button {
   margin-left: 10px;
   display: inline-block;
   margin-left: 10px;
-  white-space: nowrap; 
+  white-space: nowrap;
   vertical-align: middle; /* 讓按鈕垂直對齊 */
 }
 
-
-
 td {
-  text-align: center; 
-  vertical-align: middle; 
-  padding-right: 10px; 
+  text-align: center;
+  vertical-align: middle;
+  padding-right: 10px;
 
-  justify-content: space-between; 
-  align-items: center;  
+  justify-content: space-between;
+  align-items: center;
 }
 
 /* td span {
@@ -523,8 +1016,8 @@ td {
 
 .buttons-container {
   display: flex;
-  justify-content: center; 
-  align-items: center; 
+  justify-content: center;
+  align-items: center;
 }
 
 /* 表格內容設置 */
@@ -543,7 +1036,6 @@ button {
   margin-left: 10px;
 }
 </style>
-
 
 <!-- 第二版 
 <style scoped>
@@ -1104,5 +1596,3 @@ button {
 }
 </style>
 -->
-
-

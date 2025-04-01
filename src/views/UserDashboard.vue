@@ -352,9 +352,8 @@ const saveNewPassword = () => {
 const saveNewPassword = async () => {
 
   const loggedInUser = JSON.parse(localStorage.getItem("loggedInUser"));
-  if (loggedInUser) {
-    const empId = loggedInUser.id;
-  } else {
+  const empId = loggedInUser.empId;
+  if (!loggedInUser || !empId) {
     alert("尚未登入！");
     router.push("/"); // 若找不到 empId，導回首頁
     return;
@@ -362,6 +361,7 @@ const saveNewPassword = async () => {
 
   if (newPassword.value !== confirmPassword.value) {
     alert("兩次輸入的新密碼不一致，請重新輸入！");
+    confirmPassword.value = "";
     return;
   }
 
@@ -387,11 +387,14 @@ const saveNewPassword = async () => {
   } catch (error) {
     if (error.response) {
       if (error.response.data.code === "UE006") {
-        alert("舊密碼錯誤" + error.response.data.message.slice(-6));
+        alert("舊密碼錯誤，" + error.response.data.message.slice(-6));
         // alert(error.response.data.message.slice(-6));
       } else if (error.response.data.code) {
         alert(error.response.data.message);
         // 針對其他錯誤代碼顯示不同的錯誤訊息
+        // UE002 使用者不存在
+        // UE006 密碼錯誤，剩餘N次機會
+        // 9999 密碼規則不符合(其他問題)
       } else {
         alert("錯誤訊息:", error.response.data.message);
       }

@@ -200,7 +200,7 @@
             <th>鎖定</th>
             <th>密碼狀態</th>
             <th>最近一次登入IP</th>
-            <th>資料建立時間</th>
+            <th>資料建立日期</th>
             <th>操作</th>
           </tr>
         </thead>
@@ -846,7 +846,6 @@ const addUser = async () => {
 };
 */
 
-// 編輯人員資料
 const editUser = (id) => {
   if (id === "admin") {
     alert("無法修改系統管理員帳號！");
@@ -952,7 +951,7 @@ const saveChanges = async () => {
   const UserDataUpdate = {
     empId: editUserData.id,
     username: editUserData.name,
-    role: editUserData.role,
+    role: [editUserData.role],
   };
 
   if (editUserData.password) {
@@ -980,6 +979,7 @@ const saveChanges = async () => {
     if (response.data.code === "0000") {
       alert("資料更新成功！");
       closeEditModal(); // 關閉修改視窗
+      loadUsers();
     } else {
       alert(response.data.message || "更新失敗，請稍後再試！");
     }
@@ -1102,10 +1102,15 @@ const unlockUser = (user) => {
 
 // 解鎖帳號API
 const unlockUser = async (empId) => {
+  const token = localStorage.getItem('authToken');
+
   try {
     const response = await axios.put(
       "http://172.16.46.163/csexam/admin/users/unlock",
-      { empId }
+      { empId },
+      {
+        headers: { Authorization: `Bearer ${token}` },
+      }
     );
 
     if (response.data.code === "0000") {
@@ -1129,10 +1134,11 @@ const unlockUser = async (empId) => {
       alert("發生錯誤，請稍後再試");
     }
     console.error("解除鎖定失敗:", error);
-    alert("發生錯誤，請稍後再試");
+    // alert("發生錯誤，請稍後再試");
   }
 };
 
+// 有API之後，這個也不用了
 const updateUserData = (user) => {
   let usersList = JSON.parse(localStorage.getItem("users")) || [];
   const index = usersList.findIndex((u) => u.id === user.id);

@@ -211,7 +211,7 @@ const addCategory = () => {
   }
 };
 
-// 新增章節
+// 新增章
 const addChapter = () => {
   if (!selectedCategory.value) {
     alert("請先選擇業務種類！");
@@ -392,6 +392,7 @@ const selectedCategoryId = ref("");
 const selectedChapterId = ref("");
 const selectedPartId = ref("");
 
+/*
 const examData = JSON.parse(localStorage.getItem("examData")) || {
   存款篇: {
     第一章通則: [
@@ -431,6 +432,7 @@ const examData = JSON.parse(localStorage.getItem("examData")) || {
     重要活動及公文: ["數位存款114年最新活動"],
   },
 };
+*/
 
 // 獲取所有題庫範圍資料
 const fetchData = async () => {
@@ -598,6 +600,7 @@ const proceedToQuestions = () => {
   }
 
   // 範圍ID所對應的名稱
+  /*
   const categoryName = rangeList.value.find(
     (cat) => cat.categoryId === selectedCategoryId.value
   )?.categoryName;
@@ -610,13 +613,25 @@ const proceedToQuestions = () => {
     .find((cat) => cat.categoryId === selectedCategoryId.value)
     ?.chapterList.find((chap) => chap.chapterId === selectedChapterId.value)
     ?.partList.find((part) => part.partId === selectedPartId.value)?.partName;
+  */
+  const category = rangeList.value.find(
+    (cat) => cat.categoryId === selectedCategoryId.value
+  );
+  const categoryName = category.category;
+
+  const chapter = category.chapterList.find(
+    (chap) => chap.chapterId === selectedChapterId.value
+  );
+  const chapterName = chapter.chapter;
+
+  const part = chapter.partList.find(
+    (part) => part.partId === selectedPartId.value
+  );
+  const partName = part.part;
 
   localStorage.setItem(
     "examInfo",
     JSON.stringify({
-      // category: selectedCategoryId.value,
-      // chapter: selectedChapterId.value,
-      // section: selectedPartId.value,
       categoryId: selectedCategoryId.value,
       chapterId: selectedChapterId.value,
       partId: selectedPartId.value,
@@ -630,7 +645,6 @@ const proceedToQuestions = () => {
 
 onMounted(() => {
   localStorage.setItem("examInfo", JSON.stringify({}));
-  // populateChapters();
   fetchData();
 });
 </script>
