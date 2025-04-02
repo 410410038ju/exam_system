@@ -1,748 +1,3 @@
-<!-- 第一版
-<template>
-  <div class="container">
-    <AdminNavBar />
-
-    <div class="content">
-      <h1>開放測驗</h1>
-
-     
-      <div class="form-group">
-        <div class="form-container">
-          <label for="title">測驗名稱</label>
-          <input
-            type="text"
-            id="title"
-            v-model="testData.title"
-            placeholder="輸入測驗名稱"
-            required
-          />
-        </div>
-      </div>
-
-
-      <div class="form-group">
-        <div class="form-container">
-          <label for="limitTime">測驗作答時間 (分鐘)</label>
-          <input
-            type="number"
-            id="limitTime"
-            v-model="testData.limitTime"
-            min="1"
-            placeholder="輸入測驗作答時間"
-            required
-          />
-        </div>
-      </div>
-
-  
-      <div class="form-group">
-        <div class="form-container">
-          <label for="targetScore">及格分數</label>
-          <input
-            type="number"
-            id="targetScore"
-            v-model="testData.targetScore"
-            min="1"
-            placeholder="輸入及格分數"
-            required
-          />
-        </div>
-      </div>
-
-   
-      <div class="form-group">
-        <div class="form-container">
-          <label for="startDate">測驗開始日期</label>
-          <input
-            type="date"
-            id="startDate"
-            v-model="testData.startDate"
-            required
-          />
-        </div>
-      </div>
-
-    
-      <div class="form-group">
-        <div class="form-container">
-          <label for="endDate">測驗結束日期</label>
-          <input type="date" id="endDate" v-model="testData.endDate" required />
-        </div>
-      </div>
-
-      <div
-        class="form-group"
-        v-for="(rangeItem, index) in testData.rangeItemList"
-        :key="index"
-      >
-        <div class="form-container">
-          <label>範圍項目 {{ index + 1 }}</label>
-
-          <label for="category">業務種類</label>
-          <select
-            v-model="selectedCategory"
-            @change="populateChapters"
-            class="form-select"
-          >
-            <option value="">請選擇業務種類</option>
-            <option
-              v-for="category in categories"
-              :key="category"
-              :value="category"
-            >
-              {{ category }}
-            </option>
-          </select>
-
-          <label for="chapter">測驗範圍（章）</label>
-          <select
-            v-model="rangeItem.chapter"
-            @change="populateSections(index)"
-            :disabled="!rangeItem.category"
-            class="form-select"
-          >
-            <option value="">{{ rangeItem.category ? "請選擇章" : "請先選擇業務種類" }}</option>
-            <option v-for="chapter in chapters[index]" :key="chapter" :value="chapter">
-              {{ chapter }}
-            </option>
-          </select>
-
-          <label for="section">測驗範圍（節）</label>
-          <select
-            v-model="selectedSection"
-            :disabled="!selectedChapter"
-            class="form-select"
-          >
-            <option value="">{{ selectedChapter ? "請選擇節" : "請先選擇章" }}</option>
-            <option v-for="section in sections" :key="section" :value="section">
-              {{ section }}
-            </option>
-          </select>
-
-          <label for="questionAmount">題目數量</label>
-          <input
-            type="number"
-            id="questionAmount"
-            v-model="rangeItem.questionAmount"
-            placeholder="題目數量"
-            min="1"
-            required
-          />
-          <button @click="removeRangeItem(index)">刪除範圍</button>
-        </div>
-      </div>
-
-      <button @click="addRangeItem">新增範圍項目</button>
-
-      <button class="submit-btn" @click="submitTest">新增測驗</button>
-    </div>
-  </div>
-</template>
--->
-
-<!-- <script setup>
-import { ref, computed, watch, onMounted } from "vue";
-import AdminNavBar from "../../components/AdminNavBar.vue";
-
-const selectedCategory = ref("");
-const selectedChapter = ref("");
-const selectedSection = ref("");
-
-// const categories = ref([]);
-// const chapters = ref([]);
-// const sections = ref([]);
-
-const categories = ref([]);
-const chapters = ref([[]]); // 每個範圍項目都會對應一個章列表
-const sections = ref([[]]); // 每個範圍項目都會對應一個節列表
-
-const examData = JSON.parse(localStorage.getItem("examData")) || {};
-
-// 儲存測驗資料
-const testData = ref({
-  title: "", // 測驗名稱
-  limitTime: null, // 測驗作答時間
-  targetScore: null, // 及格分數
-  startDate: "", // 測驗開始日期
-  endDate: "", // 測驗結束日期
-  rangeItemList: [], // 儲存範圍項目
-});
-
-// 當前資料是從 examData 提取
-categories.value = Object.keys(examData);
-
-// 更新章列表
-/*
-const populateChapters = () => {
-  const category = selectedCategory.value;
-  chapters.value = category ? Object.keys(examData[category]) : [];
-  selectedChapter.value = "";
-  sections.value = [];
-  selectedSection.value = "";
-};
-
-// 更新節列表
-const populateSections = () => {
-  const category = selectedCategory.value;
-  const chapter = selectedChapter.value;
-  sections.value = chapter ? examData[category][chapter] : [];
-  selectedSection.value = "";
-};
-*/
-// 更新章列表
-const populateChapters = (index) => {
-  const category = testData.value.rangeItemList[index].category;
-  chapters.value[index] = category ? Object.keys(examData[category]) : [];
-  testData.value.rangeItemList[index].chapter = "";
-  sections.value[index] = [];
-  testData.value.rangeItemList[index].section = "";
-};
-
-// 更新節列表
-const populateSections = (index) => {
-  const category = testData.value.rangeItemList[index].category;
-  const chapter = testData.value.rangeItemList[index].chapter;
-  sections.value[index] = chapter ? examData[category][chapter] : [];
-  testData.value.rangeItemList[index].section = "";
-};
-
-// 新增範圍項目
-const addRangeItem = () => {
-  testData.value.rangeItemList.push({
-    category: null,
-    chapter: null,
-    section: null,
-    questionAmount: null,
-  });
-  chapters.value.push([]); // 新增一個章節列表
-  sections.value.push([]); // 新增一個節列表
-};
-
-// 刪除範圍項目
-const removeRangeItem = (index) => {
-  testData.value.rangeItemList.splice(index, 1);
-  chapters.value.splice(index, 1);
-  sections.value.splice(index, 1);
-};
-
-// 提交測驗資料
-const submitTest = () => {
-  // 基本驗證：檢查必填欄位是否都填寫
-  if (
-    !testData.value.title ||
-    !testData.value.limitTime ||
-    !testData.value.targetScore ||
-    !testData.value.startDate ||
-    !testData.value.endDate ||
-    testData.value.rangeItemList.length === 0
-  ) {
-    alert("請填寫所有欄位！");
-    return;
-  }
-
-  // 檢查範圍項目的資料是否完整
-  for (let rangeItem of testData.value.rangeItemList) {
-    if (
-      !rangeItem.category ||  
-      !rangeItem.chapter ||   
-      !rangeItem.section ||   
-      !rangeItem.questionAmount ||  
-      rangeItem.questionAmount <= 0 
-    ) {
-      alert("請填寫所有範圍項目欄位！");
-      return;
-    }
-  }
-
-  // 開始日期是否早於結束日期等
-  if (new Date(testData.value.startDate) > new Date(testData.value.endDate)) {
-    alert("開始日期不能晚於結束日期！");
-    return;
-  }
-
-  // 假設這裡提交資料
-  console.log("新增測驗資料：", testData.value);
-
-  // 提交後，可以將資料儲存至 localStorage 或傳送給後端等
-  localStorage.setItem('testData', JSON.stringify(testData.value));
-
-  alert("測驗新增成功！");
-
-  // 清空表單及選擇欄位
-  testData.value = {
-    title: "",
-    limitTime: null,
-    targetScore: null,
-    startDate: "",
-    endDate: "",
-    rangeItemList: [],
-  };
-  selectedCategory.value = "";
-  selectedChapter.value = "";
-  selectedSection.value = "";
-};
-
-onMounted(() => {
-  populateChapters(0);
-});
-</script> -->
-
-<!-- 第1.5版
-<script setup>
-import { ref, computed, watch, onMounted } from "vue";
-import AdminNavBar from "../../components/AdminNavBar.vue";
-
-const selectedCategory = ref("");
-const selectedChapter = ref("");
-const selectedSection = ref("");
-
-const categories = ref([]);
-const chapters = ref([]);
-const sections = ref([]);
-
-const examData = JSON.parse(localStorage.getItem("examData")) || {};
-
-// 儲存測驗資料
-const testData = ref({
-  title: "", // 測驗名稱
-  limitTime: null, // 測驗作答時間
-  targetScore: null, // 及格分數
-  startDate: "", // 測驗開始日期
-  endDate: "", // 測驗結束日期
-  rangeItemList: [], // 儲存範圍項目
-});
-
-// 初始化 categories，確保它是從 examData 取得的
-categories.value = examData ? Object.keys(examData) : [];
-
-// 當前資料是從 examData 提取
-onMounted(() => {
-  if (!examData || Object.keys(examData).length === 0) {
-    console.error("examData is not available or is empty.");
-  } else {
-    populateChapters();
-  }
-});
-
-// 更新章列表
-const populateChapters = () => {
-  const category = selectedCategory.value;
-  if (!category) {
-    console.error("選擇的業務種類無效！");
-    return;
-  }
-
-  // 確保 examData[category] 存在
-  if (!examData[category]) {
-    console.error(`找不到類別 ${category} 的資料！`);
-    return;
-  }
-
-  chapters.value = Object.keys(examData[category]);
-  selectedChapter.value = "";
-  sections.value = [];
-  selectedSection.value = "";
-};
-
-// 更新節列表
-const populateSections = () => {
-  const category = selectedCategory.value;
-  const chapter = selectedChapter.value;
-
-  if (!category || !chapter) {
-    console.error("無效的業務種類或章節！");
-    return;
-  }
-
-  sections.value = examData[category] && examData[category][chapter] ? examData[category][chapter] : [];
-  selectedSection.value = "";
-};
-
-// 新增範圍項目
-const addRangeItem = () => {
-  testData.value.rangeItemList.push({
-    category: null,
-    chapter: null,
-    section: null,
-    questionAmount: null,
-  });
-};
-
-// 刪除範圍項目
-const removeRangeItem = (index) => {
-  testData.value.rangeItemList.splice(index, 1);
-};
-
-// 提交測驗資料
-const submitTest = () => {
-  // 基本驗證：檢查必填欄位是否都填寫
-  if (
-    !testData.value.title ||
-    !testData.value.limitTime ||
-    !testData.value.targetScore ||
-    !testData.value.startDate ||
-    !testData.value.endDate ||
-    testData.value.rangeItemList.length === 0
-  ) {
-    alert("請填寫所有欄位！");
-    return;
-  }
-
-  // 檢查範圍項目的資料是否完整
-  for (let rangeItem of testData.value.rangeItemList) {
-    if (
-      !rangeItem.category ||  
-      !rangeItem.chapter ||   
-      !rangeItem.section ||   
-      !rangeItem.questionAmount ||  
-      rangeItem.questionAmount <= 0 
-    ) {
-      alert("請填寫所有範圍項目欄位！");
-      return;
-    }
-  }
-
-  // 開始日期是否早於結束日期等
-  if (new Date(testData.value.startDate) > new Date(testData.value.endDate)) {
-    alert("開始日期不能晚於結束日期！");
-    return;
-  }
-
-  // 假設這裡提交資料
-  console.log("新增測驗資料：", testData.value);
-
-  // 提交後，可以將資料儲存至 localStorage 或傳送給後端等
-  localStorage.setItem('testData', JSON.stringify(testData.value));
-
-  alert("測驗新增成功！");
-
-  // 清空表單及選擇欄位
-  testData.value = {
-    title: "",
-    limitTime: null,
-    targetScore: null,
-    startDate: "",
-    endDate: "",
-    rangeItemList: [],
-  };
-  selectedCategory.value = "";
-  selectedChapter.value = "";
-  selectedSection.value = "";
-};
-</script>
- -->
-
-<!-- 第二版
-
-<template>
-  <div class="container">
-    <AdminNavBar />
-
-    <div class="content">
-      <h1>開放測驗</h1>
-
-     
-      <div class="form-group">
-        <div class="form-container">
-          <label for="title">測驗名稱</label>
-          <input
-            type="text"
-            id="title"
-            v-model="testData.title"
-            placeholder="輸入測驗名稱"
-            required
-          />
-        </div>
-      </div>
-
-     
-      <div class="form-group">
-        <div class="form-container">
-          <label for="limitTime">測驗作答時間 (分鐘)</label>
-          <input
-            type="number"
-            id="limitTime"
-            v-model="testData.limitTime"
-            min="1"
-            placeholder="輸入測驗作答時間"
-            required
-          />
-        </div>
-      </div>
-
- 
-      <div class="form-group">
-        <div class="form-container">
-          <label for="targetScore">及格分數</label>
-          <input
-            type="number"
-            id="targetScore"
-            v-model="testData.targetScore"
-            min="1"
-            placeholder="輸入及格分數"
-            required
-          />
-        </div>
-      </div>
-
-   
-      <div class="form-group">
-        <div class="form-container">
-          <label for="startDate">測驗開始日期</label>
-          <input
-            type="date"
-            id="startDate"
-            v-model="testData.startDate"
-            required
-          />
-        </div>
-      </div>
-
-     
-      <div class="form-group">
-        <div class="form-container">
-          <label for="endDate">測驗結束日期</label>
-          <input type="date" id="endDate" v-model="testData.endDate" required />
-        </div>
-      </div>
-
-   
-      <div
-        class="form-group"
-        v-for="(rangeItem, index) in testData.value.rangeItemList"
-        :key="index"
-      >
-        <div class="form-container">
-          <label>範圍項目 {{ index + 1 }}</label>
-
-          <label for="category">業務種類</label>
-          <select
-            v-model="rangeItem.category"
-            @change="populateChapters(index)"
-            class="form-select"
-          >
-            <option value="">請選擇業務種類</option>
-            <option
-              v-for="category in categories"
-              :key="category"
-              :value="category"
-            >
-              {{ category }}
-            </option>
-          </select>
-
-          <label for="chapter">測驗範圍（章）</label>
-          <select
-            v-model="rangeItem.chapter"
-            @change="populateSections(index)"
-            :disabled="!rangeItem.category"
-            class="form-select"
-          >
-            <option value="">
-              {{ rangeItem.category ? "請選擇章" : "請先選擇業務種類" }}
-            </option>
-            <option v-for="chapter in chapters" :key="chapter" :value="chapter">
-              {{ chapter }}
-            </option>
-          </select>
-
-          <label for="section">測驗範圍（節）</label>
-          <select
-            v-model="rangeItem.section"
-            :disabled="!rangeItem.chapter"
-            class="form-select"
-          >
-            <option value="">
-              {{ rangeItem.chapter ? "請選擇節" : "請先選擇章" }}
-            </option>
-            <option v-for="section in sections" :key="section" :value="section">
-              {{ section }}
-            </option>
-          </select>
-
-          <label for="questionAmount">題目數量</label>
-          <input
-            type="number"
-            v-model="rangeItem.questionAmount"
-            placeholder="題目數量"
-            min="1"
-            required
-          />
-          <button @click="removeRangeItem(index)">刪除範圍</button>
-        </div>
-      </div>
-
-      <button @click="addRangeItem">新增範圍項目</button>
-
-      <button class="submit-btn" @click="submitTest">新增測驗</button>
-    </div>
-  </div>
-</template>
-
-<script setup>
-import { ref, computed, watch, onMounted } from "vue";
-import AdminNavBar from "../../components/AdminNavBar.vue";
-
-const categories = ref([]);
-const chapters = ref([]);
-const sections = ref([]);
-
-const examData = JSON.parse(localStorage.getItem("examData")) || {};
-
-// 儲存測驗資料
-const testData = ref({
-  title: "", // 測驗名稱
-  limitTime: null, // 測驗作答時間
-  targetScore: null, // 及格分數
-  startDate: "", // 測驗開始日期
-  endDate: "", // 測驗結束日期
-  rangeItemList: [], // 初始化範圍項目
-});
-
-// 當前資料是從 examData 提取
-categories.value = Object.keys(examData);
-/*
-// 更新章列表
-const populateChapters = (index) => {
-  const rangeItem = testData.value.rangeItemList[index];
-  if (rangeItem && rangeItem.category) {
-    chapters.value = Object.keys(examData[rangeItem.category]);
-    rangeItem.chapter = "";
-    sections.value = [];
-    rangeItem.section = "";
-  }
-};
-
-// 更新節列表
-const populateSections = (index) => {
-  const rangeItem = testData.value.rangeItemList[index];
-  if (rangeItem && rangeItem.category && rangeItem.chapter) {
-    sections.value = examData[rangeItem.category][rangeItem.chapter] || [];
-    rangeItem.section = "";
-  }
-};*/
-/*
-// 更新章列表
-const populateChapters = (index) => {
-  const rangeItem = testData.value.rangeItemList[index];
-  if (rangeItem && rangeItem.category) {
-    chapters.value = Object.keys(examData[rangeItem.category]);
-    rangeItem.chapter = ""; // 重置章節選項
-    sections.value = [];
-    rangeItem.section = ""; // 重置節選項
-  }
-};
-
-// 更新節列表
-const populateSections = (index) => {
-  const rangeItem = testData.value.rangeItemList[index];
-  if (rangeItem && rangeItem.category && rangeItem.chapter) {
-    sections.value = examData[rangeItem.category][rangeItem.chapter] || [];
-    rangeItem.section = ""; // 重置節選項
-  }
-};*/
-
-// 更新章列表
-const populateChapters = (index) => {
-  const rangeItem = testData.value.rangeItemList[index];
-  if (rangeItem && rangeItem.category) {
-    chapters.value = Object.keys(examData[rangeItem.category]);
-    rangeItem.chapter = ""; // 重置章節選項
-    sections.value = [];
-    rangeItem.section = ""; // 重置節選項
-  }
-};
-
-// 更新節列表
-const populateSections = (index) => {
-  const rangeItem = testData.value.rangeItemList[index];
-  if (rangeItem && rangeItem.category && rangeItem.chapter) {
-    sections.value = examData[rangeItem.category][rangeItem.chapter] || [];
-    rangeItem.section = ""; // 重置節選項
-  }
-};
-
-// 新增範圍項目
-const addRangeItem = () => {
-  testData.value.rangeItemList.push({
-    category: "", // 這裡初始化為空
-    chapter: "", // 這裡初始化為空
-    section: "", // 這裡初始化為空
-    questionAmount: null, // 題目數量
-  });
-};
-
-// 刪除範圍項目
-const removeRangeItem = (index) => {
-  testData.value.rangeItemList.splice(index, 1);
-};
-
-// 提交測驗資料
-const submitTest = () => {
-  // 基本驗證：檢查必填欄位是否都填寫
-  if (
-    !testData.value.title ||
-    !testData.value.limitTime ||
-    !testData.value.targetScore ||
-    !testData.value.startDate ||
-    !testData.value.endDate ||
-    testData.value.rangeItemList.length === 0
-  ) {
-    alert("請填寫所有欄位！");
-    return;
-  }
-
-  // 檢查範圍項目的資料是否完整
-  for (let rangeItem of testData.value.rangeItemList) {
-    if (
-      !rangeItem.category ||
-      !rangeItem.chapter ||
-      !rangeItem.section ||
-      !rangeItem.questionAmount ||
-      rangeItem.questionAmount <= 0
-    ) {
-      alert("請填寫所有範圍項目欄位！");
-      return;
-    }
-  }
-
-  // 開始日期是否早於結束日期等
-  if (new Date(testData.value.startDate) > new Date(testData.value.endDate)) {
-    alert("開始日期不能晚於結束日期！");
-    return;
-  }
-
-  // 假設這裡提交資料
-  console.log("新增測驗資料：", testData.value);
-
-  // 提交後，可以將資料儲存至 localStorage 或傳送給後端等
-  localStorage.setItem("testData", JSON.stringify(testData.value));
-
-  alert("測驗新增成功！");
-
-  // 清空表單及選擇欄位
-  testData.value = {
-    title: "",
-    limitTime: null,
-    targetScore: null,
-    startDate: "",
-    endDate: "",
-    rangeItemList: [],
-  };
-};
-
-onMounted(() => {
-  populateChapters(0);
-  if (!testData.value.rangeItemList) {
-    testData.value.rangeItemList = []; // 確保範圍項目列表初始化為空陣列
-  }
-});
-</script>
--->
-
-<!-- 第三版 -->
-
 <template>
   <div class="container">
     <AdminNavBar />
@@ -1092,7 +347,7 @@ onMounted(() => {
     </div>
   </div>
 </template>
-
+<!-- 不用API 
 <script setup>
 import { reactive, ref, computed, onMounted, toRaw } from "vue";
 import AdminNavBar from "../../components/AdminNavBar.vue";
@@ -1263,6 +518,217 @@ const submitTest = () => {
 
 onMounted(() => {
   categories.value = Object.keys(examData);
+});
+
+// 計算 questionAmount 的總和
+const totalQuestionAmount = computed(() => {
+  return testData.rangeItemList.reduce(
+    (total, item) => total + (item.questionAmount || 0),
+    0
+  );
+});
+</script>
+-->
+
+<!-- API -->
+<script setup>
+import { reactive, ref, computed, onMounted, toRaw } from "vue";
+import AdminNavBar from "../../components/AdminNavBar.vue";
+import axios from "axios";
+
+// 用 reactive 來管理 testData
+const testData = reactive({
+  title: "", // 測驗名稱
+  limitTime: null, // 測驗作答時間
+  targetScore: null, // 及格分數
+  startDate: "", // 測驗開始日期
+  endDate: "", // 測驗結束日期
+  // 儲存範圍項目
+  rangeItemList: [],
+});
+
+// 管理業務種類、章、節
+const selectedCategory = ref("");
+const selectedChapter = ref("");
+const selectedSection = ref("");
+const questionAmount = ref(null);
+
+const categories = ref([]); // 會從 API 取得資料
+const chapters = ref([]);
+const sections = ref([]);
+
+const token = localStorage.getItem("authToken");
+
+// 獲取分類、章節、節資料
+const fetchRangeData = async () => {
+  try {
+    const response = await axios.get(
+      "http://172.16.46.163/csexam/admin/question/range",
+      {
+        headers: {
+          Authorization: `Bearer ${token}`, // 使用 token
+        },
+      }
+    );
+
+    if (response.data.code === "0000") {
+      // 處理回傳的資料
+      const rangeList = response.data.data.rangeList;
+      categories.value = rangeList.map((item) => ({
+        categoryId: item.categoryId,
+        category: item.category,
+        chapters: item.chapterList,
+      }));
+
+      // 預設選擇第一個類別
+      if (categories.value.length > 0) {
+        selectedCategory.value = categories.value[0].category;
+        populateChapters();
+      }
+    } else {
+      alert("讀取題庫範圍失敗: " + response.data.message);
+    }
+  } catch (error) {
+    console.error("獲取分類、章節、節資料失敗：", error);
+    alert("讀取範圍資料失敗: " + response.data.message);
+  }
+};
+
+// 更新章列表
+const populateChapters = () => {
+  const category = selectedCategory.value;
+  const categoryData = categories.value.find(
+    (item) => item.category === category
+  );
+  chapters.value = categoryData ? categoryData.chapters : [];
+  selectedChapter.value = "";
+  sections.value = [];
+  selectedSection.value = "";
+};
+
+// 更新節列表
+const populateSections = () => {
+  const chapter = selectedChapter.value;
+  const categoryData = categories.value.find(
+    (item) => item.category === selectedCategory.value
+  );
+  const chapterData = categoryData
+    ? categoryData.chapters.find((ch) => ch.chapter === chapter)
+    : null;
+  sections.value = chapterData ? chapterData.partList : [];
+  selectedSection.value = "";
+};
+
+// 新增範圍項目
+const addRangeItem = () => {
+  testData.rangeItemList.push({
+    categoryId: null,
+    chapterId: null,
+    partId: null,
+    questionAmount: null,
+  });
+};
+
+// 儲存範圍項目
+const saveRangeItem = () => {
+  if (
+    !selectedCategory.value ||
+    !selectedChapter.value ||
+    !selectedSection.value ||
+    !questionAmount.value ||
+    questionAmount.value <= 0
+  ) {
+    alert("請填寫完整的範圍項目！");
+    return;
+  }
+
+  // 找到對應的 categoryId、chapterId 和 partId
+  const categoryData = categories.value.find(item => item.category === selectedCategory.value);
+  const chapterData = categoryData ? categoryData.chapters.find(ch => ch.chapter === selectedChapter.value) : null;
+  const partData = chapterData ? chapterData.partList.find(p => p.part === selectedSection.value) : null;
+
+  // 將資料加入範圍項目列表
+  testData.rangeItemList.push({
+    categoryId: categoryData ? categoryData.categoryId : null,
+    chapterId: chapterData ? chapterData.chapterId : null,
+    partId: partData ? partData.partId : null,
+    questionAmount: questionAmount.value,
+  });
+
+  // 重置選擇
+  selectedCategory.value = "";
+  selectedChapter.value = "";
+  selectedSection.value = "";
+  questionAmount.value = null;
+};
+
+// 刪除範圍項目
+const removeRangeItem = (index) => {
+  testData.rangeItemList.splice(index, 1);
+};
+
+// 提交測驗資料
+const submitTest = async () => {
+  // 基本驗證：檢查必填欄位是否都填寫
+  if (
+    !testData.title ||
+    !testData.limitTime ||
+    !testData.targetScore ||
+    !testData.startDate ||
+    !testData.endDate ||
+    testData.rangeItemList.length === 0
+  ) {
+    alert("請填寫所有欄位！");
+    return;
+  }
+
+  // 開始日期是否早於結束日期等
+  if (new Date(testData.startDate) > new Date(testData.endDate)) {
+    alert("開始日期不能晚於結束日期！");
+    return;
+  }
+
+  // 提交資料到後端
+  try {
+    const response = await axios.post(
+      "http://172.16.46.163/csexam/admin/exam",
+      testData,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`, // 使用 token
+        },
+      }
+    );
+
+    if (response.data.code === "0000") {
+      alert("考卷新增成功！");
+      console.log("新增測驗資料：", response.data);
+      // 清空表單
+      resetForm();
+    } else {
+      alert("新增考卷失敗: " + response.data.message);
+    }
+  } catch (error) {
+    console.error("提交測驗資料失敗：", error.message);
+    alert("測驗新增失敗！");
+  }
+};
+
+// 重置表單
+const resetForm = () => {
+  testData.title = "";
+  testData.limitTime = null;
+  testData.targetScore = null;
+  testData.startDate = "";
+  testData.endDate = "";
+  testData.rangeItemList = [];
+  selectedCategory.value = "";
+  selectedChapter.value = "";
+  selectedSection.value = "";
+};
+
+onMounted(() => {
+  fetchRangeData(); // 初始化時獲取分類、章節、節資料
 });
 
 // 計算 questionAmount 的總和
@@ -1969,7 +1435,7 @@ select:focus {
 }
 
 .table tr:nth-child(even) {
-  background-color: #EDE3E9;
+  background-color: #ede3e9;
   color: #34495e;
 }
 

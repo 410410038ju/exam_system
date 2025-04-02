@@ -1,4 +1,4 @@
-<!-- 不用API版本 
+<!-- 不用API版本 -->
 <template>
   <div class="container">
     <AdminNavBar />
@@ -6,7 +6,6 @@
       <div class="header">
         <h1>管理題庫類別</h1>
 
-       
         <div class="search">
           <input
             v-model="searchQuery"
@@ -45,7 +44,6 @@
                 : ['暫無節']"
               :key="`${category}-${chapter}-${sectionIndex}`"
             >
-             
               <td
                 v-if="chapterIndex === 0 && sectionIndex === 0"
                 :rowspan="getCategoryRowSpan(category) || 1"
@@ -76,7 +74,6 @@
                 </div>
               </td>
 
-           
               <td
                 v-if="sectionIndex === 0"
                 :rowspan="
@@ -111,7 +108,6 @@
                 </template>
               </td>
 
-         
               <td>
                 <span>{{ section }}</span>
                 <template v-if="section !== '暫無節'">
@@ -312,10 +308,8 @@ const deleteSection = (category, chapter, index) => {
   }
 };
 </script>
--->
-<!-- API -->
 
-<!-- 第一個template(沒測試過)
+<!-- API 裡面的第一個template(沒測試過)
 <template>
   <div class="container">
     <AdminNavBar />
@@ -429,6 +423,7 @@ const deleteSection = (category, chapter, index) => {
 </template> 
 -->
 
+<!-- API
 <template>
   <div class="container">
     <AdminNavBar />
@@ -436,7 +431,6 @@ const deleteSection = (category, chapter, index) => {
       <div class="header">
         <h1>管理題庫類別</h1>
 
-        <!-- 搜尋欄位 -->
         <div class="search">
           <input
             v-model="searchQuery"
@@ -462,7 +456,10 @@ const deleteSection = (category, chapter, index) => {
           </tr>
         </thead>
 
-        <tbody v-for="category in rangeList" :key="category.categoryId">
+        <tbody
+          v-for="category in filteredCategories"
+          :key="category.categoryId"
+        >
           <template
             v-for="(chapter, chapterIndex) in category.chapterList.length
               ? category.chapterList
@@ -476,7 +473,6 @@ const deleteSection = (category, chapter, index) => {
                 part.partId || part.part
               }`"
             >
-              <!-- 業務種類 -->
               <td
                 v-if="chapterIndex === 0 && partIndex === 0"
                 :rowspan="getCategoryRowSpan(category) || 1"
@@ -492,7 +488,6 @@ const deleteSection = (category, chapter, index) => {
                 </div>
               </td>
 
-              <!-- 章 -->
               <td
                 v-if="partIndex === 0"
                 :rowspan="chapter.partList.length ? chapter.partList.length : 1"
@@ -508,23 +503,16 @@ const deleteSection = (category, chapter, index) => {
                   >
                     新增節
                   </button>
-                  <button
-                    @click="editChapter(chapter)"
-                    class="edit-button"
-                  >
+                  <button @click="editChapter(chapter)" class="edit-button">
                     編輯
                   </button>
                 </div>
               </td>
 
-              <!-- 節 -->
               <td>
                 <span>{{ part.part }}</span>
                 <div class="buttons-container" v-if="part.part !== '暫無節'">
-                  <button
-                    @click="editPart(part)"
-                    class="edit-button"
-                  >
+                  <button @click="editPart(part)" class="edit-button">
                     編輯
                   </button>
                 </div>
@@ -608,11 +596,23 @@ const search = () => {
 };
 
 // 取得每個類別的行數
+/*
 const getCategoryRowSpan = (category) => {
   return category.chapterList.reduce((total, chapter) => {
     return total + chapter.partList.length;
   }, 0);
 };
+*/
+const getCategoryRowSpan = (category) => {
+  const chapters = category.chapterList || [];
+  if (chapters.length === 0) return 1; // 沒有章時，回傳 1
+
+  return chapters.reduce((total, chapter) => {
+    const parts = chapter.partList || [];
+    return total + (parts.length > 0 ? parts.length : 1); // 沒有節時，至少要回傳 1
+  }, 0);
+};
+
 
 // 新增業務種類API
 const addCategory = async () => {
@@ -630,6 +630,7 @@ const addCategory = async () => {
       );
 
       if (response.data.code === "0000") {
+        fetchExamData();
         refreshCategories();
       } else {
         alert("新增失敗！");
@@ -657,7 +658,9 @@ const editCategory = async (category) => {
         getAuthHeaders()
       );
       if (response.data.code === "0000") {
-        category.category = newCategoryName;
+        // category.category = newCategoryName;
+        alert("業務種類更新成功！");
+        fetchExamData();
         refreshCategories();
       } else {
         alert("編輯失敗！");
@@ -712,6 +715,7 @@ const addChapter = async (category) => {
         getAuthHeaders()
       );
       if (response.data.code === "0000") {
+        fetchExamData();
         refreshCategories();
       } else {
         alert("新增章節失敗: " + response.data.message);
@@ -733,19 +737,24 @@ const editChapter = async (chapter) => {
   if (newChapterName && newChapterName !== chapter.chapter) {
     try {
       const response = await axios.put(
-        `${BASE_URL}/admin/question/chapter/${chapter.chapterId}`,
+        `${BASE_URL}/admin/question/range/chapter/${chapter.chapterId}`,
         { chapter: newChapterName },
         getAuthHeaders()
       );
       if (response.data.code === "0000") {
-        alert("章節更新成功!");
-        refreshCategories(); // 更新界面顯示
+        // alert("章節更新成功!");
+        fetchExamData();
+        refreshCategories();
       } else {
         alert("更新章節失敗: " + response.data.message);
       }
     } catch (error) {
       alert("發生錯誤: " + error.message);
     }
+  } else if (!newChapterName) {
+    return;
+  } else {
+    alert("此章名稱沒有變動！");
   }
 };
 
@@ -786,7 +795,8 @@ const addPart = async (category, chapter) => {
         getAuthHeaders()
       );
       if (response.data.code === "0000") {
-        alert("節新增成功!");
+        // alert("節新增成功!");
+        fetchExamData();
         refreshCategories();
       } else {
         alert("新增節失敗: " + response.data.message);
@@ -794,23 +804,27 @@ const addPart = async (category, chapter) => {
     } catch (error) {
       alert("發生錯誤: " + error.message);
     }
+  } else if (!newPart) {
+    return;
+  } else {
+    alert("此節已存在！");
   }
 };
 
 // 編輯節
-// 亂七八遭
 const editPart = async (part) => {
   const newPartName = prompt("請輸入新的節名稱:", part.part);
 
   if (newPartName && newPartName !== part.part) {
     try {
       const response = await axios.put(
-        `${BASE_URL}/admin/question/part/${part.partId}`,
+        `${BASE_URL}/admin/question/range/part/${part.partId}`,
         { part: newPartName },
         getAuthHeaders()
       );
       if (response.data.code === "0000") {
-        alert("節更新成功!");
+        // alert("節更新成功!");
+        fetchExamData();
         refreshCategories();
       } else {
         alert("更新節失敗: " + response.data.message);
@@ -818,6 +832,10 @@ const editPart = async (part) => {
     } catch (error) {
       alert("發生錯誤: " + error.message);
     }
+  } else if (!newPartName) {
+    return;
+  } else {
+    alert("此節名稱沒有更改！");
   }
 };
 
@@ -847,7 +865,7 @@ onMounted(() => {
   fetchExamData();
 });
 </script>
-
+-->
 <!-- 第一版 -->
 <style scoped>
 /* 容器樣式 */

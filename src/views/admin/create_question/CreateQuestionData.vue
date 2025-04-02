@@ -239,7 +239,7 @@
               </td>
 
               <td>{{ question.text }}</td>
-              <!-- <td>{{ truncatedText }}</td> -->
+              
               <td>
                 <div v-for="(option, index) in question.options" :key="index">
                   {{ String.fromCharCode(65 + index) }}. {{ option }}
@@ -312,7 +312,9 @@ const changeQuestionType = () => {
 // 使用 computed 屬性來限制顯示的字符數
 const truncatedText = computed(() => {
   // 限制顯示前50個字符，超過部分顯示省略號
-  return question.value.text.length > 50 ? question.value.text.slice(0, 50) + '...' : question.value.text;
+  return question.value.text.length > 50
+    ? question.value.text.slice(0, 50) + "..."
+    : question.value.text;
 });
 
 /*
@@ -641,12 +643,6 @@ select:focus {
   outline: none;
 }
 
-/* 單選框和複選框樣式 */
-input[type="radio"],
-input[type="checkbox"] {
-  /* margin-right: 8px; */
-}
-
 /* 答案群組排列 */
 .answer-group {
   display: flex;
@@ -692,28 +688,22 @@ td {
   border: 1px solid #ddd;
 }
 
-
-
-
-
-
 th {
   background-color: #f1f1f1;
   font-weight: bold;
 }
 
 td {
-  max-width: 20ch;            /* 每行最多顯示 50 個字符 */
-  max-height: 100px;          /* 設定最大高度，根據需要調整 */
-  overflow: hidden;           /* 隱藏溢出部分 */
-  word-wrap: break-word;      /* 超過寬度時換行 */
-  white-space: normal;        /* 允許換行 */
-  text-overflow: ellipsis;    /* 使用省略號顯示超出的部分 */
-  line-height: 1.5em;         /* 調整行高，方便換行顯示 */
-  display: table-cell;        /* 保持表格單元格的布局 */
+  max-width: 20ch; /* 每行最多顯示 50 個字符 */
+  max-height: 100px; /* 設定最大高度，根據需要調整 */
+  overflow: hidden; /* 隱藏溢出部分 */
+  word-wrap: break-word; /* 超過寬度時換行 */
+  white-space: normal; /* 允許換行 */
+  text-overflow: ellipsis; /* 使用省略號顯示超出的部分 */
+  line-height: 1.5em; /* 調整行高，方便換行顯示 */
+  display: table-cell; /* 保持表格單元格的布局 */
   /* vertical-align: top;      */
 }
-
 
 tr:nth-child(even) {
   background-color: #f9f9f9;
@@ -743,7 +733,7 @@ tr:hover {
 }
 </style>
 
-<!-- API 
+<!-- API
 <template>
   <div class="container">
     <div class="createquestion-container">
@@ -990,7 +980,6 @@ tr:hover {
                 </div>
               </td>
               <td>
-             
                 <div v-if="typeof question.correctAnswer === 'string'">
                   {{
                     String.fromCharCode(
@@ -998,7 +987,7 @@ tr:hover {
                     )
                   }}. {{ question.correctAnswer }}
                 </div>
-             
+
                 <div v-else>
                   <div
                     v-for="(answer, index) in question.correctAnswer"
@@ -1088,8 +1077,9 @@ const submitQuestion = () => {
     categoryId: examInfo.categoryId,
     chapterId: examInfo.chapterId,
     partId: examInfo.partId,
-    questionType: questionType.value,
+    questionType: questionType.value.replace("-", "_"),
     creatorId: loggedInUser ? loggedInUser.empId : null, // 確保有取得使用者ID
+    // creatorId: loggedInUser ? String(loggedInUser.empId) : null, // 強制轉換為 string
     optionItemList: [],
   };
 
@@ -1131,14 +1121,30 @@ const submitQuestion = () => {
 const submitToAPI = async (questionData) => {
   const token = localStorage.getItem("authToken");
   try {
-    const response = await axios.post("http://172.16.46.163/csexam/admin/question", questionData, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    });
+    const response = await axios.post(
+      "http://172.16.46.163/csexam/admin/question",
+      questionData,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
 
     if (response.data.code === "0000") {
       console.log("題目提交成功！");
+
+      // 顯示新題目
+      const newQuestion = {
+        text: questionData.question,
+        type: questionData.questionType.replace("_", "-"),
+        options: questionData.optionItemList.map((item) => item.content),
+        correctAnswer: questionData.optionItemList
+          .filter((item) => item.isCorrect)
+          .map((item) => item.content),
+      };
+
+      submittedQuestions.value.push(newQuestion);
     } else {
       alert(response.data.message || "題目提交失敗，請稍後再試！");
     }
@@ -1169,6 +1175,7 @@ onMounted(() => {
     Object.assign(examInfo, storedExamInfo);
   } else {
     alert("無法讀取考試資訊！");
+    router.push("/create_question");
   }
 });
 </script>
@@ -1405,4 +1412,4 @@ tr:hover {
   }
 }
 </style>
--->
+ -->

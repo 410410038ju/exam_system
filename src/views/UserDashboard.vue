@@ -426,7 +426,7 @@ const logout = () => {
 };
 
 const startExam = (examId) => {
-  alert(`開始測驗：${examId}`);
+  // alert(`開始測驗：${examId}`);
   const exam = exams.value.find((exam) => exam.id === examId);
   exam.status = "completed";
   router.push("/testing");
@@ -456,7 +456,7 @@ const startExam = (examId) => {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  position: fixed; /* 固定位置 */
+  position: fixed;
   top: 0;
   left: 0;
   width: 100%;

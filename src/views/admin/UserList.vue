@@ -886,7 +886,7 @@ const editUser = (id) => {
 };*/
 
 // 編輯人員資料
-/*const saveChanges = () => {
+const saveChanges = () => {
   if (
     !editUserData ||
     !editUserData.id ||
@@ -926,7 +926,7 @@ const editUser = (id) => {
   } else {
     alert("未找到原始使用者！");
   }
-};*/
+};
 
 // 編輯人員資料API
 // 員工編號不能修改
