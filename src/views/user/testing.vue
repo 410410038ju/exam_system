@@ -49,7 +49,7 @@ const router = useRouter();
 const examName = ref("數學期末考");
 
 // 剩餘時間（秒）
-const timeLeft = ref(1 * 60); // 30分鐘 = 1800秒
+const timeLeft = ref(30 * 60); // 30分鐘 = 1800秒
 let timer = null;
 
 // 答題進度
@@ -93,7 +93,7 @@ const answeredQuestions = computed(() => {
 const submitExam = () => {
   clearInterval(timer); // 清除計時器，防止額外觸發
   console.log("提交答案：", userAnswers.value);
-  router.push("/user"); // 跳轉至結果頁
+  router.push("/answer"); // 跳轉至結果頁
 };
 
 // 倒數計時

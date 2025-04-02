@@ -11,6 +11,7 @@ import OpenExam from "../views/admin/OpenExam.vue";
 import ViewExamRecords from "../views/admin/ViewExamRecords.vue";
 import CreateQuestionData from "../views/admin/create_question/CreateQuestionData.vue";
 import Testing from "../views/user/testing.vue";
+import Answer from "../views/user/answer.vue";
 
 const routes = [
   {
@@ -85,6 +86,12 @@ const routes = [
     name: "Testing",
     component: Testing,
     meta: { title: "測驗" },
+  },
+  {
+    path: "/answer",
+    name: "Answer",
+    component: Answer,
+    meta: { title: "查看解答" },
   },
 ];
 
