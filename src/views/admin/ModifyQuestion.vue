@@ -130,13 +130,14 @@
       <table>
         <thead>
           <tr>
-            <th
+            <th>編號</th>
+            <!-- <th
               @click="setOrderBy('createDate')"
               :class="{ active: searchParams.orderBy === 'createDate' }"
             >
               編號
               <i :class="getSortIcon('createDate')"></i>
-            </th>
+            </th> -->
             <th
               @click="setOrderBy('questionId')"
               :class="{ active: searchParams.orderBy === 'questionId' }"

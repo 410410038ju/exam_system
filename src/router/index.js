@@ -66,7 +66,7 @@ const routes = [
     path: "/open_exam",  
     name: "OpenExam", 
     component: OpenExam,
-    meta: { title: "開放測驗" },
+    meta: { title: "新增考卷" },
 
   },
   {

@@ -376,8 +376,8 @@ const totalQuestionAmount = computed(() => {
 });
 </script>
 
-<!-- API 
 
+<!-- API 
 <template>
   <div class="container">
     <AdminNavBar />
@@ -488,7 +488,7 @@ const totalQuestionAmount = computed(() => {
               <label for="chapter">測驗範圍（章）</label>
               <select
                 v-model="selectedChapter"
-                @change="populateSections()"
+                @change="populateParts()"
                 :disabled="!selectedCategory"
                 class="form-select"
               >
@@ -506,9 +506,9 @@ const totalQuestionAmount = computed(() => {
             </div>
 
             <div class="form-content">
-              <label for="section">測驗範圍（節）</label>
+              <label for="part">測驗範圍（節）</label>
               <select
-                v-model="selectedSection"
+                v-model="selectedPart"
                 :disabled="!selectedChapter"
                 class="form-select"
               >
@@ -516,11 +516,11 @@ const totalQuestionAmount = computed(() => {
                   {{ selectedChapter ? "請選擇節" : "請先選擇章" }}
                 </option>
                 <option
-                  v-for="section in sections"
-                  :key="section.partId"
-                  :value="section.partId"
+                  v-for="part in parts"
+                  :key="part.partId"
+                  :value="part.partId"
                 >
-                  {{ section.part }}
+                  {{ part.part }}
                 </option>
               </select>
             </div>
@@ -553,13 +553,10 @@ const totalQuestionAmount = computed(() => {
             </tr>
           </thead>
           <tbody>
-            <tr
-              v-for="(rangeItem, index) in testData.rangeItemList"
-              :key="index"
-            >
+            <tr v-for="(rangeItem, index) in rangeItems" :key="index">
               <td>{{ rangeItem.category }}</td>
               <td>{{ rangeItem.chapter }}</td>
-              <td>{{ rangeItem.section }}</td>
+              <td>{{ rangeItem.part }}</td>
               <td>{{ rangeItem.questionAmount }}</td>
               <td>
                 <button @click="removeRangeItem(index)" class="btn-remove">
@@ -593,12 +590,14 @@ const testData = reactive({
 // 管理業務種類、章、節
 const selectedCategory = ref("");
 const selectedChapter = ref("");
-const selectedSection = ref("");
+const selectedPart = ref("");
 const questionAmount = ref(null);
 
 const categories = ref([]); // 會從 API 取得資料
 const chapters = ref([]);
-const sections = ref([]);
+const parts = ref([]);
+
+const rangeItems = ref([]);
 
 const token = localStorage.getItem("authToken");
 
@@ -624,10 +623,16 @@ const fetchRangeData = async () => {
       }));
 
       // 預設選擇第一個類別
-      if (categories.value.length > 0) {
+      /*if (categories.value.length > 0) {
         selectedCategory.value = categories.value[0].categoryId;
         populateChapters();
-      }
+      }*/
+      // 不做預設選擇，使用者自行選擇
+      selectedCategory.value = "";
+      selectedChapter.value = "";
+      selectedPart.value = "";
+      chapters.value = [];
+      parts.value = [];
     } else {
       alert("讀取題庫範圍失敗: " + response.data.message);
     }
@@ -645,31 +650,19 @@ const populateChapters = () => {
   );
   chapters.value = categoryData ? categoryData.chapters : [];
   selectedChapter.value = "";
-  sections.value = [];
-  selectedSection.value = "";
+  parts.value = [];
+  selectedPart.value = "";
 };
 
 // 更新節列表
-/*
-const populateSections = () => {
-  const chapter = selectedChapter.value;
-  const categoryData = categories.value.find(
-    (item) => item.category === selectedCategory.value
-  );
-  const chapterData = categoryData
-    ? categoryData.chapters.find((ch) => ch.chapter === chapter)
-    : null;
-  sections.value = chapterData ? chapterData.partList : [];
-  selectedSection.value = "";
-};*/
-const populateSections = () => {
+const populateParts = () => {
   const chapterId = selectedChapter.value;
   const chapterData = chapters.value.find(
     (item) => item.chapterId === chapterId
   );
 
-  sections.value = chapterData ? chapterData.partList : [];
-  selectedSection.value = "";
+  parts.value = chapterData ? chapterData.partList : [];
+  selectedPart.value = "";
 };
 
 // 新增範圍項目
@@ -683,11 +676,12 @@ const addRangeItem = () => {
 };
 
 // 儲存範圍項目
+/* 原版
 const saveRangeItem = () => {
   if (
     !selectedCategory.value ||
     !selectedChapter.value ||
-    !selectedSection.value ||
+    !selectedPart.value ||
     !questionAmount.value ||
     questionAmount.value <= 0
   ) {
@@ -703,7 +697,7 @@ const saveRangeItem = () => {
     ? categoryData.chapters.find((ch) => ch.chapter === selectedChapter.value)
     : null;
   const partData = chapterData
-    ? chapterData.partList.find((p) => p.part === selectedSection.value)
+    ? chapterData.partList.find((p) => p.part === selectedPart.value)
     : null;
 
   // 將資料加入範圍項目列表
@@ -717,17 +711,67 @@ const saveRangeItem = () => {
   // 重置選擇
   selectedCategory.value = "";
   selectedChapter.value = "";
-  selectedSection.value = "";
+  selectedPart.value = "";
+  questionAmount.value = null;
+};*/
+const saveRangeItem = () => {
+  const categoryData = categories.value.find(
+    (cate) => cate.categoryId === selectedCategory.value
+  );
+  const chapterData = chapters.value.find(
+    (chap) => chap.chapterId === selectedChapter.value
+  );
+  const partData = parts.value.find(
+    (part) => part.partId === selectedPart.value
+  );
+
+  if (!categoryData || !chapterData || !partData || questionAmount.value <= 0) {
+    // alert("請完整選擇業務種類、章、節");
+    alert("請填寫完整的範圍項目！");
+    return;
+  }
+
+  const newItem = {
+    categoryId: selectedCategory.value,
+    category: categoryData.category,
+    chapterId: selectedChapter.value,
+    chapter: chapterData.chapter,
+    partId: selectedPart.value,
+    part: partData.part,
+    questionAmount: questionAmount.value,
+  };
+
+  // 儲存選擇的出題範圍資料
+  rangeItems.value.push(newItem);
+
+  // 清空表單
+  selectedCategory.value = "";
+  selectedChapter.value = "";
+  selectedPart.value = "";
   questionAmount.value = null;
 };
 
 // 刪除範圍項目
+/*
 const removeRangeItem = (index) => {
   testData.rangeItemList.splice(index, 1);
+};
+*/
+const removeRangeItem = (index) => {
+  rangeItems.value.splice(index, 1);
 };
 
 // 提交測驗資料
 const submitTest = async () => {
+  testData.rangeItemList = rangeItems.value.map((item) => ({
+    categoryId: item.categoryId,
+    chapterId: item.chapterId,
+    partId: item.partId,
+    questionAmount: item.questionAmount,
+  }));
+
+  // console.log("testData.rangeItemList: ", testData.rangeItemList);
+
   // 基本驗證：檢查必填欄位是否都填寫
   if (
     !testData.title ||
@@ -761,7 +805,7 @@ const submitTest = async () => {
 
     if (response.data.code === "0000") {
       alert("考卷新增成功！");
-      console.log("新增測驗資料：", response.data);
+
       // 清空表單
       resetForm();
     } else {
@@ -783,19 +827,23 @@ const resetForm = () => {
   testData.rangeItemList = [];
   selectedCategory.value = "";
   selectedChapter.value = "";
-  selectedSection.value = "";
-};
+  selectedPart.value = "";
+  questionAmount.value = null;
 
-onMounted(() => {
-  fetchRangeData(); // 初始化時獲取分類、章節、節資料
-});
+  // 清空暫存的出題範圍
+  rangeItems.value = [];
+};
 
 // 計算 questionAmount 的總和
 const totalQuestionAmount = computed(() => {
-  return testData.rangeItemList.reduce(
+  return rangeItems.value.reduce(
     (total, item) => total + (item.questionAmount || 0),
     0
   );
+});
+
+onMounted(() => {
+  fetchRangeData(); // 初始化時獲取分類、章節、節資料
 });
 </script>
 -->
