@@ -654,4 +654,95 @@ label {
 .close-btn:hover {
   color: #333;
 }
+
+/* 響應式設計：手機尺寸（最大寬度 768px） */
+@media (max-width: 768px) {
+  .navbar {
+    flex-direction: column; /* 導覽列改為垂直排列 */
+    align-items: flex-start;
+    padding: 10px 20px;
+  }
+
+  .nav-title {
+    font-size: 20px;
+    margin-bottom: 10px;
+  }
+
+  .nav-list {
+    flex-direction: column;
+    width: 100%;
+    gap: 10px;
+  }
+
+  .nav-item {
+    width: 100%;
+    font-size: 18px;
+    justify-content: center;
+  }
+
+  .changepassword-btn,
+  .logout-btn {
+    width: 100%;
+    justify-content: center;
+    font-size: 16px;
+    margin: 6px 0;
+  }
+
+  .modal-content {
+    width: 90%; /* Modal 寬度調整 */
+    padding: 15px;
+  }
+
+  label {
+    width: 100%;
+    font-size: 14px;
+  }
+
+  .input-field {
+    width: 100%;
+    font-size: 14px;
+  }
+
+  .message {
+    width: 100%;
+    font-size: 14px;
+  }
+
+  .btn-primary,
+  .btn-secondary {
+    width: 48%;
+    font-size: 14px;
+    padding: 8px;
+  }
+
+  .close-btn {
+    font-size: 24px;
+  }
+}
+
+/* 響應式設計：超小手機尺寸（最大寬度 480px） */
+@media (max-width: 480px) {
+  .nav-title {
+    font-size: 18px;
+  }
+
+  .nav-item {
+    font-size: 16px;
+  }
+
+  .btn-primary,
+  .btn-secondary {
+    width: 100%;
+    margin: 5px 0;
+  }
+
+  .button-container {
+    flex-direction: column;
+    align-items: stretch;
+  }
+}
+
 </style>
+
+
+

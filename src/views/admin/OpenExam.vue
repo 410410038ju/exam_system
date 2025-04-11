@@ -1,3 +1,4 @@
+<!-- 不用API -->
 <template>
   <div class="container">
     <AdminNavBar />
@@ -6,7 +7,6 @@
       <div class="left-content">
         <h1>新增考卷</h1>
 
-        <!-- 測驗名稱 -->
         <div class="form-group">
           <div class="form-container">
             <label for="title">測驗名稱</label>
@@ -20,7 +20,6 @@
           </div>
         </div>
 
-        <!-- 測驗作答時間 -->
         <div class="form-group">
           <div class="form-container">
             <label for="limitTime">測驗作答時間 (分鐘)</label>
@@ -35,7 +34,6 @@
           </div>
         </div>
 
-        <!-- 及格分數 -->
         <div class="form-group">
           <div class="form-container">
             <label for="targetScore">及格分數</label>
@@ -50,7 +48,6 @@
           </div>
         </div>
 
-        <!-- 測驗開始日期 -->
         <div class="form-group">
           <div class="form-container">
             <label for="startDate">測驗開始日期</label>
@@ -63,7 +60,6 @@
           </div>
         </div>
 
-        <!-- 測驗結束日期 -->
         <div class="form-group">
           <div class="form-container">
             <label for="endDate">測驗結束日期</label>
@@ -76,7 +72,6 @@
           </div>
         </div>
 
-        <!-- 顯示總題目數量 -->
         <div class="form-group">
           <div class="form-container">
             <label class="form-label">總題目數量</label>
@@ -87,157 +82,9 @@
         <button class="submit-btn" @click="submitTest">新增測驗</button>
       </div>
 
-      <!-- 範圍項目 -->
       <div class="right-content">
         <h2>本次考試的出題範圍</h2>
-        <!-- <button @click="addRangeItem">新增範圍項目</button> -->
-        <!-- <div
-          class="form-group"
-          v-for="(rangeItem, index) in testData.rangeItemList"
-          :key="index"
-        >
-          <div class="form-container">
-            <label>範圍項目 {{ index + 1 }}</label>
 
-            <label for="category">業務種類</label>
-            <select
-              v-model="selectedCategory"
-              @change="populateChapters"
-              class="form-select"
-            >
-              
-              <option value="">請選擇業務種類</option>
-              <option
-                v-for="category in categories"
-                :key="category"
-                :value="category"
-              >
-                {{ category }}
-              </option>
-            </select>
-
-            <label for="chapter">測驗範圍（章）</label>
-            <select
-              v-model="selectedChapter"
-              @change="populateSections"
-              :disabled="!selectedCategory"
-              class="form-select"
-            >
-            
-              <option value="">
-                {{ selectedCategory ? "請選擇章" : "請先選擇業務種類" }}
-              </option>
-              <option
-                v-for="chapter in chapters"
-                :key="chapter"
-                :value="chapter"
-              >
-                {{ chapter }}
-              </option>
-            </select>
-
-            <label for="section">測驗範圍（節）</label>
-            <select
-              v-model="selectedSection"
-              :disabled="!selectedChapter"
-              class="form-select"
-            >
-          
-              <option value="">
-                {{ selectedChapter ? "請選擇節" : "請先選擇章" }}
-              </option>
-              <option
-                v-for="section in sections"
-                :key="section"
-                :value="section"
-              >
-                {{ section }}
-              </option>
-            </select>
-
-            <label for="questionAmount">題目數量</label>
-            <input
-              type="number"
-              id="questionAmount"
-              v-model="rangeItem.questionAmount"
-              placeholder="題目數量"
-              min="1"
-              required
-            />
-            <button @click="removeRangeItem(index)">刪除範圍</button>
-          </div>
-        </div> -->
-        <!-- <div
-          class="form-group"
-          v-for="(rangeItem, index) in testData.rangeItemList" 
-          :key="index"
-        >
-          <div class="form-container">
-            <label for="category">業務種類</label>
-            <select
-              v-model="rangeItem.category"
-              @change="populateChapters(index)"
-              class="form-select"
-            >
-              <option value="">請選擇業務種類</option>
-              <option
-                v-for="category in categories"
-                :key="category"
-                :value="category"
-              >
-                {{ category }}
-              </option>
-            </select>
-
-            <label for="chapter">測驗範圍（章）</label>
-            <select
-              v-model="rangeItem.chapter"
-              @change="populateSections(index)"
-              :disabled="!rangeItem.category"
-              class="form-select"
-            >
-              <option value="">
-                {{ rangeItem.category ? "請選擇章" : "請先選擇業務種類" }}
-              </option>
-              <option
-                v-for="chapter in chapters"
-                :key="chapter"
-                :value="chapter"
-              >
-                {{ chapter }}
-              </option>
-            </select>
-
-            <label for="section">測驗範圍（節）</label>
-            <select
-              v-model="rangeItem.section"
-              :disabled="!rangeItem.chapter"
-              class="form-select"
-            >
-              <option value="">
-                {{ rangeItem.chapter ? "請選擇節" : "請先選擇章" }}
-              </option>
-              <option
-                v-for="section in sections"
-                :key="section"
-                :value="section"
-              >
-                {{ section }}
-              </option>
-            </select>
-
-            <label for="questionAmount">題目數量</label>
-            <input
-              type="number"
-              id="questionAmount"
-              v-model="rangeItem.questionAmount"
-              placeholder="題目數量"
-              min="1"
-              required
-            />
-            <button @click="saveRangeItem(index)">儲存</button>
-          </div>
-        </div> -->
         <div class="form-group">
           <div class="form-container">
             <div class="form-content">
@@ -347,7 +194,7 @@
     </div>
   </div>
 </template>
-<!-- 不用API 
+
 <script setup>
 import { reactive, ref, computed, onMounted, toRaw } from "vue";
 import AdminNavBar from "../../components/AdminNavBar.vue";
@@ -528,9 +375,205 @@ const totalQuestionAmount = computed(() => {
   );
 });
 </script>
--->
 
-<!-- API -->
+<!-- API 
+
+<template>
+  <div class="container">
+    <AdminNavBar />
+
+    <div class="content">
+      <div class="left-content">
+        <h1>新增考卷</h1>
+
+        <div class="form-group">
+          <div class="form-container">
+            <label for="title">測驗名稱</label>
+            <input
+              type="text"
+              id="title"
+              v-model="testData.title"
+              placeholder="輸入測驗名稱"
+              required
+            />
+          </div>
+        </div>
+
+        <div class="form-group">
+          <div class="form-container">
+            <label for="limitTime">測驗作答時間 (分鐘)</label>
+            <input
+              type="number"
+              id="limitTime"
+              v-model="testData.limitTime"
+              min="1"
+              placeholder="輸入測驗作答時間"
+              required
+            />
+          </div>
+        </div>
+
+        <div class="form-group">
+          <div class="form-container">
+            <label for="targetScore">及格分數</label>
+            <input
+              type="number"
+              id="targetScore"
+              v-model="testData.targetScore"
+              min="1"
+              placeholder="輸入及格分數"
+              required
+            />
+          </div>
+        </div>
+
+        <div class="form-group">
+          <div class="form-container">
+            <label for="startDate">測驗開始日期</label>
+            <input
+              type="date"
+              id="startDate"
+              v-model="testData.startDate"
+              required
+            />
+          </div>
+        </div>
+
+        <div class="form-group">
+          <div class="form-container">
+            <label for="endDate">測驗結束日期</label>
+            <input
+              type="date"
+              id="endDate"
+              v-model="testData.endDate"
+              required
+            />
+          </div>
+        </div>
+
+        <div class="form-group">
+          <div class="form-container">
+            <label class="form-label">總題目數量</label>
+            <div class="total-question-amount">{{ totalQuestionAmount }}</div>
+          </div>
+        </div>
+
+        <button class="submit-btn" @click="submitTest">新增測驗</button>
+      </div>
+
+      <div class="right-content">
+        <h2>本次考試的出題範圍</h2>
+
+        <div class="form-group">
+          <div class="form-container">
+            <div class="form-content">
+              <label for="category">業務種類</label>
+              <select
+                v-model="selectedCategory"
+                @change="populateChapters()"
+                class="form-select"
+              >
+                <option value="">請選擇業務種類</option>
+                <option
+                  v-for="category in categories"
+                  :key="category.categoryId"
+                  :value="category.categoryId"
+                >
+                  {{ category.category }}
+                </option>
+              </select>
+            </div>
+
+            <div class="form-content">
+              <label for="chapter">測驗範圍（章）</label>
+              <select
+                v-model="selectedChapter"
+                @change="populateSections()"
+                :disabled="!selectedCategory"
+                class="form-select"
+              >
+                <option value="">
+                  {{ selectedCategory ? "請選擇章" : "請先選擇業務種類" }}
+                </option>
+                <option
+                  v-for="chapter in chapters"
+                  :key="chapter.chapterId"
+                  :value="chapter.chapterId"
+                >
+                  {{ chapter.chapter }}
+                </option>
+              </select>
+            </div>
+
+            <div class="form-content">
+              <label for="section">測驗範圍（節）</label>
+              <select
+                v-model="selectedSection"
+                :disabled="!selectedChapter"
+                class="form-select"
+              >
+                <option value="">
+                  {{ selectedChapter ? "請選擇節" : "請先選擇章" }}
+                </option>
+                <option
+                  v-for="section in sections"
+                  :key="section.partId"
+                  :value="section.partId"
+                >
+                  {{ section.part }}
+                </option>
+              </select>
+            </div>
+
+            <div class="form-content">
+              <label for="questionAmount">題目數量</label>
+              <input
+                type="number"
+                id="questionAmount"
+                v-model="questionAmount"
+                placeholder="題目數量"
+                min="1"
+                class="input-number"
+                required
+              />
+            </div>
+
+            <button @click="saveRangeItem" class="btn-save">儲存</button>
+          </div>
+        </div>
+
+        <table class="table">
+          <thead>
+            <tr>
+              <th>業務種類</th>
+              <th>測驗範圍（章）</th>
+              <th>測驗範圍（節）</th>
+              <th>題目數量</th>
+              <th>操作</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr
+              v-for="(rangeItem, index) in testData.rangeItemList"
+              :key="index"
+            >
+              <td>{{ rangeItem.category }}</td>
+              <td>{{ rangeItem.chapter }}</td>
+              <td>{{ rangeItem.section }}</td>
+              <td>{{ rangeItem.questionAmount }}</td>
+              <td>
+                <button @click="removeRangeItem(index)" class="btn-remove">
+                  刪除
+                </button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</template>
+
 <script setup>
 import { reactive, ref, computed, onMounted, toRaw } from "vue";
 import AdminNavBar from "../../components/AdminNavBar.vue";
@@ -582,7 +625,7 @@ const fetchRangeData = async () => {
 
       // 預設選擇第一個類別
       if (categories.value.length > 0) {
-        selectedCategory.value = categories.value[0].category;
+        selectedCategory.value = categories.value[0].categoryId;
         populateChapters();
       }
     } else {
@@ -596,9 +639,9 @@ const fetchRangeData = async () => {
 
 // 更新章列表
 const populateChapters = () => {
-  const category = selectedCategory.value;
+  const categoryId = selectedCategory.value;
   const categoryData = categories.value.find(
-    (item) => item.category === category
+    (item) => item.categoryId === categoryId
   );
   chapters.value = categoryData ? categoryData.chapters : [];
   selectedChapter.value = "";
@@ -607,6 +650,7 @@ const populateChapters = () => {
 };
 
 // 更新節列表
+/*
 const populateSections = () => {
   const chapter = selectedChapter.value;
   const categoryData = categories.value.find(
@@ -615,6 +659,15 @@ const populateSections = () => {
   const chapterData = categoryData
     ? categoryData.chapters.find((ch) => ch.chapter === chapter)
     : null;
+  sections.value = chapterData ? chapterData.partList : [];
+  selectedSection.value = "";
+};*/
+const populateSections = () => {
+  const chapterId = selectedChapter.value;
+  const chapterData = chapters.value.find(
+    (item) => item.chapterId === chapterId
+  );
+
   sections.value = chapterData ? chapterData.partList : [];
   selectedSection.value = "";
 };
@@ -643,9 +696,15 @@ const saveRangeItem = () => {
   }
 
   // 找到對應的 categoryId、chapterId 和 partId
-  const categoryData = categories.value.find(item => item.category === selectedCategory.value);
-  const chapterData = categoryData ? categoryData.chapters.find(ch => ch.chapter === selectedChapter.value) : null;
-  const partData = chapterData ? chapterData.partList.find(p => p.part === selectedSection.value) : null;
+  const categoryData = categories.value.find(
+    (item) => item.category === selectedCategory.value
+  );
+  const chapterData = categoryData
+    ? categoryData.chapters.find((ch) => ch.chapter === selectedChapter.value)
+    : null;
+  const partData = chapterData
+    ? chapterData.partList.find((p) => p.part === selectedSection.value)
+    : null;
 
   // 將資料加入範圍項目列表
   testData.rangeItemList.push({
@@ -739,554 +798,7 @@ const totalQuestionAmount = computed(() => {
   );
 });
 </script>
-
-<!-- No. 1 
-<style scoped>
-.container {
-  padding: 20px;
-}
-
-.content {
-  max-width: 600px;
-  margin: 0 auto;
-  background-color: #fae8e8;
-}
-
-/* 表單區塊樣式 */
-.form-group {
-  margin-bottom: 20px;
-}
-
-.form-container {
-  padding: 20px;
-  border: 1px solid #ccc;
-  border-radius: 8px;
-  background-color: #f9f9f9;
-}
-
-.form-container label {
-  font-weight: bold;
-  margin-bottom: 5px;
-  display: block;
-}
-
-.form-select,
-.input-number {
-  width: 100%;
-  padding: 8px;
-  margin-bottom: 15px;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-  font-size: 14px;
-}
-
-.input-number {
-  -moz-appearance: textfield; /* 去除箭頭 */
-}
-
-.input-number::-webkit-outer-spin-button,
-.input-number::-webkit-inner-spin-button {
-  -webkit-appearance: none;
-  margin: 0;
-}
-
-.btn-save {
-  padding: 10px 15px;
-  background-color: #4caf50;
-  color: white;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  font-size: 14px;
-  transition: background-color 0.3s;
-}
-
-.btn-save:hover {
-  background-color: #45a049;
-}
-
-.btn-save:disabled {
-  background-color: #cccccc;
-  cursor: not-allowed;
-}
-
-/* 表格樣式 */
-.table {
-  width: 100%;
-  margin-top: 20px;
-  border-collapse: collapse;
-  background-color: #fff;
-}
-
-.table th,
-.table td {
-  padding: 12px;
-  text-align: left;
-  border: 1px solid #ddd;
-}
-
-.table th {
-  background-color: #f2f2f2;
-  font-weight: bold;
-}
-
-.table tr:nth-child(even) {
-  background-color: #f9f9f9;
-}
-
-.table tr:hover {
-  background-color: #f1f1f1;
-}
-
-.table .btn-remove {
-  padding: 5px 10px;
-  background-color: #f44336;
-  color: white;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-}
-
-.table .btn-remove:hover {
-  background-color: #e53935;
-}
-
-.table .btn-remove:disabled {
-  background-color: #cccccc;
-  cursor: not-allowed;
-}
-
-.form-container input {
-  width: 100%;
-}
-
-/* 輸入框與下拉選單距離調整 */
-.form-container select,
-.form-container .input-number {
-  margin-bottom: 10px;
-}
-
-label {
-  margin-bottom: 5px;
-}
-
-input {
-  padding: 10px;
-  border: 1px solid #ccc;
-  border-radius: 5px;
-}
-
-.submit-btn {
-  background-color: #4caf50;
-  color: white;
-  padding: 10px 20px;
-  border: none;
-  border-radius: 5px;
-  cursor: pointer;
-}
-
-.submit-btn:hover {
-  background-color: #45a049;
-}
-</style>
 -->
-
-<!-- No. 2 
-<style scoped>
-/* 全局設置 */
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-}
-
-body {
-  font-family: "Arial", sans-serif;
-  background-color: #f4f6f9;
-  color: #333;
-}
-
-.container {
-  display: flex;
-  flex-direction: column;
-  width: 100%;
-  padding: 20px;
-}
-
-.content {
-  display: flex;
-  justify-content: space-between;
-  gap: 20px;
-}
-
-/* 標題 */
-h1 {
-  font-size: 24px;
-  font-weight: bold;
-  color: #2c3e50;
-  margin-bottom: 20px;
-}
-
-h2 {
-  font-size: 20px;
-  font-weight: bold;
-  color: #34495e;
-  margin-bottom: 10px;
-}
-
-/* 左側內容區 */
-.left-content {
-  flex: 1;
-  background-color: white;
-  padding: 20px;
-  border-radius: 8px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-}
-
-.form-group {
-  margin-bottom: 20px;
-}
-
-.form-container {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-label {
-  font-size: 14px;
-  color: #7f8c8d;
-}
-
-input,
-select {
-  padding: 10px;
-  font-size: 14px;
-  border: 1px solid #bdc3c7;
-  border-radius: 4px;
-  background-color: #ecf0f1;
-}
-
-input[type="number"] {
-  -moz-appearance: textfield;
-}
-
-input::placeholder {
-  color: #95a5a6;
-}
-
-input:focus,
-select:focus {
-  outline: none;
-  border-color: #3498db;
-  background-color: #fff;
-}
-
-/* 右側內容區 */
-.right-content {
-  flex: 1;
-  background-color: white;
-  padding: 20px;
-  border-radius: 8px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-}
-
-/* 表格樣式 */
-.table {
-  width: 100%;
-  border-collapse: collapse;
-  margin-top: 20px;
-}
-
-.table th,
-.table td {
-  padding: 12px;
-  text-align: left;
-  border-bottom: 1px solid #ecf0f1;
-}
-
-.table th {
-  background-color: #f8f9fa;
-  color: #34495e;
-}
-
-.table td {
-  background-color: white;
-}
-
-.table button {
-  padding: 6px 12px;
-  background-color: #e74c3c;
-  color: white;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-}
-
-.table button:hover {
-  background-color: #c0392b;
-}
-
-/* 按鈕樣式 */
-.submit-btn {
-  padding: 10px 20px;
-  background-color: #2ecc71;
-  color: white;
-  font-size: 16px;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  margin-top: 20px;
-}
-
-.submit-btn:hover {
-  background-color: #27ae60;
-}
-
-.btn-save,
-.btn-remove {
-  padding: 6px 12px;
-  background-color: #3498db;
-  color: white;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-}
-
-.btn-save:hover {
-  background-color: #2980b9;
-}
-
-.btn-remove:hover {
-  background-color: #e74c3c;
-}
-
-.input-number {
-  width: 100px;
-}
-
-/* 使表單響應式 */
-@media (max-width: 768px) {
-  .content {
-    flex-direction: column;
-  }
-
-  .left-content,
-  .right-content {
-    width: 100%;
-    margin-bottom: 20px;
-  }
-}
-</style>
--->
-
-<!-- No. 3
-<style scoped>
-/* 全局設置 */
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-}
-
-body {
-  font-family: "Arial", sans-serif;
-  background-color: #f4f6f9;
-  color: #333;
-}
-
-.container {
-  display: flex;
-  flex-direction: column;
-  width: 100%;
-  padding: 20px;
-}
-
-.content {
-  display: flex;
-  justify-content: space-between;
-  gap: 20px;
-  margin-bottom: 20px;
-}
-
-/* 標題 */
-h1 {
-  font-size: 24px;
-  font-weight: bold;
-  color: #2c3e50;
-  margin-bottom: 20px;
-  text-align: center;
-}
-
-h2 {
-  font-size: 20px;
-  font-weight: bold;
-  color: #34495e;
-  margin-bottom: 10px;
-  text-align: center;
-}
-
-/* 左側內容區 */
-.left-content {
-  flex: 1;
-  background-color: white;
-  padding: 20px;
-  border-radius: 8px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-}
-
-.left-content h2 {
-  margin-top: 0;
-}
-
-.form-group {
-  margin-bottom: 20px;
-}
-
-.form-container {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-label {
-  font-size: 14px;
-  color: #7f8c8d;
-}
-
-input,
-select {
-  padding: 10px;
-  font-size: 14px;
-  border: 1px solid #bdc3c7;
-  border-radius: 4px;
-  background-color: #ecf0f1;
-}
-
-input[type="number"] {
-  -moz-appearance: textfield;
-}
-
-input::placeholder {
-  color: #95a5a6;
-}
-
-input:focus,
-select:focus {
-  outline: none;
-  border-color: #3498db;
-  background-color: #fff;
-}
-
-/* 右側內容區 */
-.right-content {
-  flex: 1;
-  background-color: white;
-  padding: 20px;
-  border-radius: 8px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-}
-
-.right-content h2 {
-  margin-top: 0;
-}
-
-/* 表格樣式 */
-.table {
-  width: 100%;
-  border-collapse: collapse;
-  margin-top: 20px;
-}
-
-.table th,
-.table td {
-  padding: 12px;
-  text-align: left;
-  border-bottom: 1px solid #ecf0f1;
-}
-
-.table th {
-  background-color: #f8f9fa;
-  color: #34495e;
-}
-
-.table td {
-  background-color: white;
-}
-
-.table button {
-  padding: 6px 12px;
-  background-color: #e74c3c;
-  color: white;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-}
-
-.table button:hover {
-  background-color: #c0392b;
-}
-
-/* 按鈕樣式 */
-.submit-btn {
-  padding: 10px 20px;
-  background-color: #2ecc71;
-  color: white;
-  font-size: 16px;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  margin-top: 20px;
-}
-
-.submit-btn:hover {
-  background-color: #27ae60;
-}
-
-.btn-save,
-.btn-remove {
-  padding: 6px 12px;
-  background-color: #3498db;
-  color: white;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-}
-
-.btn-save:hover {
-  background-color: #2980b9;
-}
-
-.btn-remove:hover {
-  background-color: #e74c3c;
-}
-
-.input-number {
-  width: 100px;
-}
-
-/* 使表單響應式 */
-@media (max-width: 768px) {
-  .content {
-    flex-direction: column;
-  }
-
-  .left-content,
-  .right-content {
-    width: 100%;
-    margin-bottom: 20px;
-  }
-}
-</style>
- -->
-
-<!-- No. 4 -->
 <style scoped>
 /* 全局設置 */
 * {
@@ -1379,10 +891,6 @@ select {
   border-radius: 4px;
 }
 
-input[type="number"] {
-  -moz-appearance: textfield;
-}
-
 input::placeholder {
   color: #95a5a6;
 }
@@ -1430,12 +938,12 @@ select:focus {
 }
 
 .table tr:nth-child(odd) {
-  background-color: #ebc3db;
+  background-color: #fadcee;
   color: #34495e;
 }
 
 .table tr:nth-child(even) {
-  background-color: #ede3e9;
+  background-color: #fff6de;
   color: #34495e;
 }
 

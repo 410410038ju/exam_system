@@ -2,34 +2,49 @@
   <div class="container">
     <AdminNavBar />
     <div class="content">
-      <!-- 多重查詢表單 -->
+      <!-- 查詢考卷 -->
       <div class="query-form">
-      <div class="form-group">
-        <label for="examName">考卷名稱</label>
-        <input id="examName" v-model="query.examName" type="text" placeholder="輸入考卷名稱" />
-      </div>
-      
-      <div class="form-group">
-        <label for="startDate">開始日期</label>
-        <input id="startDate" v-model="query.startDate" type="date" placeholder="選擇開始日期" />
-      </div>
+        <div class="form-group">
+          <label for="examName">考卷名稱</label>
+          <input
+            id="examName"
+            v-model="query.examName"
+            type="text"
+            placeholder="輸入考卷名稱"
+          />
+        </div>
 
-      <div class="form-group">
-        <label for="endDate">結束日期</label>
-        <input id="endDate" v-model="query.endDate" type="date" placeholder="選擇結束日期" />
-      </div>
+        <div class="form-group">
+          <label for="startDate">開始日期</label>
+          <input
+            id="startDate"
+            v-model="query.startDate"
+            type="date"
+            placeholder="選擇開始日期"
+          />
+        </div>
 
-      <div class="form-group">
-        <label for="status">狀態</label>
-        <select id="status" v-model="query.status">
-          <option value="">請選擇狀態</option>
-          <option value="已完成">已完成</option>
-          <option value="未完成">未完成</option>
-        </select>
-      </div>
+        <div class="form-group">
+          <label for="endDate">結束日期</label>
+          <input
+            id="endDate"
+            v-model="query.endDate"
+            type="date"
+            placeholder="選擇結束日期"
+          />
+        </div>
 
-      <button @click="search">查詢</button>
-    </div>
+        <div class="form-group">
+          <label for="status">狀態</label>
+          <select id="status" v-model="query.status">
+            <option value="">請選擇狀態</option>
+            <option value="已完成">已完成</option>
+            <option value="未完成">未完成</option>
+          </select>
+        </div>
+
+        <button @click="search">查詢</button>
+      </div>
 
       <!-- 顯示查詢結果的表格 -->
       <table>
@@ -135,7 +150,8 @@ const search = () => {
   margin-bottom: 5px;
 }
 
-.query-form input, .query-form select {
+.query-form input,
+.query-form select {
   width: 100%;
   padding: 8px;
   margin-top: 5px;
@@ -151,7 +167,8 @@ table {
   border-collapse: collapse;
 }
 
-th, td {
+th,
+td {
   border: 1px solid #ddd;
   padding: 8px;
   text-align: left;
