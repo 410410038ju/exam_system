@@ -423,7 +423,7 @@ const deleteSection = (category, chapter, index) => {
 </template> 
 -->
 
-<!-- API
+<!-- API 
 <template>
   <div class="container">
     <AdminNavBar />
@@ -866,7 +866,7 @@ onMounted(() => {
 });
 </script>
 -->
-<!-- 第一版 -->
+<!-- 第一版 
 <style scoped>
 /* 容器樣式 */
 .container {
@@ -953,7 +953,7 @@ onMounted(() => {
 }
 
 .data-table th {
-  background-color: #ff97ec;
+  background-color: #c5b5f8;
   font-weight: bold;
   font-size: 24px;
 }
@@ -1054,8 +1054,9 @@ button {
   margin-left: 10px;
 }
 </style>
+-->
 
-<!-- 第二版 
+<!-- 第二版
 <style scoped>
 /* 容器樣式 */
 .container {
@@ -1614,3 +1615,181 @@ button {
 }
 </style>
 -->
+
+<!-- 第五版(藍紫色) -->
+<style scoped>
+/* 容器樣式 */
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  font-family: Arial, sans-serif;
+  position: absolute;
+  top: 100px;
+  left: 0;
+  right: 0;
+  width: 80%;
+}
+
+/* 內容區域 */
+.content {
+  background-color: #f4f4f4; /* 藍色背景 */
+  padding: 20px;
+  margin-bottom: 30px;
+  border-radius: 8px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+/* h1標題 */
+.header h1 {
+  font-size: 36px;
+  color: black; /* 深紫色 */
+  margin: 0;
+  flex-grow: 1; /* 讓標題佔用剩餘的空間 */
+  text-align: left;
+}
+
+/* 搜尋欄位 */
+.search {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+}
+
+.search-input {
+  width: 100%;
+  padding: 10px;
+  font-size: 16px;
+  border: 1px solid #c7a8e5; /* 淡紫色邊框 */
+  border-radius: 4px;
+}
+
+.search-button {
+  height: 40px;
+  width: 30%;
+  margin: 10px auto;
+  margin-left: 10px;
+  padding: 10px;
+  font-size: 16px;
+  background-color: #00d4c6; /* 藍紫色 */
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.search-button:hover {
+  background-color: #14aaa7; /* 深藍紫色 */
+}
+
+/* 表格樣式 */
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 20px;
+}
+
+.data-table th,
+.data-table td {
+  padding: 12px;
+  text-align: center;
+  border: 1px solid #ddd;
+}
+
+.data-table th {
+  background-color: #f8abd8; /* 淡紫色 */
+  font-weight: bold;
+  font-size: 24px;
+}
+
+.data-table td {
+  background-color: #fff;
+  text-align: center; /* 讓文字靠左 */
+  vertical-align: middle; /* 垂直置中 */
+  font-size: 20px;
+}
+
+/* 按鈕樣式 */
+.form-button {
+  padding: 6px 12px;
+  font-size: 14px;
+  background-color: #4db5e9; /* 藍色 */
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.form-button:hover {
+  background-color: #4698cc; /* 深藍色 */
+}
+
+.edit-button {
+  padding: 6px 12px;
+  font-size: 14px;
+  background-color: #9f75e2; /* 紫色 */
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.edit-button:hover {
+  background-color: #7c53c0; /* 深紫色 */
+  color: white;
+}
+
+.delete-button {
+  padding: 6px 12px;
+  font-size: 14px;
+  background-color: #d16ada; /* 粉紫色 */
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.delete-button:hover {
+  background-color: #c24fbb; /* 深粉紫色 */
+}
+
+/* 表格按鈕間距 */
+button {
+  margin-left: 10px;
+  display: inline-block;
+  margin-left: 10px;
+  white-space: nowrap;
+  vertical-align: middle; /* 讓按鈕垂直對齊 */
+}
+
+td {
+  text-align: center;
+  vertical-align: middle;
+  padding-right: 10px;
+
+  justify-content: space-between;
+  align-items: center;
+}
+
+/* 表格內容設置 */
+td[rowspan] {
+  vertical-align: middle;
+}
+
+td button {
+  white-space: nowrap; /* 防止換行 */
+  display: inline-block; /* 保持在同一行 */
+  text-align: center;
+}
+
+/* 按鈕的樣式 */
+button {
+  margin-left: 10px;
+}
+</style>

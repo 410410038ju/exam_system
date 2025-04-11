@@ -1059,8 +1059,7 @@ const deleteUser = async (id) => {
       );
 
       // 根據回應結果進行處理
-      // 如果回應狀態是 204，表示刪除成功
-      if (response.status === 204) {
+      if (response.data.code === "0000") {
         // 刪除成功後更新前端資料
         // users.value = users.value.filter((user) => user.id !== id);
         // localStorage.setItem("users", JSON.stringify(users.value));
