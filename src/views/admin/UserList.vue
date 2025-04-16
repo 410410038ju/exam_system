@@ -107,17 +107,19 @@
           <br />
           <div class="form-group">
             <label>
-              <span>人員姓名：</span>
+              <span>人員姓名<span style="color: red">*</span>：</span>
               <input
                 type="text"
                 v-model="editUserData.name"
                 placeholder="輸入新姓名"
+                required
               />
             </label>
+            <p v-if="!editUserData.name" style="color: red">此欄位為必填</p>
           </div>
           <div class="form-group">
             <label>
-              <span>人員編號：</span>
+              <span>人員編號<span style="color: red">*</span>：</span>
               <input
                 type="text"
                 v-model="editUserData.id"
@@ -156,7 +158,7 @@
 
           <div class="form-group">
             <label>
-              <span>人員權限：</span>
+              <span>人員權限<span style="color: red">*</span>：</span>
               <select v-model="editUserData.role">
                 <option value="EXAM_TAKER">客服</option>
                 <option value="MANAGER">主管</option>
@@ -200,7 +202,7 @@
             <th>鎖定</th>
             <th>密碼狀態</th>
             <th>最近一次登入IP</th>
-            <th>資料建立日期</th>
+            <th>帳號啟用日期</th>
             <th>操作</th>
           </tr>
         </thead>
@@ -603,14 +605,6 @@ const loggedInUser = JSON.parse(localStorage.getItem("loggedInUser"));
 const currentUserRole = ref(loggedInUser?.role || "MANAGER");
 const isNewPasswordValid = ref(false); // 用來檢查新增人員的密碼是否有效
 const isEditPasswordValid = ref(false); // 用來檢查修改人員的密碼是否有效
-
-// 檢查登入狀況
-const checkLogin = () => {
-  if (!loggedInUser) {
-    alert("你尚未登入");
-    router.push("/"); // 跳轉到 Home.vue（根路由）
-  }
-};
 
 // 檢查新密碼是否符合要求
 const checkNewPassword = () => {
@@ -1101,7 +1095,7 @@ const unlockUser = (user) => {
 
 // 解鎖帳號API
 const unlockUser = async (empId) => {
-  const token = localStorage.getItem('authToken');
+  const token = localStorage.getItem("authToken");
 
   try {
     const response = await axios.put(
@@ -1168,9 +1162,50 @@ const exportToExcel = () => {
   XLSX.writeFile(wb, "線上測驗系統人員資料.xlsx");
 };
 
+// 匯出客服名單EXCEL
+/*
+const exportToExcel = async () => {
+  const token = localStorage.getItem("authToken");
+
+  try {
+    const response = await axios.get(
+      "http://172.16.46.163/csexam/admin/excel/user",
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+        responseType: "blob", // 讓回應以二進位制檔案格式處理
+      }
+    );
+
+    // 檢查是否為成功回應
+    if (response.status === 200) {
+      // 嘗試從回應的 headers 取得檔案名稱（如果 API 支援提供檔案名稱）
+      const contentDisposition = response.headers["content-disposition"];
+      const filename =
+        contentDisposition && contentDisposition.match(/filename="(.+)"/)
+          ? contentDisposition.match(/filename="(.+)"/)[1]
+          : "user.xlsx"; // 若無檔案名稱則預設為 'user.xlsx'
+
+      // 創建一個檔案 URL
+      const blob = response.data;
+      const link = document.createElement("a");
+      link.href = URL.createObjectURL(blob);
+      link.download = filename; // 使用取得的檔案名稱
+      link.click(); // 自動點擊下載鏈接
+    } else {
+      console.error("伺服器未回傳 200，實際狀態碼:", response.status);
+      alert("發生錯誤，請稍後再試");
+    }
+  } catch (error) {
+    console.error("下載檔案時發生錯誤:", error);
+  }
+};
+*/
+
 // 初始化
 onMounted(() => {
-  checkLogin();
+  //checkLogin();
   loadUsers();
   filteredUsers.value = users.value;
 });

@@ -186,7 +186,7 @@ nav {
             :to="{ name: 'ViewExamRecords' }"
             class="nav-item"
             active-class="active"
-            >查看測驗紀錄</router-link
+            >查看所有考卷</router-link
           >
         </li>
         <li>
@@ -289,7 +289,7 @@ const loggedInUser = JSON.parse(localStorage.getItem("loggedInUser"));
 // 檢查登入狀況
 const checkLogin = () => {
   if (!loggedInUser) {
-    alert("你尚未登入");
+    alert("尚未登入");
     router.push("/"); // 跳轉到 Home.vue（根路由）
   }
 };
@@ -655,10 +655,10 @@ label {
   color: #333;
 }
 
-/* 響應式設計：手機尺寸（最大寬度 768px） */
+/*
 @media (max-width: 768px) {
   .navbar {
-    flex-direction: column; /* 導覽列改為垂直排列 */
+    flex-direction: column; 
     align-items: flex-start;
     padding: 10px 20px;
   }
@@ -689,7 +689,7 @@ label {
   }
 
   .modal-content {
-    width: 90%; /* Modal 寬度調整 */
+    width: 90%; 
     padding: 15px;
   }
 
@@ -720,7 +720,7 @@ label {
   }
 }
 
-/* 響應式設計：超小手機尺寸（最大寬度 480px） */
+
 @media (max-width: 480px) {
   .nav-title {
     font-size: 18px;
@@ -741,7 +741,7 @@ label {
     align-items: stretch;
   }
 }
-
+*/
 </style>
 
 

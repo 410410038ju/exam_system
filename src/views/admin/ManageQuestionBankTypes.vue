@@ -438,7 +438,7 @@ const deleteSection = (category, chapter, index) => {
             placeholder="搜尋業務種類、章、節..."
             class="search-input"
           />
-          <button @click="search" class="search-button">搜尋</button>
+          <button @click="search" class="search-button">關鍵字搜尋</button>
         </div>
       </div>
 
@@ -613,7 +613,6 @@ const getCategoryRowSpan = (category) => {
   }, 0);
 };
 
-
 // 新增業務種類API
 const addCategory = async () => {
   // const token = localStorage.getItem("authToken");
@@ -650,6 +649,17 @@ const addCategory = async () => {
 const editCategory = async (category) => {
   // const token = localStorage.getItem("authToken");
   const newCategoryName = prompt("請輸入新的業務種類名稱:", category.category);
+
+  // 檢查是否與其他類別重複（排除自己）
+  const isDuplicate = examData.rangeList.some(
+    (cat) =>
+      cat.category === newCategoryName && cat.categoryId !== category.categoryId
+  );
+  if (isDuplicate) {
+    alert("已有相同名稱的業務種類，請重新命名！");
+    return;
+  }
+
   if (newCategoryName && newCategoryName !== category.category) {
     try {
       const response = await axios.put(
@@ -734,6 +744,21 @@ const addChapter = async (category) => {
 const editChapter = async (chapter) => {
   // const token = localStorage.getItem("authToken");
   const newChapterName = prompt("請輸入新的章名稱:", chapter.chapter);
+
+  // 取得同一業務種類下的所有章節（透過反查 category）
+  const parentCategory = examData.rangeList.find((cat) =>
+    cat.chapterList.some((chap) => chap.chapterId === chapter.chapterId)
+  );
+  const isDuplicate = parentCategory?.chapterList.some(
+    (chap) =>
+      chap.chapter === newChapterName && chap.chapterId !== chapter.chapterId
+  );
+
+  if (isDuplicate) {
+    alert("已有相同名稱的章，請重新命名！");
+    return;
+  }
+
   if (newChapterName && newChapterName !== chapter.chapter) {
     try {
       const response = await axios.put(
@@ -814,6 +839,20 @@ const addPart = async (category, chapter) => {
 // 編輯節
 const editPart = async (part) => {
   const newPartName = prompt("請輸入新的節名稱:", part.part);
+
+  // 取得對應章節
+  const parentChapter = examData.rangeList
+    .flatMap((cat) => cat.chapterList)
+    .find((chap) => chap.partList.some((p) => p.partId === part.partId));
+
+  const isDuplicate = parentChapter?.partList.some(
+    (p) => p.part === newPartName && p.partId !== part.partId
+  );
+
+  if (isDuplicate) {
+    alert("已有相同名稱的節，請重新命名！");
+    return;
+  }
 
   if (newPartName && newPartName !== part.part) {
     try {

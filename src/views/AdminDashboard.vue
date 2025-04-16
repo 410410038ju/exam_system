@@ -34,7 +34,7 @@
           管理題庫類別
         </button>
         <button @click="navigateTo('open_exam')">新增考卷</button>
-        <button @click="navigateTo('view_exam_records')">查看測驗紀錄</button>
+        <button @click="navigateTo('view_exam_records')">查看所有考卷</button>
         <button @click="logout" class="logout-btn">登出</button>
       </div>
     </div>
@@ -135,7 +135,7 @@ const loggedInUser = JSON.parse(localStorage.getItem("loggedInUser"));
 // 檢查登入狀況
 const checkLogin = () => {
   if (!loggedInUser) {
-    alert("你尚未登入");
+    alert("尚未登入");
     router.push("/"); // 跳轉到 Home.vue（根路由）
   }
 };
@@ -152,6 +152,7 @@ const navigateTo = (page) => {
 const logout = () => {
   localStorage.removeItem("loggedInUser");
   sessionStorage.clear();
+  // localStorage.clear();
   // localStorage.removeItem('authToken');
   // delete axios.defaults.headers['Authorization'];  // 清除預設 header
   router.push("/");

@@ -1,4 +1,4 @@
-<!-- 不用API -->
+<!-- 不用API 
 <template>
   <div class="container">
     <AdminNavBar />
@@ -146,6 +146,10 @@
               </select>
             </div>
 
+            <div v-if="selectedPart"> 
+              <p>選擇的節ID：{{ getSelectedPartId }}</p>
+            </div>
+
             <div class="form-content">
               <label for="questionAmount">題目數量</label>
               <input
@@ -248,6 +252,15 @@ const populateSections = () => {
   sections.value = chapter ? examData[category][chapter] : [];
   selectedSection.value = "";
 };
+
+// 找出節ID
+const getSelectedPartId = computed(() => {
+  const selectedPartData = parts.value.find(
+    (part) => part.partId === selectedPart.value
+  );
+  return selectedPartData ? selectedPartData.partId : "尚未選擇節";
+});
+
 
 // 新增範圍項目
 const addRangeItem = () => {
@@ -375,9 +388,9 @@ const totalQuestionAmount = computed(() => {
   );
 });
 </script>
+-->
 
-
-<!-- API 
+<!-- API -->
 <template>
   <div class="container">
     <AdminNavBar />
@@ -525,6 +538,11 @@ const totalQuestionAmount = computed(() => {
               </select>
             </div>
 
+            <!-- 顯示選擇的節ID -->
+            <div>
+              <p>選擇的節ID：{{ getSelectedPartId }}</p>
+            </div>
+
             <div class="form-content">
               <label for="questionAmount">題目數量</label>
               <input
@@ -664,6 +682,14 @@ const populateParts = () => {
   parts.value = chapterData ? chapterData.partList : [];
   selectedPart.value = "";
 };
+
+// 找出節ID
+const getSelectedPartId = computed(() => {
+  const selectedPartData = parts.value.find(
+    (part) => part.partId === selectedPart.value
+  );
+  return selectedPartData ? selectedPartData.partId : "尚未選擇節";
+});
 
 // 新增範圍項目
 const addRangeItem = () => {
@@ -846,7 +872,7 @@ onMounted(() => {
   fetchRangeData(); // 初始化時獲取分類、章節、節資料
 });
 </script>
--->
+
 <style scoped>
 /* 全局設置 */
 * {

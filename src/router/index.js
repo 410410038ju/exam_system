@@ -73,7 +73,7 @@ const routes = [
     path: "/view_exam_records",
     name: "ViewExamRecords",
     component: ViewExamRecords,
-    meta: { title: "查看測驗紀錄" },
+    meta: { title: "查看所有考卷" },
   },
   {
     path: "/create_question_data",

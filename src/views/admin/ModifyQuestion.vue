@@ -976,7 +976,7 @@ button {
   font-weight: 600;
   color: #333;
   margin-bottom: 8px;
-  text-align: left;
+  text-align: center;
   margin-left: 10px;
 }
 
@@ -986,7 +986,7 @@ button {
   padding: 12px;
   font-size: 14px;
   border: 1px solid #ccc;
-  border-radius: 8px;
+  border-radius: 4px;
   transition: border-color 0.3s ease, box-shadow 0.3s ease;
   background-color: white;
 }

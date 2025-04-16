@@ -293,7 +293,18 @@ const newPassword = ref(""); // 新密碼
 const confirmPassword = ref(""); // 確認新密碼
 const isPasswordValid = ref(false); // 確認密碼是否符合規定
 
+const loggedInUser = JSON.parse(localStorage.getItem("loggedInUser"));
+
+// 檢查登入狀況
+const checkLogin = () => {
+  if (!loggedInUser) {
+    alert("尚未登入");
+    router.push("/"); // 跳轉到 Home.vue（根路由）
+  }
+};
+
 onMounted(() => {
+  checkLogin();
   const loggedInUser = JSON.parse(localStorage.getItem("loggedInUser"));
   if (loggedInUser) {
     userName.value = loggedInUser.name;
