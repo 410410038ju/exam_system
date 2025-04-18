@@ -1,0 +1,12 @@
+{
+    "errors": {
+      "notLoggedIn": "You are not logged in.",
+      "tokenExpired": "Token expired.",
+      "unauthorized": "Unauthorized. Please log in again.",
+      "network": "Network error. Please try again later.",
+      "notFound": "Resource not found.",
+      "serverError": "Server error. Please try again later.",
+      "unknown": "An unknown error occurred."
+    }
+  }
+  

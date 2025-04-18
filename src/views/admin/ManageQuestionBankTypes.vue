@@ -48,7 +48,7 @@
                 v-if="chapterIndex === 0 && sectionIndex === 0"
                 :rowspan="getCategoryRowSpan(category) || 1"
               >
-                {{ category }}
+              <span v-html="highlightText(category)"></span>
                 <div class="buttons-container">
                   <button
                     v-if="category !== '暫無章'"
@@ -83,7 +83,7 @@
                     : 1
                 "
               >
-                <span>{{ chapter }}</span>
+              <span v-html="highlightText(chapter)"></span>
                 <template v-if="chapter !== '暫無章'">
                   <div class="buttons-container">
                     <button
@@ -109,7 +109,7 @@
               </td>
 
               <td>
-                <span>{{ section }}</span>
+                <span v-html="highlightText(section)"></span>
                 <template v-if="section !== '暫無節'">
                   <div class="buttons-container">
                     <button
@@ -136,9 +136,12 @@
 </template>
 
 <script setup>
-import { ref, reactive } from "vue";
+import { ref, reactive, onMounted } from "vue";
 import axios from "axios";
 import AdminNavBar from "../../components/AdminNavBar.vue";
+
+// 定義高亮顯示的關鍵字
+const highlightedText = ref("");
 
 const examData = JSON.parse(localStorage.getItem("examData")) || {};
 
@@ -161,6 +164,8 @@ const refreshCategories = () => {
 // 關鍵字搜尋
 const search = () => {
   const query = searchQuery.value.toLowerCase();
+  highlightedText.value = query;  // 保存搜尋關鍵字
+
   if (query) {
     filteredCategories.value = categories.filter((category) => {
       if (category.toLowerCase().includes(query)) return true;
@@ -176,6 +181,14 @@ const search = () => {
   } else {
     filteredCategories.value = [...categories]; // 若搜尋框為空，顯示所有類別
   }
+};
+
+
+// 高亮顯示匹配的文字
+const highlightText = (text) => {
+  if (!highlightedText.value) return text;
+  const regex = new RegExp(`(${highlightedText.value})`, "gi"); // 使用正則表達式匹配關鍵字
+  return text.replace(regex, `<span class="highlight">$1</span>`); // 加上 HTML 標籤來高亮顯示
 };
 
 const getCategoryRowSpan = (category) => {
@@ -308,7 +321,7 @@ const deleteSection = (category, chapter, index) => {
   }
 };
 </script>
-
+-->
 <!-- API 裡面的第一個template(沒測試過)
 <template>
   <div class="container">
@@ -426,6 +439,11 @@ const deleteSection = (category, chapter, index) => {
 <!-- API 
 <template>
   <div class="container">
+    <ErrorModal
+      v-model="showError"
+      :message="errorMsg"
+      @confirm="handleRedirect"
+    />
     <AdminNavBar />
     <div class="content">
       <div class="header">
@@ -477,7 +495,7 @@ const deleteSection = (category, chapter, index) => {
                 v-if="chapterIndex === 0 && partIndex === 0"
                 :rowspan="getCategoryRowSpan(category) || 1"
               >
-                {{ category.category }}
+                <span v-html="highlightText(category.category)"></span>
                 <div class="buttons-container">
                   <button @click="addChapter(category)" class="form-button">
                     新增章
@@ -492,7 +510,7 @@ const deleteSection = (category, chapter, index) => {
                 v-if="partIndex === 0"
                 :rowspan="chapter.partList.length ? chapter.partList.length : 1"
               >
-                <span>{{ chapter.chapter }}</span>
+                <span v-html="highlightText(chapter.chapter)"></span>
                 <div
                   class="buttons-container"
                   v-if="chapter.chapter !== '暫無章'"
@@ -510,7 +528,7 @@ const deleteSection = (category, chapter, index) => {
               </td>
 
               <td>
-                <span>{{ part.part }}</span>
+                <span v-html="highlightText(part.part)"></span>
                 <div class="buttons-container" v-if="part.part !== '暫無節'">
                   <button @click="editPart(part)" class="edit-button">
                     編輯
@@ -529,6 +547,20 @@ const deleteSection = (category, chapter, index) => {
 import { ref, reactive, onMounted } from "vue";
 import axios from "axios";
 import AdminNavBar from "../../components/AdminNavBar.vue";
+import ErrorModal from "../../components/APIerror.vue";
+
+// 控制錯誤視窗顯示與否
+const showError = ref(false);
+
+// 儲存錯誤訊息
+const errorMsg = ref({
+  status: 0,
+  code: 0,
+  message: "",
+});
+
+// 定義高亮顯示的關鍵字
+const highlightedText = ref("");
 
 const examData = reactive({
   rangeList: [],
@@ -566,6 +598,33 @@ const fetchExamData = async () => {
   } catch (error) {
     console.error("錯誤:", error);
     alert("資料載入失敗");
+    if (
+      error.response.data.message === "請求未提供token" ||
+      error.response.data.message === "token無效或已過期，請重新登入"
+    ) {
+      // 來自伺服器的錯誤回應（例如 404, 500 等）
+      errorMsg.value = {
+        status: error.response.status,
+        code: error.response.data.code,
+        message: error.response.data.message || "null",
+      };
+    } else if (error.request) {
+      // 請求已發送但沒有收到回應
+      errorMsg.value = {
+        status: "timeout",
+        code: 0,
+        message: "伺服器回應超時，請稍後再試",
+      };
+    } else {
+      // 發生其他錯誤（例如設定錯誤等）
+      errorMsg.value = {
+        status: 0,
+        code: 0,
+        message: "發生未知錯誤，請稍後再試",
+      };
+    }
+    // 顯示錯誤視窗
+    showError.value = true;
   }
 };
 
@@ -578,6 +637,8 @@ const refreshCategories = () => {
 // 關鍵字搜尋
 const search = () => {
   const query = searchQuery.value.toLowerCase();
+  highlightedText.value = query; // 保存搜尋關鍵字
+
   if (query) {
     filteredCategories.value = examData.rangeList.filter((category) => {
       if (category.category.toLowerCase().includes(query)) return true;
@@ -593,6 +654,13 @@ const search = () => {
   } else {
     filteredCategories.value = [...examData.rangeList]; // 若搜尋框為空，顯示所有類別
   }
+};
+
+// 高亮顯示匹配的文字
+const highlightText = (text) => {
+  if (!highlightedText.value) return text;
+  const regex = new RegExp(`(${highlightedText.value})`, "gi"); // 使用正則表達式匹配關鍵字
+  return text.replace(regex, `<span class="highlight">$1</span>`); // 加上 HTML 標籤來高亮顯示
 };
 
 // 取得每個類別的行數
@@ -637,6 +705,33 @@ const addCategory = async () => {
     } catch (error) {
       console.error("錯誤:", error);
       alert("新增業務種類失敗");
+      if (
+        error.response.data.message === "請求未提供token" ||
+        error.response.data.message === "token無效或已過期，請重新登入"
+      ) {
+        // 來自伺服器的錯誤回應（例如 404, 500 等）
+        errorMsg.value = {
+          status: error.response.status,
+          code: error.response.data.code,
+          message: error.response.data.message || "null",
+        };
+      } else if (error.request) {
+        // 請求已發送但沒有收到回應
+        errorMsg.value = {
+          status: "timeout",
+          code: 0,
+          message: "伺服器回應超時，請稍後再試",
+        };
+      } else {
+        // 發生其他錯誤（例如設定錯誤等）
+        errorMsg.value = {
+          status: 0,
+          code: 0,
+          message: "發生未知錯誤，請稍後再試",
+        };
+      }
+      // 顯示錯誤視窗
+      showError.value = true;
     }
   } else if (!newCategory) {
     return;
@@ -678,6 +773,33 @@ const editCategory = async (category) => {
     } catch (error) {
       console.error("錯誤:", error);
       alert("編輯業務種類失敗");
+      if (
+        error.response.data.message === "請求未提供token" ||
+        error.response.data.message === "token無效或已過期，請重新登入"
+      ) {
+        // 來自伺服器的錯誤回應（例如 404, 500 等）
+        errorMsg.value = {
+          status: error.response.status,
+          code: error.response.data.code,
+          message: error.response.data.message || "null",
+        };
+      } else if (error.request) {
+        // 請求已發送但沒有收到回應
+        errorMsg.value = {
+          status: "timeout",
+          code: 0,
+          message: "伺服器回應超時，請稍後再試",
+        };
+      } else {
+        // 發生其他錯誤（例如設定錯誤等）
+        errorMsg.value = {
+          status: 0,
+          code: 0,
+          message: "發生未知錯誤，請稍後再試",
+        };
+      }
+      // 顯示錯誤視窗
+      showError.value = true;
     }
   } else if (!newCategoryName) {
     return;
@@ -732,6 +854,33 @@ const addChapter = async (category) => {
       }
     } catch (error) {
       alert("發生錯誤: " + error.message);
+      if (
+        error.response.data.message === "請求未提供token" ||
+        error.response.data.message === "token無效或已過期，請重新登入"
+      ) {
+        // 來自伺服器的錯誤回應（例如 404, 500 等）
+        errorMsg.value = {
+          status: error.response.status,
+          code: error.response.data.code,
+          message: error.response.data.message || "null",
+        };
+      } else if (error.request) {
+        // 請求已發送但沒有收到回應
+        errorMsg.value = {
+          status: "timeout",
+          code: 0,
+          message: "伺服器回應超時，請稍後再試",
+        };
+      } else {
+        // 發生其他錯誤（例如設定錯誤等）
+        errorMsg.value = {
+          status: 0,
+          code: 0,
+          message: "發生未知錯誤，請稍後再試",
+        };
+      }
+      // 顯示錯誤視窗
+      showError.value = true;
     }
   } else if (!newChapter) {
     return;
@@ -775,6 +924,33 @@ const editChapter = async (chapter) => {
       }
     } catch (error) {
       alert("發生錯誤: " + error.message);
+      if (
+        error.response.data.message === "請求未提供token" ||
+        error.response.data.message === "token無效或已過期，請重新登入"
+      ) {
+        // 來自伺服器的錯誤回應（例如 404, 500 等）
+        errorMsg.value = {
+          status: error.response.status,
+          code: error.response.data.code,
+          message: error.response.data.message || "null",
+        };
+      } else if (error.request) {
+        // 請求已發送但沒有收到回應
+        errorMsg.value = {
+          status: "timeout",
+          code: 0,
+          message: "伺服器回應超時，請稍後再試",
+        };
+      } else {
+        // 發生其他錯誤（例如設定錯誤等）
+        errorMsg.value = {
+          status: 0,
+          code: 0,
+          message: "發生未知錯誤，請稍後再試",
+        };
+      }
+      // 顯示錯誤視窗
+      showError.value = true;
     }
   } else if (!newChapterName) {
     return;
@@ -828,6 +1004,33 @@ const addPart = async (category, chapter) => {
       }
     } catch (error) {
       alert("發生錯誤: " + error.message);
+      if (
+        error.response.data.message === "請求未提供token" ||
+        error.response.data.message === "token無效或已過期，請重新登入"
+      ) {
+        // 來自伺服器的錯誤回應（例如 404, 500 等）
+        errorMsg.value = {
+          status: error.response.status,
+          code: error.response.data.code,
+          message: error.response.data.message || "null",
+        };
+      } else if (error.request) {
+        // 請求已發送但沒有收到回應
+        errorMsg.value = {
+          status: "timeout",
+          code: 0,
+          message: "伺服器回應超時，請稍後再試",
+        };
+      } else {
+        // 發生其他錯誤（例如設定錯誤等）
+        errorMsg.value = {
+          status: 0,
+          code: 0,
+          message: "發生未知錯誤，請稍後再試",
+        };
+      }
+      // 顯示錯誤視窗
+      showError.value = true;
     }
   } else if (!newPart) {
     return;
@@ -870,6 +1073,33 @@ const editPart = async (part) => {
       }
     } catch (error) {
       alert("發生錯誤: " + error.message);
+      if (
+        error.response.data.message === "請求未提供token" ||
+        error.response.data.message === "token無效或已過期，請重新登入"
+      ) {
+        // 來自伺服器的錯誤回應（例如 404, 500 等）
+        errorMsg.value = {
+          status: error.response.status,
+          code: error.response.data.code,
+          message: error.response.data.message || "null",
+        };
+      } else if (error.request) {
+        // 請求已發送但沒有收到回應
+        errorMsg.value = {
+          status: "timeout",
+          code: 0,
+          message: "伺服器回應超時，請稍後再試",
+        };
+      } else {
+        // 發生其他錯誤（例如設定錯誤等）
+        errorMsg.value = {
+          status: 0,
+          code: 0,
+          message: "發生未知錯誤，請稍後再試",
+        };
+      }
+      // 顯示錯誤視窗
+      showError.value = true;
     }
   } else if (!newPartName) {
     return;
@@ -899,6 +1129,12 @@ const deleteSection = async (category, chapter, index) => {
   }
 };
 */
+
+// 當錯誤視窗按下確認後跳轉到首頁
+const handleRedirect = () => {
+  showError.value = false; // 關閉錯誤視窗
+  router.push("/"); // 跳轉到首頁
+};
 
 onMounted(() => {
   fetchExamData();
@@ -1830,5 +2066,10 @@ td button {
 /* 按鈕的樣式 */
 button {
   margin-left: 10px;
+}
+
+.highlight {
+  background-color: yellow; /* 可以根據需求修改顏色 */
+  font-weight: bold;
 }
 </style>

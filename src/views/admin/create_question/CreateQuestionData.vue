@@ -1,4 +1,4 @@
-<!-- 不用API的版本 -->
+<!-- 不用API的版本 
 <template>
   <div class="container">
     <div class="createquestion-container">
@@ -470,7 +470,7 @@ onMounted(() => {
       currentQuestionCount.value = submittedQuestions.value.length;
     }
   } else {
-    alert("無法讀取考試資訊！");
+    alert("無法讀取測驗資訊！");
   }
 });
 */
@@ -481,7 +481,7 @@ onMounted(() => {
     // 更新 examInfo 和 maxQuestions
     Object.assign(examInfo, storedExamInfo);
   } else {
-    alert("無法讀取考試資訊！");
+    alert("無法讀取測驗資訊！");
   }
 });
 </script>
@@ -732,10 +732,16 @@ tr:hover {
   }
 }
 </style>
-
-<!-- API
+-->
+<!-- API-->
 <template>
   <div class="container">
+    <ErrorModal
+      v-model="showError"
+      :message="errorMsg"
+      @confirm="handleRedirect"
+    />
+
     <div class="createquestion-container">
       <form @submit.prevent="submitQuestion">
         <div class="createquestion-content">
@@ -1016,8 +1022,19 @@ tr:hover {
 import { useRouter } from "vue-router";
 import { ref, reactive, onMounted } from "vue";
 import axios from "axios";
+import ErrorModal from "../../../components/APIerror.vue";
 
 const router = useRouter();
+
+// 控制錯誤視窗顯示與否
+const showError = ref(false);
+
+// 儲存錯誤訊息
+const errorMsg = ref({
+  status: 0,
+  code: 0,
+  message: "",
+});
 
 const currentQuestionCount = ref(0);
 const questionType = ref("true-false");
@@ -1044,7 +1061,7 @@ const changeQuestionType = () => {
 };
 
 // 取得登入者 ID
-const loggedInUser = JSON.parse(localStorage.getItem("loggedInUser"));
+// const loggedInUser = JSON.parse(localStorage.getItem("loggedInUser"));
 
 const submitQuestion = () => {
   // 檢查每一種題型是否選擇了答案
@@ -1078,7 +1095,7 @@ const submitQuestion = () => {
     chapterId: examInfo.chapterId,
     partId: examInfo.partId,
     questionType: questionType.value.replace("-", "_"),
-    creatorId: loggedInUser ? loggedInUser.empId : null, // 確保有取得使用者ID
+    // creatorId: loggedInUser ? loggedInUser.empId : null, // 確保有取得使用者ID
     // creatorId: loggedInUser ? String(loggedInUser.empId) : null, // 強制轉換為 string
     optionItemList: [],
   };
@@ -1159,6 +1176,34 @@ const submitToAPI = async (questionData) => {
     } else {
       alert("發生錯誤，請稍後再試");
     }
+
+    if (
+      error.response.data.message === "請求未提供token" ||
+      error.response.data.message === "token無效或已過期，請重新登入"
+    ) {
+      // 來自伺服器的錯誤回應（例如 404, 500 等）
+      errorMsg.value = {
+        status: error.response.status,
+        code: error.response.data.code,
+        message: error.response.data.message || "null",
+      };
+    } else if (error.request) {
+      // 請求已發送但沒有收到回應
+      errorMsg.value = {
+        status: "timeout",
+        code: 0,
+        message: "伺服器回應超時，請稍後再試",
+      };
+    } else {
+      // 發生其他錯誤（例如設定錯誤等）
+      errorMsg.value = {
+        status: 0,
+        code: 0,
+        message: "發生未知錯誤，請稍後再試",
+      };
+    }
+    // 顯示錯誤視窗
+    showError.value = true;
   }
 };
 
@@ -1168,13 +1213,19 @@ const endCreateQuestion = () => {
   router.push("/create_question");
 };
 
+// 當錯誤視窗按下確認後跳轉到首頁
+const handleRedirect = () => {
+  showError.value = false; // 關閉錯誤視窗
+  router.push("/"); // 跳轉到首頁
+};
+
 onMounted(() => {
   const storedExamInfo = JSON.parse(localStorage.getItem("examInfo"));
   if (storedExamInfo) {
     // 更新 examInfo 和 maxQuestions
     Object.assign(examInfo, storedExamInfo);
   } else {
-    alert("無法讀取考試資訊！");
+    alert("無法讀取測驗資訊！");
     router.push("/create_question");
   }
 });
@@ -1412,4 +1463,4 @@ tr:hover {
   }
 }
 </style>
- -->
+-->

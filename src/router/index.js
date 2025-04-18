@@ -12,6 +12,8 @@ import ViewExamRecords from "../views/admin/ViewExamRecords.vue";
 import CreateQuestionData from "../views/admin/create_question/CreateQuestionData.vue";
 import Testing from "../views/user/testing.vue";
 import Answer from "../views/user/answer.vue";
+import ExamInfo from "../views/admin/exam-info/ExamInfo.vue";
+import AnswerRecord from "../views/admin/exam-info/AnswerRecord.vue";
 
 const routes = [
   {
@@ -80,6 +82,18 @@ const routes = [
     name: "CreateQuestionData",
     component: CreateQuestionData,
     meta: { title: "出題" },
+  },
+  {
+    path: "/exam_info",
+    name: "ExamInfo",
+    component: ExamInfo,
+    meta: { title: "測驗內容" },
+  },
+  {
+    path: "/answer_record",
+    name: "AnswerRecord",
+    component: AnswerRecord,
+    meta: { title: "作答紀錄" },
   },
   {
     path: "/testing",

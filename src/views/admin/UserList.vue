@@ -2,6 +2,13 @@
   <div class="container">
     <AdminNavBar />
 
+    <!-- 錯誤視窗 -->
+    <ErrorModal
+      v-model="showError"
+      :message="errorMsg"
+      @confirm="handleRedirect"
+    />
+
     <div class="content">
       <div class="header-container">
         <h1>人員管理</h1>
@@ -573,10 +580,21 @@ import { ref, reactive, computed, onMounted, watch } from "vue";
 import { useRouter } from "vue-router"; // 引入 Vue Router
 import axios from "axios";
 import AdminNavBar from "../../components/AdminNavBar.vue";
+import ErrorModal from "../../components/APIerror.vue";
 import * as XLSX from "xlsx";
 
 // 初始化 Vue Router
 const router = useRouter();
+
+// 控制錯誤視窗顯示與否
+const showError = ref(false);
+
+// 儲存錯誤訊息
+const errorMsg = ref({
+  status: 0,
+  code: 0,
+  message: "",
+});
 
 // 使用 ref 和 reactive 定義狀態
 const users = ref([]);
@@ -679,13 +697,16 @@ const loadUsers = () => {
 // 讀取所有人員資料API
 /*
 const loadUsers = async () => {
-  const token = localStorage.getItem('authToken');
+  const token = localStorage.getItem("authToken");
 
   try {
     // const response = await axios.get("http://172.16.46.163/csexam/admin/users");
-    const response = await axios.get("http://172.16.46.163/csexam/admin/users", {
-      headers: { Authorization: `Bearer ${token}` },
-    });
+    const response = await axios.get(
+      "http://172.16.46.163/csexam/admin/users",
+      {
+        headers: { Authorization: `Bearer ${token}` },
+      }
+    );
 
     const data = response.data;
 
@@ -697,7 +718,7 @@ const loadUsers = async () => {
         locked: user.lockedFlag,
         createDate: user.createDate,
         lastLoginIp: user.lastLoginIp,
-        passwordExpiredFlag: user.passwordExpiredFlag
+        passwordExpiredFlag: user.passwordExpiredFlag,
       }));
       filteredUsers.value = users.value;
     } else {
@@ -706,6 +727,34 @@ const loadUsers = async () => {
   } catch (error) {
     console.error("載入使用者資料時出錯:", error);
     alert("載入使用者資料時出錯");
+
+    if (
+      error.response.data.message === "請求未提供token" ||
+      error.response.data.message === "token無效或已過期，請重新登入"
+    ) {
+      // 來自伺服器的錯誤回應（例如 404, 500 等）
+      errorMsg.value = {
+        status: error.response.status,
+        code: error.response.data.code,
+        message: error.response.data.message || "null",
+      };
+    } else if (error.request) {
+      // 請求已發送但沒有收到回應
+      errorMsg.value = {
+        status: "timeout",
+        code: 0,
+        message: "伺服器回應超時，請稍後再試",
+      };
+    } else {
+      // 發生其他錯誤（例如設定錯誤等）
+      errorMsg.value = {
+        status: 0,
+        code: 0,
+        message: "發生未知錯誤，請稍後再試",
+      };
+    }
+    // 顯示錯誤視窗
+    showError.value = true;
   }
 };
 */
@@ -823,6 +872,33 @@ const addUser = async () => {
       alert("發生錯誤，請稍後再試");
     }
     console.error("新增人員失敗:", error);
+    if (
+      error.response.data.message === "請求未提供token" ||
+      error.response.data.message === "token無效或已過期，請重新登入"
+    ) {
+      // 來自伺服器的錯誤回應（例如 404, 500 等）
+      errorMsg.value = {
+        status: error.response.status,
+        code: error.response.data.code,
+        message: error.response.data.message || "null",
+      };
+    } else if (error.request) {
+      // 請求已發送但沒有收到回應
+      errorMsg.value = {
+        status: "timeout",
+        code: 0,
+        message: "伺服器回應超時，請稍後再試",
+      };
+    } else {
+      // 發生其他錯誤（例如設定錯誤等）
+      errorMsg.value = {
+        status: 0,
+        code: 0,
+        message: "發生未知錯誤，請稍後再試",
+      };
+    }
+    // 顯示錯誤視窗
+    showError.value = true;
   }
 
   Object.assign(newUser, {
@@ -992,6 +1068,33 @@ const saveChanges = async () => {
       alert("發生錯誤，請稍後再試");
     }
     console.error("資料更新失敗:", error);
+    if (
+      error.response.data.message === "請求未提供token" ||
+      error.response.data.message === "token無效或已過期，請重新登入"
+    ) {
+      // 來自伺服器的錯誤回應（例如 404, 500 等）
+      errorMsg.value = {
+        status: error.response.status,
+        code: error.response.data.code,
+        message: error.response.data.message || "null",
+      };
+    } else if (error.request) {
+      // 請求已發送但沒有收到回應
+      errorMsg.value = {
+        status: "timeout",
+        code: 0,
+        message: "伺服器回應超時，請稍後再試",
+      };
+    } else {
+      // 發生其他錯誤（例如設定錯誤等）
+      errorMsg.value = {
+        status: 0,
+        code: 0,
+        message: "發生未知錯誤，請稍後再試",
+      };
+    }
+    // 顯示錯誤視窗
+    showError.value = true;
   }
 };
 */
@@ -1073,6 +1176,33 @@ const deleteUser = async (id) => {
     } catch (error) {
       console.error(error);
       alert("刪除人員資料時發生錯誤！");
+      if (
+      error.response.data.message === "請求未提供token" ||
+      error.response.data.message === "token無效或已過期，請重新登入"
+    ) {
+      // 來自伺服器的錯誤回應（例如 404, 500 等）
+      errorMsg.value = {
+        status: error.response.status,
+        code: error.response.data.code,
+        message: error.response.data.message || "null",
+      };
+    } else if (error.request) {
+      // 請求已發送但沒有收到回應
+      errorMsg.value = {
+        status: "timeout",
+        code: 0,
+        message: "伺服器回應超時，請稍後再試",
+      };
+    } else {
+      // 發生其他錯誤（例如設定錯誤等）
+      errorMsg.value = {
+        status: 0,
+        code: 0,
+        message: "發生未知錯誤，請稍後再試",
+      };
+    }
+    // 顯示錯誤視窗
+    showError.value = true;
     }
   } else {
     // alert("輸入人員編號錯誤");
@@ -1128,6 +1258,33 @@ const unlockUser = async (empId) => {
     }
     console.error("解除鎖定失敗:", error);
     // alert("發生錯誤，請稍後再試");
+    if (
+      error.response.data.message === "請求未提供token" ||
+      error.response.data.message === "token無效或已過期，請重新登入"
+    ) {
+      // 來自伺服器的錯誤回應（例如 404, 500 等）
+      errorMsg.value = {
+        status: error.response.status,
+        code: error.response.data.code,
+        message: error.response.data.message || "null",
+      };
+    } else if (error.request) {
+      // 請求已發送但沒有收到回應
+      errorMsg.value = {
+        status: "timeout",
+        code: 0,
+        message: "伺服器回應超時，請稍後再試",
+      };
+    } else {
+      // 發生其他錯誤（例如設定錯誤等）
+      errorMsg.value = {
+        status: 0,
+        code: 0,
+        message: "發生未知錯誤，請稍後再試",
+      };
+    }
+    // 顯示錯誤視窗
+    showError.value = true;
   }
 };
 
@@ -1155,6 +1312,7 @@ const closeEditModal = () => {
   showEditModal.value = false;
 };
 
+// 匯出客服名單EXCEL
 const exportToExcel = () => {
   const ws = XLSX.utils.table_to_sheet(document.getElementById("user-table"));
   const wb = XLSX.utils.book_new();
@@ -1162,7 +1320,7 @@ const exportToExcel = () => {
   XLSX.writeFile(wb, "線上測驗系統人員資料.xlsx");
 };
 
-// 匯出客服名單EXCEL
+// 匯出客服名單EXCEL API
 /*
 const exportToExcel = async () => {
   const token = localStorage.getItem("authToken");
@@ -1199,9 +1357,42 @@ const exportToExcel = async () => {
     }
   } catch (error) {
     console.error("下載檔案時發生錯誤:", error);
+    if (
+      error.response.data.message === "請求未提供token" ||
+      error.response.data.message === "token無效或已過期，請重新登入"
+    ) {
+      // 來自伺服器的錯誤回應（例如 404, 500 等）
+      errorMsg.value = {
+        status: error.response.status,
+        code: error.response.data.code,
+        message: error.response.data.message || "null",
+      };
+    } else if (error.request) {
+      // 請求已發送但沒有收到回應
+      errorMsg.value = {
+        status: "timeout",
+        code: 0,
+        message: "伺服器回應超時，請稍後再試",
+      };
+    } else {
+      // 發生其他錯誤（例如設定錯誤等）
+      errorMsg.value = {
+        status: 0,
+        code: 0,
+        message: "發生未知錯誤，請稍後再試",
+      };
+    }
+    // 顯示錯誤視窗
+    showError.value = true;
   }
 };
 */
+
+// 當錯誤視窗按下確認後跳轉到首頁
+const handleRedirect = () => {
+  showError.value = false; // 關閉錯誤視窗
+  router.push("/"); // 跳轉到首頁
+};
 
 // 初始化
 onMounted(() => {

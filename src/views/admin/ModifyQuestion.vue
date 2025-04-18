@@ -1,5 +1,10 @@
 <template>
   <div class="container">
+    <ErrorModal
+      v-model="showError"
+      :message="errorMsg"
+      @confirm="handleRedirect"
+    />
     <AdminNavBar />
 
     <div class="search-container">
@@ -112,7 +117,12 @@
           class="page-input"
         />
         <button
-          @click="searchQuestions"
+          @click="
+            () => {
+              searchQuestions();
+              scrollToTop();
+            }
+          "
           :disabled="
             !searchParams.page ||
             searchParams.page < 1 ||
@@ -288,7 +298,12 @@
           class="page-input"
         />
         <button
-          @click="searchQuestions"
+          @click="
+            () => {
+              searchQuestions();
+              scrollToTop();
+            }
+          "
           :disabled="
             !searchParams.page ||
             searchParams.page < 1 ||
@@ -500,6 +515,17 @@ import { ref, computed, watch, onMounted } from "vue";
 import { useRouter } from "vue-router";
 import axios from "axios";
 import AdminNavBar from "../../components/AdminNavBar.vue";
+import ErrorModal from "../../components/APIerror.vue";
+
+// 控制錯誤視窗顯示與否
+const showError = ref(false);
+
+// 儲存錯誤訊息
+const errorMsg = ref({
+  status: 0,
+  code: 0,
+  message: "",
+});
 
 // 題型英文名稱轉中文名稱
 const getTypeName = (type) => {
@@ -698,14 +724,65 @@ const searchQuestions = async () => {
     // 處理 API 回傳的結果
     if (response.data.code === "0000") {
       results.value = response.data.data.content;
-      pageInfo.value = response.data.data.page;
+      // pageInfo.value = response.data.data.page;
+      pageInfo.value = {
+        number: response.data.data.number,
+        size: response.data.data.size,
+        totalElements: response.data.data.totalElements,
+        totalPages: response.data.data.totalPages,
+      };
     } else {
       alert("搜尋失敗，資料庫出現問題");
       console.error("搜尋錯誤: 資料格式異常");
     }
   } catch (error) {
     console.error("發生錯誤:", error);
+    if (
+      error.response.data.message === "請求未提供token" ||
+      error.response.data.message === "token無效或已過期，請重新登入"
+    ) {
+      // 來自伺服器的錯誤回應（例如 404, 500 等）
+      errorMsg.value = {
+        status: error.response.status,
+        code: error.response.data.code,
+        message: error.response.data.message || "null",
+      };
+    } else if (error.request) {
+      // 請求已發送但沒有收到回應
+      errorMsg.value = {
+        status: "timeout",
+        code: 0,
+        message: "伺服器回應超時，請稍後再試",
+      };
+    } else {
+      // 發生其他錯誤（例如設定錯誤等）
+      errorMsg.value = {
+        status: 0,
+        code: 0,
+        message: "發生未知錯誤，請稍後再試",
+      };
+    }
+    // 顯示錯誤視窗
+    showError.value = true;
   }
+};
+
+// 查詢條件變動時，跳回第 1 頁並自動查詢
+watch(
+  () => [
+    searchParams.questionType,
+    searchParams.creatorId,
+    searchParams.keyword,
+  ],
+  () => {
+    searchParams.page = 1; // 回到第 1 頁
+    searchQuestions();
+  }
+);
+
+// 自動滾到最上方
+const scrollToTop = () => {
+  window.scrollTo({ top: 0, behavior: "smooth" });
 };
 
 /*
@@ -731,6 +808,7 @@ const prevPage = () => {
   if (searchParams.value.page > 1) {
     searchParams.value.page--;
     searchQuestions(); // 重新載入資料
+    scrollToTop();
   }
 };
 
@@ -739,6 +817,7 @@ const nextPage = () => {
   if (searchParams.value.page < pageInfo.value.totalPages) {
     searchParams.value.page++;
     searchQuestions(); // 重新載入資料
+    scrollToTop();
   }
 };
 
@@ -795,6 +874,33 @@ const editQuestion = async (question) => {
   } catch (error) {
     console.error("發生錯誤:", error);
     alert("發生錯誤，請稍後再試");
+    if (
+      error.response.data.message === "請求未提供token" ||
+      error.response.data.message === "token無效或已過期，請重新登入"
+    ) {
+      // 來自伺服器的錯誤回應（例如 404, 500 等）
+      errorMsg.value = {
+        status: error.response.status,
+        code: error.response.data.code,
+        message: error.response.data.message || "null",
+      };
+    } else if (error.request) {
+      // 請求已發送但沒有收到回應
+      errorMsg.value = {
+        status: "timeout",
+        code: 0,
+        message: "伺服器回應超時，請稍後再試",
+      };
+    } else {
+      // 發生其他錯誤（例如設定錯誤等）
+      errorMsg.value = {
+        status: 0,
+        code: 0,
+        message: "發生未知錯誤，請稍後再試",
+      };
+    }
+    // 顯示錯誤視窗
+    showError.value = true;
   }
 };
 */
@@ -844,6 +950,33 @@ const saveEdit = async () => {
     }
   } catch (error) {
     console.error("發生錯誤:", error);
+    if (
+      error.response.data.message === "請求未提供token" ||
+      error.response.data.message === "token無效或已過期，請重新登入"
+    ) {
+      // 來自伺服器的錯誤回應（例如 404, 500 等）
+      errorMsg.value = {
+        status: error.response.status,
+        code: error.response.data.code,
+        message: error.response.data.message || "null",
+      };
+    } else if (error.request) {
+      // 請求已發送但沒有收到回應
+      errorMsg.value = {
+        status: "timeout",
+        code: 0,
+        message: "伺服器回應超時，請稍後再試",
+      };
+    } else {
+      // 發生其他錯誤（例如設定錯誤等）
+      errorMsg.value = {
+        status: 0,
+        code: 0,
+        message: "發生未知錯誤，請稍後再試",
+      };
+    }
+    // 顯示錯誤視窗
+    showError.value = true;
   }
 };
 */
@@ -891,7 +1024,7 @@ const deleteQuestion = async (question) => {
       //   (q) => q.questionId !== question.questionId
       // );
       searchQuestions();
-      alert("問題已刪除");
+      alert("題目已刪除");
     } else {
       alert("刪除失敗，資料庫出現問題");
       console.error("刪除錯誤: 資料格式異常");
@@ -899,7 +1032,40 @@ const deleteQuestion = async (question) => {
   } catch (error) {
     console.error("發生錯誤:", error);
     alert("發生錯誤，請稍後再試");
+    if (
+      error.response.data.message === "請求未提供token" ||
+      error.response.data.message === "token無效或已過期，請重新登入"
+    ) {
+      // 來自伺服器的錯誤回應（例如 404, 500 等）
+      errorMsg.value = {
+        status: error.response.status,
+        code: error.response.data.code,
+        message: error.response.data.message || "null",
+      };
+    } else if (error.request) {
+      // 請求已發送但沒有收到回應
+      errorMsg.value = {
+        status: "timeout",
+        code: 0,
+        message: "伺服器回應超時，請稍後再試",
+      };
+    } else {
+      // 發生其他錯誤（例如設定錯誤等）
+      errorMsg.value = {
+        status: 0,
+        code: 0,
+        message: "發生未知錯誤，請稍後再試",
+      };
+    }
+    // 顯示錯誤視窗
+    showError.value = true;
   }
+};
+
+// 當錯誤視窗按下確認後跳轉到首頁
+const handleRedirect = () => {
+  showError.value = false; // 關閉錯誤視窗
+  router.push("/"); // 跳轉到首頁
 };
 </script>
 

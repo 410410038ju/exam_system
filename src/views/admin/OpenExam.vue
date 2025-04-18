@@ -1,11 +1,11 @@
-<!-- 不用API 
+<!-- 不用API -->
 <template>
   <div class="container">
     <AdminNavBar />
 
     <div class="content">
       <div class="left-content">
-        <h1>新增考卷</h1>
+        <h1>新增測驗</h1>
 
         <div class="form-group">
           <div class="form-container">
@@ -22,7 +22,7 @@
 
         <div class="form-group">
           <div class="form-container">
-            <label for="limitTime">測驗作答時間 (分鐘)</label>
+            <label for="limitTime">答題時間 (分鐘)</label>
             <input
               type="number"
               id="limitTime"
@@ -83,7 +83,7 @@
       </div>
 
       <div class="right-content">
-        <h2>本次考試的出題範圍</h2>
+        <h2>本次測驗的出題範圍</h2>
 
         <div class="form-group">
           <div class="form-container">
@@ -390,14 +390,19 @@ const totalQuestionAmount = computed(() => {
 </script>
 -->
 
-<!-- API -->
+<!-- API 
 <template>
   <div class="container">
+    <ErrorModal
+      v-model="showError"
+      :message="errorMsg"
+      @confirm="handleRedirect"
+    />
     <AdminNavBar />
 
     <div class="content">
       <div class="left-content">
-        <h1>新增考卷</h1>
+        <h1>新增測驗</h1>
 
         <div class="form-group">
           <div class="form-container">
@@ -475,7 +480,7 @@ const totalQuestionAmount = computed(() => {
       </div>
 
       <div class="right-content">
-        <h2>本次考試的出題範圍</h2>
+        <h2>本次測驗的出題範圍</h2>
 
         <div class="form-group">
           <div class="form-container">
@@ -538,7 +543,7 @@ const totalQuestionAmount = computed(() => {
               </select>
             </div>
 
-            <!-- 顯示選擇的節ID -->
+           
             <div>
               <p>選擇的節ID：{{ getSelectedPartId }}</p>
             </div>
@@ -592,7 +597,18 @@ const totalQuestionAmount = computed(() => {
 <script setup>
 import { reactive, ref, computed, onMounted, toRaw } from "vue";
 import AdminNavBar from "../../components/AdminNavBar.vue";
+import ErrorModal from "../../components/APIerror.vue";
 import axios from "axios";
+
+// 控制錯誤視窗顯示與否
+const showError = ref(false);
+
+// 儲存錯誤訊息
+const errorMsg = ref({
+  status: 0,
+  code: 0,
+  message: "",
+});
 
 // 用 reactive 來管理 testData
 const testData = reactive({
@@ -657,6 +673,33 @@ const fetchRangeData = async () => {
   } catch (error) {
     console.error("獲取分類、章節、節資料失敗：", error);
     alert("讀取範圍資料失敗: " + response.data.message);
+    if (
+      error.response.data.message === "請求未提供token" ||
+      error.response.data.message === "token無效或已過期，請重新登入"
+    ) {
+      // 來自伺服器的錯誤回應（例如 404, 500 等）
+      errorMsg.value = {
+        status: error.response.status,
+        code: error.response.data.code,
+        message: error.response.data.message || "null",
+      };
+    } else if (error.request) {
+      // 請求已發送但沒有收到回應
+      errorMsg.value = {
+        status: "timeout",
+        code: 0,
+        message: "伺服器回應超時，請稍後再試",
+      };
+    } else {
+      // 發生其他錯誤（例如設定錯誤等）
+      errorMsg.value = {
+        status: 0,
+        code: 0,
+        message: "發生未知錯誤，請稍後再試",
+      };
+    }
+    // 顯示錯誤視窗
+    showError.value = true;
   }
 };
 
@@ -830,16 +873,43 @@ const submitTest = async () => {
     );
 
     if (response.data.code === "0000") {
-      alert("考卷新增成功！");
+      alert("測驗新增成功！");
 
       // 清空表單
       resetForm();
     } else {
-      alert("新增考卷失敗: " + response.data.message);
+      alert("新增測驗失敗: " + response.data.message);
     }
   } catch (error) {
     console.error("提交測驗資料失敗：", error.message);
     alert("測驗新增失敗！");
+    if (
+      error.response.data.message === "請求未提供token" ||
+      error.response.data.message === "token無效或已過期，請重新登入"
+    ) {
+      // 來自伺服器的錯誤回應（例如 404, 500 等）
+      errorMsg.value = {
+        status: error.response.status,
+        code: error.response.data.code,
+        message: error.response.data.message || "null",
+      };
+    } else if (error.request) {
+      // 請求已發送但沒有收到回應
+      errorMsg.value = {
+        status: "timeout",
+        code: 0,
+        message: "伺服器回應超時，請稍後再試",
+      };
+    } else {
+      // 發生其他錯誤（例如設定錯誤等）
+      errorMsg.value = {
+        status: 0,
+        code: 0,
+        message: "發生未知錯誤，請稍後再試",
+      };
+    }
+    // 顯示錯誤視窗
+    showError.value = true;
   }
 };
 
@@ -868,11 +938,17 @@ const totalQuestionAmount = computed(() => {
   );
 });
 
+// 當錯誤視窗按下確認後跳轉到首頁
+const handleRedirect = () => {
+  showError.value = false; // 關閉錯誤視窗
+  router.push("/"); // 跳轉到首頁
+};
+
 onMounted(() => {
   fetchRangeData(); // 初始化時獲取分類、章節、節資料
 });
 </script>
-
+-->
 <style scoped>
 /* 全局設置 */
 * {

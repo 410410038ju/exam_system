@@ -33,8 +33,8 @@
         <button @click="navigateTo('manage_question_bank_types')">
           管理題庫類別
         </button>
-        <button @click="navigateTo('open_exam')">新增考卷</button>
-        <button @click="navigateTo('view_exam_records')">查看所有考卷</button>
+        <button @click="navigateTo('open_exam')">新增測驗</button>
+        <button @click="navigateTo('view_exam_records')">查看測驗紀錄</button>
         <button @click="logout" class="logout-btn">登出</button>
       </div>
     </div>

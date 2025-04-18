@@ -171,15 +171,19 @@ onUnmounted(() => {
 }
 
 .exam-name {
-  font-size: 18px;
+  font-size: 20px;
   font-weight: bold;
   color: white;
 }
 
 .time-left,
 .progress {
-  font-size: 18px;
+  font-size: 20px;
   color: white;
+}
+
+.progress {
+  font-size: 18px;
 }
 
 .submit-btn {

@@ -3,8 +3,8 @@
     <!-- 頁面頭部 -->
     <div class="header">
       <div class="user-info">
-        <span class="name">{{ userName }}</span>
-        <span class="user-id">{{ userId }}</span>
+        <span class="user-id">員編：{{ userId }}</span>
+        <span class="name">姓名：{{ userName }}</span>
       </div>
       <div class="actions">
         <button @click="modifyPassword" class="button">修改密碼</button>
@@ -70,11 +70,11 @@
       <table>
         <thead>
           <tr>
-            <th>考試名稱</th>
+            <th>測驗名稱</th>
             <th>業務種類</th>
-            <th>考試範圍</th>
-            <th>作答時間</th>
-            <th>測驗開放時間</th>
+            <th>測驗範圍</th>
+            <th>答題時間</th>
+            <th>測驗進行時間</th>
             <th>及格分數</th>
             <th>出題者</th>
             <th>題數</th>
@@ -247,6 +247,7 @@ export default {
 </script>
 -->
 
+<!-- 沒有API -->
 <script setup>
 import { ref, watch, onMounted } from "vue";
 import { useRouter } from "vue-router";
@@ -444,6 +445,204 @@ const startExam = (examId) => {
 };
 </script>
 
+<!-- API 
+<script setup>
+import { ref, watch, onMounted } from "vue";
+import { useRouter } from "vue-router";
+import axios from "axios";
+
+const router = useRouter();
+
+const userName = ref("");
+const userId = ref("");
+const exams = ref([
+  {
+    id: 1,
+    name: "數學期末考",
+    scope: "代數、幾何",
+    duration: 60,
+    startTime: "2025-02-20 09:00",
+    endTime: "2025-02-20 10:00",
+    passingScore: 60, // 及格分數
+    creator: "李老師", // 出題者
+    category: "數學", // 業務種類
+    questionsCount: 50, // 題數
+    examType: "一般考試", // 考試類型
+    status: "notStarted", // 考試狀態
+  },
+  {
+    id: 2,
+    name: "英文聽力測驗",
+    scope: "聽力理解",
+    duration: 30,
+    startTime: "2025-02-21 14:00",
+    endTime: "2025-02-21 14:30",
+    passingScore: 40, // 及格分數
+    creator: "王老師", // 出題者
+    category: "語言", // 業務種類
+    questionsCount: 30, // 題數
+    examType: "補考", // 考試類型
+    status: "completed", // 考試狀態
+  },
+]);
+
+const showPasswordModal = ref(false); // 控制修改密碼對話框顯示
+const oldPassword = ref(""); // 舊密碼
+const newPassword = ref(""); // 新密碼
+const confirmPassword = ref(""); // 確認新密碼
+const isPasswordValid = ref(false); // 確認密碼是否符合規定
+
+const loggedInUser = JSON.parse(localStorage.getItem("loggedInUser"));
+
+// 檢查登入狀況
+const checkLogin = () => {
+  if (!loggedInUser) {
+    alert("尚未登入");
+    router.push("/"); // 跳轉到 Home.vue（根路由）
+  }
+};
+
+onMounted(() => {
+  checkLogin();
+  const loggedInUser = JSON.parse(localStorage.getItem("loggedInUser"));
+  if (loggedInUser) {
+    userName.value = loggedInUser.username;
+    userId.value = loggedInUser.empId;
+  }
+});
+
+const modifyPassword = () => {
+  showPasswordModal.value = true;
+};
+
+watch(newPassword, () => {
+  const regex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{12,}$/;
+  isPasswordValid.value = regex.test(newPassword.value);
+});
+
+// 儲存新密碼
+const saveNewPassword = () => {
+  const users = JSON.parse(localStorage.getItem("users")) || [];
+
+  const user = users.find((user) => user.id === userId.value);
+
+  if (!user) {
+    alert("用戶未找到");
+    return;
+  }
+
+  if (oldPassword.value !== user.password) {
+    alert("舊密碼錯誤");
+    return;
+  }
+
+  if (newPassword.value !== confirmPassword.value) {
+    alert("新密碼和確認密碼不一致");
+    return;
+  }
+
+  if (!isPasswordValid.value) {
+    alert("密碼不符合要求");
+    return;
+  }
+
+  user.password = newPassword.value;
+
+  localStorage.setItem("users", JSON.stringify(users));
+  alert("密碼已成功修改");
+
+  oldPassword.value = "";
+  newPassword.value = "";
+  confirmPassword.value = "";
+  showPasswordModal.value = false;
+};
+
+// 儲存新密碼/修改密碼API
+/*
+const saveNewPassword = async () => {
+
+  const loggedInUser = JSON.parse(localStorage.getItem("loggedInUser"));
+  const empId = loggedInUser.empId;
+  if (!loggedInUser || !empId) {
+    alert("尚未登入！");
+    router.push("/"); // 若找不到 empId，導回首頁
+    return;
+  }
+
+  if (newPassword.value !== confirmPassword.value) {
+    alert("兩次輸入的新密碼不一致，請重新輸入！");
+    confirmPassword.value = "";
+    return;
+  }
+
+  if (!isPasswordValid.value) {
+    alert("密碼不符合要求");
+    return;
+  }
+
+  try {
+    const response = await axios.put(
+      "http://172.16.46.163/csexam/api/change-password", // 修改密碼的 API
+      {
+        empId: empId, // 傳送 empId
+        oldPassword: oldPassword.value, // 舊密碼
+        newPassword: newPassword.value, // 新密碼
+      }
+    );
+
+    if (response.data.code === "0000") {
+      alert("密碼已成功更新，請重新登入");
+      router.push("/");
+    }
+  } catch (error) {
+    if (error.response) {
+      if (error.response.data.code === "UE006") {
+        alert("舊密碼錯誤，" + error.response.data.message.slice(-6));
+        // alert(error.response.data.message.slice(-6));
+      } else if (error.response.data.code) {
+        alert(error.response.data.message);
+        // 針對其他錯誤代碼顯示不同的錯誤訊息
+        // UE002 使用者不存在
+        // UE006 密碼錯誤，剩餘N次機會
+        // 9999 密碼規則不符合(其他問題)
+      } else {
+        alert("錯誤訊息:", error.response.data.message);
+      }
+    } else {
+      alert("發生錯誤，請稍後再試");
+    }
+    console.error("修改密碼失敗", error);
+    alert(error.response?.data?.message || "修改密碼失敗，請稍後再試！");
+  }
+
+  // 清空輸入框內容
+  oldPassword.value = "";
+  newPassword.value = "";
+  confirmPassword.value = "";
+  showPasswordModal.value = false;
+};
+*/
+
+const cancelChangePassword = () => {
+  showPasswordModal.value = false;
+};
+
+const logout = () => {
+  localStorage.removeItem("loggedInUser");
+  sessionStorage.clear();
+  // localStorage.removeItem('authToken');
+  // delete axios.defaults.headers['Authorization'];  // 清除預設 header
+  router.push("/");
+};
+
+const startExam = (examId) => {
+  // alert(`開始測驗：${examId}`);
+  const exam = exams.value.find((exam) => exam.id === examId);
+  exam.status = "completed";
+  router.push("/testing");
+};
+</script>
+-->
 <style scoped>
 #app {
   margin: 0;
@@ -480,15 +679,18 @@ const startExam = (examId) => {
 /* 用戶信息區域 */
 .user-info {
   display: flex;
-  flex-direction: column;
+  flex-direction: row; /* 改為水平排列 */
+  align-items: center; /* 垂直居中對齊 */
 }
 
 .name {
   font-size: 20px;
+  margin: 0 20px;
 }
 
 .user-id {
-  font-size: 16px;
+  font-size: 20px;
+  margin: 0 20px;
 }
 
 /* 頁面頭部的動作區域 */
@@ -659,12 +861,12 @@ table td {
 
 table th:nth-child(1),
 table td:nth-child(1) {
-  width: 120px; /* 例如考試名稱列 */
+  width: 120px; 
 }
 
 table th:nth-child(5),
 table td:nth-child(5) {
-  width: 300px; /* 例如考試名稱列 */
+  width: 300px; 
 }
 
 /* 提高按鈕的可讀性 */

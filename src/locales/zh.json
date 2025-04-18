@@ -1,0 +1,12 @@
+{
+    "errors": {
+      "notLoggedIn": "尚未登入",
+      "tokenExpired": "Token 已過期",
+      "unauthorized": "未授權，請重新登入",
+      "network": "網路異常，請稍後再試",
+      "notFound": "找不到資源",
+      "serverError": "伺服器錯誤，請稍後再試",
+      "unknown": "發生未知錯誤"
+    }
+  }
+  

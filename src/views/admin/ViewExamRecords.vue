@@ -1,17 +1,22 @@
 <template>
   <div class="container">
+    <ErrorModal
+      v-model="showError"
+      :message="errorMsg"
+      @confirm="handleRedirect"
+    />
     <AdminNavBar />
     <div class="content">
       <!-- 查詢考卷 -->
       <div class="search-container">
         <div class="query-form">
           <div class="form-group" id="examName-group">
-            <label for="examName">考卷名稱</label>
+            <label for="examName">測驗名稱</label>
             <input
               id="examName"
               v-model="query.examName"
               type="text"
-              placeholder="輸入考卷名稱"
+              placeholder="輸入測驗名稱"
             />
           </div>
 
@@ -113,15 +118,19 @@
           <thead>
             <tr>
               <th>編號</th>
-              <th>考卷編號</th>
-              <th>考卷名稱</th>
+              <th>測驗編號</th>
+              <th>測驗名稱</th>
               <th>測驗開始日期</th>
               <th>測驗結束日期</th>
               <th>狀態</th>
             </tr>
           </thead>
           <tbody>
-            <tr v-for="(exam, index) in filteredExams" :key="index">
+            <tr
+              v-for="(exam, index) in filteredExams"
+              :key="index"
+              @click="goToExamInfo(exam.examId)"
+            >
               <td>{{ index + 1 }}</td>
               <td>{{ exam.examId }}</td>
               <td>{{ exam.examName }}</td>
@@ -198,9 +207,11 @@
 <!-- 沒有API -->
 <script setup>
 import AdminNavBar from "../../components/AdminNavBar.vue";
-import { ref, computed, watch, onMounted } from "vue";
+import { ref, computed, watch, onMounted, onBeforeUnmount } from "vue";
 import { useRouter } from "vue-router";
 import axios from "axios";
+
+const router = useRouter();
 
 // 查詢條件的狀態
 const query = ref({
@@ -271,14 +282,50 @@ const searchExam = () => {
     );
   });
 };
+
+const goToExamInfo = (examId) => {
+  // router.push({ name: 'ExamInfo', params: { id: examId } });
+  const selectedExam = filteredExams.value.find((e) => e.examId === examId);
+  if (selectedExam) {
+    localStorage.setItem("selectedExam", JSON.stringify(selectedExam));
+  }
+  router.push("/exam_info");
+};
+
+onMounted(() => {
+  // 檢查是否已經重新整理過
+  if (!localStorage.getItem('reloaded')) {
+    localStorage.setItem('reloaded', 'true');
+    window.location.reload();
+  }
+});
+
+onBeforeUnmount(() => {
+  // 當頁面卸載時重置 'reloaded' 為 false
+  localStorage.removeItem('reloaded');
+});
+
 </script>
 -->
 <!-- API 
 <script setup>
 import AdminNavBar from "../../components/AdminNavBar.vue";
+import ErrorModal from "../../components/APIerror.vue";
 import { ref, computed, watch, onMounted } from "vue";
 import { useRouter } from "vue-router";
 import axios from "axios";
+
+const router = useRouter();
+
+// 控制錯誤視窗顯示與否
+const showError = ref(false);
+
+// 儲存錯誤訊息
+const errorMsg = ref({
+  status: 0,
+  code: 0,
+  message: "",
+});
 
 // 查詢條件的狀態
 const query = ref({
@@ -287,7 +334,7 @@ const query = ref({
   endDate: "",
   status: "",
   page: 1,
-  size: 5,
+  size: 10,
 });
 
 const filteredExams = ref([]); // 顯示用的資料
@@ -351,23 +398,87 @@ const searchExam = async () => {
       console.error("搜尋錯誤: 資料格式異常");
     }
   } catch (error) {
-    console.error("搜尋考卷失敗：", error);
+    console.error("搜尋測驗失敗：", error);
+    if (
+      error.response.data.message === "請求未提供token" ||
+      error.response.data.message === "token無效或已過期，請重新登入"
+    ) {
+      // 來自伺服器的錯誤回應（例如 404, 500 等）
+      errorMsg.value = {
+        status: error.response.status,
+        code: error.response.data.code,
+        message: error.response.data.message || "null",
+      };
+    } else if (error.request) {
+      // 請求已發送但沒有收到回應
+      errorMsg.value = {
+        status: "timeout",
+        code: 0,
+        message: "伺服器回應超時，請稍後再試",
+      };
+    } else {
+      // 發生其他錯誤（例如設定錯誤等）
+      errorMsg.value = {
+        status: 0,
+        code: 0,
+        message: "發生未知錯誤，請稍後再試",
+      };
+    }
+    // 顯示錯誤視窗
+    showError.value = true;
   }
 };
 
+// 查詢條件變動時，跳回第 1 頁並自動查詢
+/* 待測試
+watch(
+  () => [
+    query.examName,
+    query.startDate,
+    query.endDate,
+    query.status,
+  ],
+  () => {
+    query.page = 1; // 回到第 1 頁
+    searchExam();
+  }
+);
+*/
+
+// 上一頁
 const prevPage = () => {
   if (query.value.page > 1) {
     query.value.page--;
     searchExam();
+    window.scrollTo({ top: 0, behavior: "smooth" }); // ✨滾到上方
   }
 };
 
+// 下一頁
 const nextPage = () => {
   if (query.value.page < totalPages.value) {
     query.value.page++;
     searchExam();
+    window.scrollTo({ top: 0, behavior: "smooth" }); // ✨滾到上方
   }
 };
+
+const goToExamInfo = (examId) => {
+  const selectedExam = filteredExams.value.find((e) => e.examId === examId);
+  if (selectedExam) {
+    localStorage.setItem("selectedExam", JSON.stringify(selectedExam));
+  }
+  router.push({ name: "ExamInfo", params: { id: examId } });
+};
+
+// 當錯誤視窗按下確認後跳轉到首頁
+const handleRedirect = () => {
+  showError.value = false; // 關閉錯誤視窗
+  router.push("/"); // 跳轉到首頁
+};
+
+
+
 </script>
 -->
 <style scoped>
@@ -552,6 +663,7 @@ tbody tr:nth-child(even) {
 /* Hover 效果 */
 tbody tr:hover {
   background-color: #e0f7fa;
+  cursor: pointer;
 }
 
 .table-info {
@@ -561,7 +673,7 @@ tbody tr:hover {
   gap: 1rem;
   padding: 1rem;
   background-color: #f9f9f9;
-  border-radius: 8px;
+  border-radius: 0;
   font-family: Arial, sans-serif;
   font-size: 14px;
 }

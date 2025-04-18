@@ -178,7 +178,7 @@ nav {
             :to="{ name: 'OpenExam' }"
             class="nav-item"
             active-class="active"
-            >新增考卷</router-link
+            >新增測驗</router-link
           >
         </li>
         <li>
@@ -186,7 +186,7 @@ nav {
             :to="{ name: 'ViewExamRecords' }"
             class="nav-item"
             active-class="active"
-            >查看所有考卷</router-link
+            >查看測驗紀錄</router-link
           >
         </li>
         <li>
@@ -254,22 +254,6 @@ nav {
   </div>
 </template>
 
-<!-- vue 2
-<script>
-export default {
-  name: "AdminNavBar",
-  methods: {
-    logout() {
-      // 在這裡處理登出邏輯，比如清除用戶的登入狀態
-      //this.$store.dispatch("logout");
-      localStorage.removeItem("loggedInUser");
-      sessionStorage.clear();
-      this.$router.push("/");
-    },
-  },
-};
-</script>
--->
 
 <script setup>
 import { ref, reactive, watch, onMounted } from "vue";
