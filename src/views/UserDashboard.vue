@@ -71,13 +71,13 @@
         <thead>
           <tr>
             <th>測驗名稱</th>
-            <th>業務種類</th>
-            <th>測驗範圍</th>
+            <!-- <th>業務種類</th> -->
+            <!-- <th>測驗範圍</th> -->
             <th>答題時間</th>
             <th>測驗進行時間</th>
             <th>及格分數</th>
             <th>出題者</th>
-            <th>題數</th>
+            <!-- <th>題數</th> -->
             <th>考試類型</th>
             <th>狀態</th>
           </tr>
@@ -85,16 +85,15 @@
         <tbody>
           <tr v-for="exam in exams" :key="exam.id">
             <td>{{ exam.name }}</td>
-            <td>{{ exam.category }}</td>
-            <td>{{ exam.scope }}</td>
+            <!-- <td>{{ exam.category }}</td> -->
+            <!-- <td>{{ exam.scope }}</td> -->
             <td>{{ exam.duration }} 分鐘</td>
             <td>{{ exam.startTime }} 至 {{ exam.endTime }}</td>
             <td>{{ exam.passingScore }} 分</td>
             <!-- 顯示及格分數 -->
             <td>{{ exam.creator }}</td>
             <!-- 顯示出題者 -->
-            <td>{{ exam.questionsCount }}</td>
-            <!-- 顯示題數 -->
+
             <td>{{ exam.examType }}</td>
             <!-- 顯示考試類型 -->
             <td>
@@ -653,11 +652,12 @@ const startExam = (examId) => {
   background-color: #f4f4f9; /* 淺灰背景 */
   background-attachment: fixed;
   position: absolute;
-  top: 100px;
+  top: 70px;
   left: 0;
   right: 0;
   width: 100%;
   margin: 0 auto;
+  padding-top: 30px;
   height: calc(100vh - 100px);
 }
 
@@ -861,12 +861,12 @@ table td {
 
 table th:nth-child(1),
 table td:nth-child(1) {
-  width: 120px; 
+  width: 120px;
 }
 
 table th:nth-child(5),
 table td:nth-child(5) {
-  width: 300px; 
+  width: 300px;
 }
 
 /* 提高按鈕的可讀性 */

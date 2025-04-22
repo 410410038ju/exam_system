@@ -1,4 +1,4 @@
-<!-- 不用API 
+<!-- 不用API -->
 <template>
   <div class="container">
     <AdminNavBar />
@@ -388,9 +388,9 @@ const totalQuestionAmount = computed(() => {
   );
 });
 </script>
--->
 
-<!-- API -->
+
+<!-- API 
 <template>
   <div class="container">
     <ErrorModal
@@ -471,8 +471,9 @@ const totalQuestionAmount = computed(() => {
 
         <div class="form-group">
           <div class="form-container">
-            <label class="form-label">總題目數量：{{ totalQuestionAmount }}</label>
-            <div class="total-question-amount">{{ totalQuestionAmount }}</div>
+            <label class="form-label"
+              >總題目數量：{{ totalQuestionAmount }}</label
+            >
           </div>
         </div>
 
@@ -544,8 +545,14 @@ const totalQuestionAmount = computed(() => {
             </div>
 
             <div>
-              <p>選擇的節ID：{{ getSelectedPartId }}</p>
-              <p>此節題目數量：{{ selectedPart.value ? `${questionCount}` : "尚未選擇節" }}</p>
+              
+              <p>
+                此節題目數量：{{
+                  getSelectedPartId !== "尚未選擇節"
+                    ? `${questionCount}`
+                    : "尚未選擇節"
+                }}
+              </p>
             </div>
 
             <div class="form-content">
@@ -556,6 +563,7 @@ const totalQuestionAmount = computed(() => {
                 v-model="questionAmount"
                 placeholder="題目數量"
                 min="1"
+                :max="questionCount"
                 class="input-number"
                 required
               />
@@ -674,7 +682,9 @@ const fetchRangeData = async () => {
     }
   } catch (error) {
     console.error("獲取分類、章節、節資料失敗：", error);
-    alert("讀取範圍資料失敗: " + response.data.message);
+    alert(
+      "讀取範圍資料失敗: " + (error?.response?.data?.message || "未知錯誤")
+    );
     if (
       error.response.data.message === "請求未提供token" ||
       error.response.data.message === "token無效或已過期，請重新登入"
@@ -739,11 +749,17 @@ const getSelectedPartId = computed(() => {
 // 當選擇節時，獲取該節的題目數量
 const fetchQuestionCount = async (partId) => {
   try {
-    const response = await axios.get(`http://172.16.46.163/csexam/admin/question/count?${partId}`, {
-      headers: {
-        Authorization: `Bearer ${token}`,
+    const response = await axios.get(
+      `http://172.16.46.163/csexam/admin/question/count`,
+      {
+        params: {
+          partId: partId,
+        },
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
       }
-    });
+    );
 
     if (response.data.code === "0000") {
       questionCount.value = response.data.data.count;
@@ -756,9 +772,9 @@ const fetchQuestionCount = async (partId) => {
 };
 
 // 當選擇的節ID改變時，更新題目數量
-watch(getSelectedPartId, (newPartId) => {
-  if (newPartId) {
-    fetchQuestionCount(newPartId);
+watch(getSelectedPartId, async (newPartId) => {
+  if (newPartId !== null && newPartId !== "尚未選擇節") {
+    await fetchQuestionCount(newPartId);
   }
 });
 
@@ -825,6 +841,12 @@ const saveRangeItem = () => {
   if (!categoryData || !chapterData || !partData || questionAmount.value <= 0) {
     // alert("請完整選擇業務種類、章、節");
     alert("請填寫完整的範圍項目！");
+    return;
+  }
+
+  if (questionAmount.value > questionCount.value) {
+    alert(`題目數量不能超過此節最大題數（${questionCount.value} 題）`);
+    questionAmount.value = questionCount.value;
     return;
   }
 
@@ -974,12 +996,9 @@ const handleRedirect = () => {
 
 onMounted(() => {
   fetchRangeData(); // 初始化時獲取分類、章節、節資料
-  if (getSelectedPartId.value) {
-    fetchQuestionCount(getSelectedPartId.value);
-  }
 });
 </script>
-
+-->
 <style scoped>
 /* 全局設置 */
 * {

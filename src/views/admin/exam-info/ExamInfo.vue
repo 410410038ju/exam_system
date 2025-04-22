@@ -19,14 +19,17 @@
               <i
                 v-if="exam.status === 'ongoing'"
                 class="fas fa-hourglass-half"
+                 :class="'icon-ongoing'"
               ></i>
               <i
                 v-else-if="exam.status === 'done'"
                 class="fas fa-check-circle"
+                 :class="'icon-done'"
               ></i>
               <i
                 v-else-if="exam.status === 'canceled'"
                 class="fas fa-times-circle"
+                 :class="'icon-canceled'"
               ></i>
             </span>
             測驗{{ getStatusName(exam.status) }}
@@ -312,6 +315,15 @@ body {
   height: 100%;
 }
 
+.container {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: #f4f4f4;
+}
+
 .content {
   margin: 110px auto 20px;
   padding: 20px;
@@ -407,6 +419,19 @@ body {
   margin-right: 0.5rem;
   font-size: 1.2rem;
 }
+
+.icon-ongoing {
+  color: #856404; /* 黃色 */
+}
+
+.icon-done {
+  color: #155724; /* 綠色 */
+}
+
+.icon-canceled {
+  color: #721c24; /* 紅色 */
+}
+
 
 .exam-info-content {
   box-sizing: border-box;
