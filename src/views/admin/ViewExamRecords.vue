@@ -120,8 +120,11 @@
               <th>編號</th>
               <th>測驗編號</th>
               <th>測驗名稱</th>
+              <th>答題時間</th>
+              <th>及格分數</th>
               <th>測驗開始日期</th>
               <th>測驗結束日期</th>
+              <th>測驗出題者員編</th>
               <th>狀態</th>
             </tr>
           </thead>
@@ -134,8 +137,11 @@
               <td>{{ index + 1 }}</td>
               <td>{{ exam.examId }}</td>
               <td>{{ exam.examName }}</td>
+              <td>{{ exam.limitTime }}</td>
+              <td>{{ exam.targetScore }}</td>
               <td>{{ exam.startDate }}</td>
               <td>{{ exam.endDate }}</td>
+              <td>{{ exam.creatorId }}</td>
               <td>{{ getStatusName(exam.status) }}</td>
             </tr>
           </tbody>
@@ -363,6 +369,11 @@ const getStatusName = (status) => {
 const searchExam = async () => {
   const token = localStorage.getItem("authToken");
 
+  if (!query.value.startDate || !query.value.endDate) {
+    alert("請填寫起始日與結束日");
+    return;
+  }
+
   // 檢查結束時間是否小於開始時間
   if (new Date(query.value.endDate) < new Date(query.value.startDate)) {
     alert("結束日期不能小於開始日期");
@@ -477,7 +488,16 @@ const handleRedirect = () => {
   router.push("/"); // 跳轉到首頁
 };
 
+onMounted(() => {
+  const today = new Date();
+  const oneMonthLater = new Date();
+  oneMonthLater.setMonth(today.getMonth() + 1);
 
+  const toISODate = (date) => date.toISOString().split("T")[0];
+
+  query.value.startDate = toISODate(today);
+  query.value.endDate = toISODate(oneMonthLater);
+});
 
 </script>
 -->
@@ -493,7 +513,7 @@ const handleRedirect = () => {
   max-width: 1200px;
   margin: 0 auto;
   padding: 20px;
-  padding-bottom: 60px;
+  padding-top: 100px;
 }
 
 .content {

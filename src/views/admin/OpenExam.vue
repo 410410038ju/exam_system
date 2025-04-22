@@ -1,4 +1,4 @@
-<!-- 不用API -->
+<!-- 不用API 
 <template>
   <div class="container">
     <AdminNavBar />
@@ -390,7 +390,7 @@ const totalQuestionAmount = computed(() => {
 </script>
 -->
 
-<!-- API 
+<!-- API -->
 <template>
   <div class="container">
     <ErrorModal
@@ -471,7 +471,7 @@ const totalQuestionAmount = computed(() => {
 
         <div class="form-group">
           <div class="form-container">
-            <label class="form-label">總題目數量</label>
+            <label class="form-label">總題目數量：{{ totalQuestionAmount }}</label>
             <div class="total-question-amount">{{ totalQuestionAmount }}</div>
           </div>
         </div>
@@ -543,9 +543,9 @@ const totalQuestionAmount = computed(() => {
               </select>
             </div>
 
-           
             <div>
               <p>選擇的節ID：{{ getSelectedPartId }}</p>
+              <p>此節題目數量：{{ selectedPart.value ? `${questionCount}` : "尚未選擇節" }}</p>
             </div>
 
             <div class="form-content">
@@ -595,7 +595,7 @@ const totalQuestionAmount = computed(() => {
 </template>
 
 <script setup>
-import { reactive, ref, computed, onMounted, toRaw } from "vue";
+import { ref, reactive, computed, watch, onMounted } from "vue";
 import AdminNavBar from "../../components/AdminNavBar.vue";
 import ErrorModal from "../../components/APIerror.vue";
 import axios from "axios";
@@ -632,6 +632,8 @@ const chapters = ref([]);
 const parts = ref([]);
 
 const rangeItems = ref([]);
+
+const questionCount = ref(0);
 
 const token = localStorage.getItem("authToken");
 
@@ -732,6 +734,32 @@ const getSelectedPartId = computed(() => {
     (part) => part.partId === selectedPart.value
   );
   return selectedPartData ? selectedPartData.partId : "尚未選擇節";
+});
+
+// 當選擇節時，獲取該節的題目數量
+const fetchQuestionCount = async (partId) => {
+  try {
+    const response = await axios.get(`http://172.16.46.163/csexam/admin/question/count?${partId}`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      }
+    });
+
+    if (response.data.code === "0000") {
+      questionCount.value = response.data.data.count;
+    } else {
+      console.error("獲取題目數量失敗：", response.data.message);
+    }
+  } catch (error) {
+    console.error("API請求失敗：", error);
+  }
+};
+
+// 當選擇的節ID改變時，更新題目數量
+watch(getSelectedPartId, (newPartId) => {
+  if (newPartId) {
+    fetchQuestionCount(newPartId);
+  }
 });
 
 // 新增範圍項目
@@ -946,9 +974,12 @@ const handleRedirect = () => {
 
 onMounted(() => {
   fetchRangeData(); // 初始化時獲取分類、章節、節資料
+  if (getSelectedPartId.value) {
+    fetchQuestionCount(getSelectedPartId.value);
+  }
 });
 </script>
--->
+
 <style scoped>
 /* 全局設置 */
 * {

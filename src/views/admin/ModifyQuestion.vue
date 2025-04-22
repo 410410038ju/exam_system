@@ -1074,7 +1074,7 @@ const handleRedirect = () => {
   max-width: 1200px;
   margin: 0 auto;
   padding: 20px;
-  padding-bottom: 60px;
+  padding-top: 100px;
 }
 
 /* 搜尋區塊容器 */

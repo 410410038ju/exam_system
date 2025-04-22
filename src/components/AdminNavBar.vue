@@ -137,7 +137,7 @@ nav {
 </style>
 -->
 <template>
-  <div class="container">
+  <div class="nav-container">
     <nav class="navbar">
       <div class="nav-title">管理系統</div>
       <ul class="nav-list">

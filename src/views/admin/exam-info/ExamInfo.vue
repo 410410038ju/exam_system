@@ -1,31 +1,54 @@
 <template>
   <div class="container">
     <ErrorModal
-    v-model="showError"
-    :message="errorMsg"
-    @confirm="handleRedirect"
-  />
+      v-model="showError"
+      :message="errorMsg"
+      @confirm="handleRedirect"
+    />
     <AdminNavBar />
     <div class="content">
-      <button class="back-btn" @click="backTo">
+      <button class="back-btn" @click="goBack">
         <i class="arrow-icon">＜</i> 返回
       </button>
 
       <div class="exam-info-card">
         <h2>{{ exam.examName }}</h2>
-        <p>及格分數：60 分</p>
-        <p>答題時間：30 分鐘</p>
-        <p>總題數：20 題</p>
-        <p>
-          測驗進行日期：{{ exam.startDate?.replaceAll("-", "/") }} ~
-          {{ exam.endDate?.replaceAll("-", "/") }}
-          <button class="edit-time-btn" @click="showModal = true">
-            修改測驗日期
-          </button>
-        </p>
+        <div :class="['status-wrapper', exam.status]">
+          <p class="status-tag">
+            <span class="status-icon">
+              <i
+                v-if="exam.status === 'ongoing'"
+                class="fas fa-hourglass-half"
+              ></i>
+              <i
+                v-else-if="exam.status === 'done'"
+                class="fas fa-check-circle"
+              ></i>
+              <i
+                v-else-if="exam.status === 'canceled'"
+                class="fas fa-times-circle"
+              ></i>
+            </span>
+            測驗{{ getStatusName(exam.status) }}
+          </p>
+        </div>
+
+        <div class="exam-info-content">
+          <p>及格分數：{{ exam.targetScore }}</p>
+          <p>答題時間：{{ exam.limitTime }}</p>
+          <!-- <p>總題數：20 題</p> -->
+          <p>測驗出題者：{{ exam.creatorId }}</p>
+          <p>
+            測驗進行日期：{{ exam.startDate?.replaceAll("-", "/") }} ~
+            {{ exam.endDate?.replaceAll("-", "/") }}
+            <button class="edit-time-btn" @click="showModal = true">
+              修改測驗日期
+            </button>
+          </p>
+        </div>
       </div>
 
-      <table class="exam-range-table">
+      <!-- <table class="exam-range-table">
         <thead>
           <tr>
             <th>業務種類</th>
@@ -47,9 +70,9 @@
             <td>HTML 表單</td>
             <td>5</td>
           </tr>
-          <!-- 這邊可依資料動態渲染 -->
+         
         </tbody>
-      </table>
+      </table> -->
 
       <div class="action-buttons">
         <button class="btn" @click="openMakeupExam">開啟補考測驗</button>
@@ -57,7 +80,7 @@
         <button class="btn" @click="exportGrades">匯出成績</button>
       </div>
 
-      <!-- 新增的表格 -->
+      <!-- 成績表格 
       <table class="exam-records-table">
         <thead>
           <tr>
@@ -94,19 +117,23 @@
               </button>
             </td>
           </tr>
-          <!-- 可依據資料動態渲染 -->
+     
         </tbody>
-      </table>
+      </table>-->
 
       <!-- 彈出視窗 modal -->
       <div v-if="showModal" class="modal-overlay">
         <div class="modal">
           <button @click="showModal = false" class="close-btn">×</button>
           <h3>修改作答時間</h3>
-          <label>開始時間：</label>
-          <input type="date" v-model="newStartTime" />
-          <label>結束時間：</label>
-          <input type="date" v-model="newEndTime" />
+          <label class="modal-label">
+            <span class="label-text">開始時間：</span>
+            <input type="date" v-model="newStartTime" class="modal-input" />
+          </label>
+          <label class="modal-label">
+            <span class="label-text">結束時間：</span>
+            <input type="date" v-model="newEndTime" class="modal-input" />
+          </label>
           <div class="modal-actions">
             <button @click="confirmEdit" class="confirm-btn">確認</button>
             <button @click="showModal = false" class="cancel-btn">取消</button>
@@ -142,7 +169,21 @@ const newEndTime = ref("");
 
 const exam = ref({});
 
-const backTo = () => {
+// 狀態英文名稱轉中文名稱
+const getStatusName = (status) => {
+  switch (status) {
+    case "ongoing":
+      return "進行中";
+    case "done":
+      return "已結束";
+    case "canceled":
+      return "已取消";
+    default:
+      return status;
+  }
+};
+
+const goBack = () => {
   router.push("/view_exam_records");
   localStorage.removeItem("selectedExam");
 };
@@ -224,16 +265,19 @@ const confirmEdit = async () => {
 
 const openMakeupExam = () => {
   console.log("開啟補考測驗");
+  alert("功能尚未實作");
   // 這裡可以執行開啟補考測驗的邏輯
 };
 
 const viewMakeupRecords = () => {
   console.log("查看補考紀錄");
+  alert("功能尚未實作");
   // 這裡可以執行查看補考紀錄的邏輯
 };
 
 const exportGrades = () => {
   console.log("匯出成績");
+  alert("功能尚未實作");
   // 這裡可以執行匯出成績的邏輯
 };
 
@@ -260,29 +304,40 @@ onMounted(() => {
 </script>
 
 <style scoped>
+html,
+body {
+  background-color: #eee;
+  margin: 0;
+  padding: 0;
+  height: 100%;
+}
+
 .content {
   margin: 110px auto 20px;
   padding: 20px;
   max-width: 1100px;
-  background-color: #e6ffcf;
+  background-color: #fff;
+  border: 2px solid #dfdfdf;
 }
 
 .back-btn {
   margin: 0;
+  margin-bottom: 20px;
   display: flex;
   align-items: center;
   padding: 6px 12px;
   font-size: 14px;
-  background-color: #e0e0e0;
-  color: #333;
+  color: #0c029a;
+  background-color: #e7e7e7;
   border: none;
-  border-radius: 6px;
+  border-radius: 0;
   cursor: pointer;
   transition: background-color 0.2s ease;
 }
 
 .back-btn:hover {
-  background-color: #ccc;
+  color: #060053;
+  background-color: #d3d3d3;
 }
 
 .arrow-icon {
@@ -292,19 +347,19 @@ onMounted(() => {
 }
 
 .exam-info-card {
-  background-color: #f9f9f9;
+  background-color: #fff;
   padding: 20px 0;
   margin: 0 auto;
   margin-top: 0;
-  border-radius: 12px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  border-radius: 0;
   width: 100%;
   /* max-width: 800px; */
 }
 
 .exam-info-card h2 {
-  font-size: 20px;
+  font-size: 24px;
   margin: 0;
+  margin-bottom: 10px;
   color: #333;
   text-align: left;
 }
@@ -314,6 +369,51 @@ onMounted(() => {
   margin: 5px 0;
   font-size: 16px;
   color: #555;
+}
+
+.status-wrapper {
+  box-sizing: border-box;
+  width: 100%;
+}
+
+.status-wrapper.ongoing {
+  background-color: #fff3cd;
+  color: #856404;
+  border: 2px solid #856404;
+}
+
+.status-wrapper.done {
+  background-color: #d4edda;
+  color: #155724;
+  border: 2px solid #155724;
+}
+
+.status-wrapper.canceled {
+  background-color: #f8d7da;
+  color: #721c24;
+  border: 2px solid #721c24;
+}
+
+.status-tag {
+  display: flex;
+  align-items: center;
+  font-weight: bold;
+  font-size: 1rem;
+  margin: 0;
+  padding: 0.25rem 1rem;
+}
+
+.status-icon {
+  margin-right: 0.5rem;
+  font-size: 1.2rem;
+}
+
+.exam-info-content {
+  box-sizing: border-box;
+  margin-top: 20px;
+  padding: 10px 20px;
+  width: 100%;
+  background-color: #f5f5f5;
 }
 
 .edit-time-btn {
@@ -329,7 +429,7 @@ onMounted(() => {
 }
 
 .edit-time-btn:hover {
-  background-color: #45a049;
+  background-color: #38833c;
 }
 
 .exam-range-table {
@@ -361,11 +461,10 @@ onMounted(() => {
 .action-buttons {
   display: flex;
   justify-content: flex-start;
-  margin-top: 20px;
   width: 80%;
   max-width: 800px;
-  margin-left: auto;
-  margin-right: auto;
+  margin-top: 10px;
+  margin-left: 0;
 }
 
 /* 按鈕樣式 */
@@ -376,13 +475,16 @@ onMounted(() => {
   border: none;
   border-radius: 6px;
   cursor: pointer;
+  background-color: #4caf50;
+  color: white;
   transition: background-color 0.3s ease;
 }
 
 .btn:hover {
-  background-color: #45a049; /* 按鈕懸停時變色 */
+  background-color: #38833c; /* 按鈕懸停時變色 */
 }
 
+/*
 .btn:nth-child(1) {
   background-color: #4caf50;
   color: white;
@@ -397,6 +499,7 @@ onMounted(() => {
   background-color: #ff9800;
   color: white;
 }
+*/
 
 .modal-overlay {
   position: fixed;
@@ -423,13 +526,26 @@ onMounted(() => {
 }
 
 .modal h3 {
-  margin-bottom: 16px;
-  font-size: 18px;
+  margin: 0;
+  margin-bottom: 15px;
+  font-size: 24px;
+  color: #333;
+  font-weight: bold;
   text-align: center;
 }
 
-.modal input {
-  width: 90%;
+.modal-label {
+  display: flex;
+  flex-direction: column;
+}
+
+.label-text {
+  text-align: left; /* 將文字對齊到左邊 */
+  margin-bottom: 5px;
+  font-size: 16px;
+}
+
+.modal-input {
   padding: 8px;
   font-size: 14px;
   margin-bottom: 16px;
@@ -439,14 +555,15 @@ onMounted(() => {
 
 .modal-actions {
   display: flex;
-  justify-content: space-between;
+  justify-content: center;
+  gap: 20px;
 }
 
 .confirm-btn,
 .cancel-btn {
   padding: 6px 12px;
   border: none;
-  border-radius: 6px;
+  border-radius: 4px;
   cursor: pointer;
   font-size: 14px;
 }
@@ -456,9 +573,17 @@ onMounted(() => {
   color: white;
 }
 
+.confirm-btn:hover {
+  background-color: #45a049;
+}
+
 .cancel-btn {
   background-color: #f44336;
   color: white;
+}
+
+.cancel-btn:hover {
+  background-color: #d7372d;
 }
 
 .close-btn {
