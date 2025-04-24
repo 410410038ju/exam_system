@@ -19,17 +19,17 @@
               <i
                 v-if="exam.status === 'ongoing'"
                 class="fas fa-hourglass-half"
-                 :class="'icon-ongoing'"
+                :class="'icon-ongoing'"
               ></i>
               <i
                 v-else-if="exam.status === 'done'"
                 class="fas fa-check-circle"
-                 :class="'icon-done'"
+                :class="'icon-done'"
               ></i>
               <i
                 v-else-if="exam.status === 'canceled'"
                 class="fas fa-times-circle"
-                 :class="'icon-canceled'"
+                :class="'icon-canceled'"
               ></i>
             </span>
             測驗{{ getStatusName(exam.status) }}
@@ -124,7 +124,7 @@
         </tbody>
       </table>-->
 
-      <!-- 彈出視窗 modal -->
+      <!-- 修改作答時間 modal -->
       <div v-if="showModal" class="modal-overlay">
         <div class="modal">
           <button @click="showModal = false" class="close-btn">×</button>
@@ -143,6 +143,50 @@
           </div>
         </div>
       </div>
+
+      <!-- 補考設定 Modal -->
+      <div v-if="showMakeupModal" class="makeup-modal-overlay">
+        <div class="makeup-modal">
+          <button @click="showMakeupModal = false" class="close-btn">×</button>
+          <h3>設定補考測驗</h3>
+          <div class="form-group">
+            <label>測驗名稱：</label>
+            <p class="exam-name">{{ exam.examName }}</p>
+          </div>
+          <div class="form-group">
+            <label>開始日期：</label>
+            <input type="date" v-model="makeupStartDate" class="date-input" />
+          </div>
+          <div class="form-group">
+            <label>結束日期：</label>
+            <input type="date" v-model="makeupEndDate" class="date-input" />
+          </div>
+          <div class="form-group">
+            <label>及格分數：</label>
+            <input
+              type="number"
+              v-model="makeupTargetScore"
+              min="1"
+              @keyup.enter="submitMakeupExam"
+            />
+          </div>
+          <div class="form-group">
+            <label>答題時間(分鐘)：</label>
+            <input
+              type="number"
+              v-model="makeupLimitTime"
+              min="1"
+              @keyup.enter="submitMakeupExam"
+            />
+          </div>
+          <div class="modal-actions">
+            <button @click="submitMakeupExam" class="confirm-btn">確認</button>
+            <button @click="showMakeupModal = false" class="cancel-btn">
+              取消
+            </button>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 </template>
@@ -153,6 +197,9 @@ import ErrorModal from "../../../components/APIerror.vue";
 import { ref, computed, watch, onMounted } from "vue";
 import { useRouter } from "vue-router";
 import axios from "axios";
+import { useIdleLogout } from "../../../composables/useIdleLogout";
+
+useIdleLogout();
 
 const router = useRouter();
 
@@ -169,6 +216,12 @@ const errorMsg = ref({
 const showModal = ref(false);
 const newStartTime = ref("");
 const newEndTime = ref("");
+
+const showMakeupModal = ref(false);
+const makeupLimitTime = ref("");
+const makeupStartDate = ref("");
+const makeupEndDate = ref("");
+const makeupTargetScore = ref("");
 
 const exam = ref({});
 
@@ -212,6 +265,12 @@ const confirmEdit = async () => {
     const token = localStorage.getItem("authToken");
     const examId = exam.value.examId;
 
+    // 檢查 endDate 是否大於等於 startDate
+    if (newEndTime.value <= newStartTime.value) {
+      alert("結束時間不能早於開始時間！");
+      return; // 終止後續操作
+    }
+
     const response = await axios.patch(
       `http://172.16.46.163/csexam/admin/exam/${examId}`,
       {
@@ -246,20 +305,6 @@ const confirmEdit = async () => {
         code: error.response.data.code,
         message: error.response.data.message || "null",
       };
-    } else if (error.request) {
-      // 請求已發送但沒有收到回應
-      errorMsg.value = {
-        status: "timeout",
-        code: 0,
-        message: "伺服器回應超時，請稍後再試",
-      };
-    } else {
-      // 發生其他錯誤（例如設定錯誤等）
-      errorMsg.value = {
-        status: 0,
-        code: 0,
-        message: "發生未知錯誤，請稍後再試",
-      };
     }
     // 顯示錯誤視窗
     showError.value = true;
@@ -267,9 +312,37 @@ const confirmEdit = async () => {
 };
 
 const openMakeupExam = () => {
-  console.log("開啟補考測驗");
-  alert("功能尚未實作");
-  // 這裡可以執行開啟補考測驗的邏輯
+  showMakeupModal.value = true;
+  // console.log("開啟補考測驗");
+  // alert("功能尚未實作");
+};
+
+const submitMakeupExam = () => {
+  if (
+    !makeupLimitTime.value ||
+    !makeupStartDate.value ||
+    !makeupEndDate.value ||
+    !makeupTargetScore.value
+  ) {
+    alert("請填寫所有欄位！");
+    return;
+  }
+  // 這邊可接 API 發送邏輯
+  console.log({
+    limitTime: makeupLimitTime.value,
+    startDate: makeupStartDate.value,
+    endDate: makeupEndDate.value,
+    targetScore: makeupTargetScore.value,
+  });
+  
+  // 清空資料
+  makeupLimitTime.value = "";
+  makeupStartDate.value = "";
+  makeupEndDate.value = "";
+  makeupTargetScore.value = "";
+  showMakeupModal.value = false;
+  alert("已開啟補考測驗");
+  // EE003 補考考試已存在
 };
 
 const viewMakeupRecords = () => {
@@ -321,7 +394,7 @@ body {
   left: 0;
   width: 100%;
   height: 100%;
-  background-color: #f4f4f4;
+  background-color: #eee;
 }
 
 .content {
@@ -432,13 +505,12 @@ body {
   color: #721c24; /* 紅色 */
 }
 
-
 .exam-info-content {
   box-sizing: border-box;
   margin-top: 20px;
   padding: 10px 20px;
   width: 100%;
-  background-color: #f5f5f5;
+  background-color: #eee;
 }
 
 .edit-time-btn {
@@ -582,6 +654,70 @@ body {
   display: flex;
   justify-content: center;
   gap: 20px;
+}
+/*
+.form-group {
+  margin-bottom: 16px;
+  display: flex;
+  flex-direction: column;
+}*/
+
+.makeup-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.4);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 999;
+  opacity: 0;
+  animation: fadeIn 0.3s forwards;
+}
+
+.makeup-modal {
+  position: relative;
+  background-color: white;
+  padding: 24px;
+  border-radius: 12px;
+  width: 400px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+}
+
+.makeup-modal h3 {
+  margin: 0;
+  margin-bottom: 15px;
+  font-size: 24px;
+  color: #333;
+  font-weight: bold;
+  text-align: center;
+}
+
+.form-group {
+  display: flex;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.form-group label {
+  width: 130px;
+  text-align: center;
+}
+
+.form-group input {
+  flex-grow: 1;
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+.exam-name {
+  font-size: 16px;
+  padding: 0;
+  margin: 0;
+  color: #333;
 }
 
 .confirm-btn,

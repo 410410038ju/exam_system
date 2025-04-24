@@ -154,7 +154,7 @@ const fullMessage = computed(() => {
 .modal-content {
   background: white;
   padding: 24px 32px;
-  border-radius: 12px;
+  border-radius: 6px;
   text-align: center;
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
   max-width: 400px;

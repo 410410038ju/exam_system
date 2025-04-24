@@ -131,7 +131,9 @@ import { useRouter } from "vue-router";
 import axios from "axios";
 import cheerImage from "../assets/images/cheer.png";
 const loggedInUser = JSON.parse(localStorage.getItem("loggedInUser"));
+import { useIdleLogout } from "../composables/useIdleLogout";
 
+useIdleLogout();
 // 檢查登入狀況
 const checkLogin = () => {
   if (!loggedInUser) {

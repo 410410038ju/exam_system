@@ -26,6 +26,7 @@
             id="creatorId"
             type="text"
             placeholder="輸入員工編號"
+            @keyup.enter="searchQuestions"
           />
         </div>
 
@@ -36,6 +37,7 @@
             id="keyword"
             type="text"
             placeholder="輸入題目關鍵字"
+            @keyup.enter="searchQuestions"
           />
         </div>
 
@@ -516,6 +518,9 @@ import { useRouter } from "vue-router";
 import axios from "axios";
 import AdminNavBar from "../../components/AdminNavBar.vue";
 import ErrorModal from "../../components/APIerror.vue";
+import { useIdleLogout } from "../../composables/useIdleLogout";
+
+useIdleLogout();
 
 // 控制錯誤視窗顯示與否
 const showError = ref(false);
@@ -747,21 +752,7 @@ const searchQuestions = async () => {
         code: error.response.data.code,
         message: error.response.data.message || "null",
       };
-    } else if (error.request) {
-      // 請求已發送但沒有收到回應
-      errorMsg.value = {
-        status: "timeout",
-        code: 0,
-        message: "伺服器回應超時，請稍後再試",
-      };
-    } else {
-      // 發生其他錯誤（例如設定錯誤等）
-      errorMsg.value = {
-        status: 0,
-        code: 0,
-        message: "發生未知錯誤，請稍後再試",
-      };
-    }
+    } 
     // 顯示錯誤視窗
     showError.value = true;
   }
@@ -884,21 +875,7 @@ const editQuestion = async (question) => {
         code: error.response.data.code,
         message: error.response.data.message || "null",
       };
-    } else if (error.request) {
-      // 請求已發送但沒有收到回應
-      errorMsg.value = {
-        status: "timeout",
-        code: 0,
-        message: "伺服器回應超時，請稍後再試",
-      };
-    } else {
-      // 發生其他錯誤（例如設定錯誤等）
-      errorMsg.value = {
-        status: 0,
-        code: 0,
-        message: "發生未知錯誤，請稍後再試",
-      };
-    }
+    } 
     // 顯示錯誤視窗
     showError.value = true;
   }
@@ -960,21 +937,7 @@ const saveEdit = async () => {
         code: error.response.data.code,
         message: error.response.data.message || "null",
       };
-    } else if (error.request) {
-      // 請求已發送但沒有收到回應
-      errorMsg.value = {
-        status: "timeout",
-        code: 0,
-        message: "伺服器回應超時，請稍後再試",
-      };
-    } else {
-      // 發生其他錯誤（例如設定錯誤等）
-      errorMsg.value = {
-        status: 0,
-        code: 0,
-        message: "發生未知錯誤，請稍後再試",
-      };
-    }
+    } 
     // 顯示錯誤視窗
     showError.value = true;
   }
@@ -1042,21 +1005,7 @@ const deleteQuestion = async (question) => {
         code: error.response.data.code,
         message: error.response.data.message || "null",
       };
-    } else if (error.request) {
-      // 請求已發送但沒有收到回應
-      errorMsg.value = {
-        status: "timeout",
-        code: 0,
-        message: "伺服器回應超時，請稍後再試",
-      };
-    } else {
-      // 發生其他錯誤（例如設定錯誤等）
-      errorMsg.value = {
-        status: 0,
-        code: 0,
-        message: "發生未知錯誤，請稍後再試",
-      };
-    }
+    } 
     // 顯示錯誤視窗
     showError.value = true;
   }

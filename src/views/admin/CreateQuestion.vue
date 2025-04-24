@@ -1,4 +1,4 @@
-<!-- 不需要API的程式碼 -->
+<!-- 不需要API的程式碼 
 <template>
   <div class="container">
     <AdminNavBar />
@@ -82,6 +82,9 @@ import { ref, computed, watch, onMounted } from "vue";
 import { useRouter } from "vue-router";
 import axios from "axios";
 import AdminNavBar from "../../components/AdminNavBar.vue";
+import { useIdleLogout } from "../../composables/useIdleLogout";
+
+useIdleLogout();
 
 // 初始化 router
 const router = useRouter(); // 使用 useRouter 來取得 router
@@ -281,9 +284,9 @@ onMounted(() => {
   populateChapters();
 });
 </script>
+-->
 
-
-<!-- API 
+<!-- API -->
 <template>
   <div class="container">
     <ErrorModal
@@ -382,6 +385,9 @@ import { useRouter } from "vue-router";
 import axios from "axios";
 import AdminNavBar from "../../components/AdminNavBar.vue";
 import ErrorModal from "../../components/APIerror.vue";
+import { useIdleLogout } from "../../composables/useIdleLogout";
+
+useIdleLogout();
 
 // 初始化 router
 const router = useRouter(); // 使用 useRouter 來取得 router
@@ -480,21 +486,7 @@ const fetchData = async () => {
         code: error.response.data.code,
         message: error.response.data.message || "null",
       };
-    } else if (error.request) {
-      // 請求已發送但沒有收到回應
-      errorMsg.value = {
-        status: "timeout",
-        code: 0,
-        message: "伺服器回應超時，請稍後再試",
-      };
-    } else {
-      // 發生其他錯誤（例如設定錯誤等）
-      errorMsg.value = {
-        status: 0,
-        code: 0,
-        message: "發生未知錯誤，請稍後再試",
-      };
-    }
+    } 
     // 顯示錯誤視窗
     showError.value = true;
   }
@@ -567,21 +559,7 @@ const addCategory = async () => {
         code: error.response.data.code,
         message: error.response.data.message || "null",
       };
-    } else if (error.request) {
-      // 請求已發送但沒有收到回應
-      errorMsg.value = {
-        status: "timeout",
-        code: 0,
-        message: "伺服器回應超時，請稍後再試",
-      };
-    } else {
-      // 發生其他錯誤（例如設定錯誤等）
-      errorMsg.value = {
-        status: 0,
-        code: 0,
-        message: "發生未知錯誤，請稍後再試",
-      };
-    }
+    } 
     // 顯示錯誤視窗
     showError.value = true;
   }
@@ -630,21 +608,7 @@ const addChapter = async () => {
         code: error.response.data.code,
         message: error.response.data.message || "null",
       };
-    } else if (error.request) {
-      // 請求已發送但沒有收到回應
-      errorMsg.value = {
-        status: "timeout",
-        code: 0,
-        message: "伺服器回應超時，請稍後再試",
-      };
-    } else {
-      // 發生其他錯誤（例如設定錯誤等）
-      errorMsg.value = {
-        status: 0,
-        code: 0,
-        message: "發生未知錯誤，請稍後再試",
-      };
-    }
+    } 
     // 顯示錯誤視窗
     showError.value = true;
   }
@@ -693,21 +657,7 @@ const addPart = async () => {
         code: error.response.data.code,
         message: error.response.data.message || "null",
       };
-    } else if (error.request) {
-      // 請求已發送但沒有收到回應
-      errorMsg.value = {
-        status: "timeout",
-        code: 0,
-        message: "伺服器回應超時，請稍後再試",
-      };
-    } else {
-      // 發生其他錯誤（例如設定錯誤等）
-      errorMsg.value = {
-        status: 0,
-        code: 0,
-        message: "發生未知錯誤，請稍後再試",
-      };
-    }
+    } 
     // 顯示錯誤視窗
     showError.value = true;
   }

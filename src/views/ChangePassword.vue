@@ -198,6 +198,7 @@ button {
             v-model="confirmPassword"
             placeholder="再次輸入新密碼"
             class="input-field"
+            @keyup.enter="changePassword"
           />
 
           <button @click="changePassword" class="btn-primary">

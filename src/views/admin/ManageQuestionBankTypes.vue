@@ -12,6 +12,7 @@
             type="text"
             placeholder="搜尋業務種類、章、節..."
             class="search-input"
+            @keyup.enter="search"
           />
           <button @click="search" class="search-button">搜尋</button>
         </div>
@@ -139,6 +140,9 @@
 import { ref, reactive, onMounted } from "vue";
 import axios from "axios";
 import AdminNavBar from "../../components/AdminNavBar.vue";
+import { useIdleLogout } from "../../composables/useIdleLogout";
+
+useIdleLogout();
 
 // 定義高亮顯示的關鍵字
 const highlightedText = ref("");
@@ -455,6 +459,7 @@ const deleteSection = (category, chapter, index) => {
             type="text"
             placeholder="搜尋業務種類、章、節..."
             class="search-input"
+            @keyup.enter="search"
           />
           <button @click="search" class="search-button">關鍵字搜尋</button>
         </div>
@@ -548,6 +553,9 @@ import { ref, reactive, onMounted } from "vue";
 import axios from "axios";
 import AdminNavBar from "../../components/AdminNavBar.vue";
 import ErrorModal from "../../components/APIerror.vue";
+import { useIdleLogout } from "../../composables/useIdleLogout";
+
+useIdleLogout();
 
 // 控制錯誤視窗顯示與否
 const showError = ref(false);
@@ -608,21 +616,7 @@ const fetchExamData = async () => {
         code: error.response.data.code,
         message: error.response.data.message || "null",
       };
-    } else if (error.request) {
-      // 請求已發送但沒有收到回應
-      errorMsg.value = {
-        status: "timeout",
-        code: 0,
-        message: "伺服器回應超時，請稍後再試",
-      };
-    } else {
-      // 發生其他錯誤（例如設定錯誤等）
-      errorMsg.value = {
-        status: 0,
-        code: 0,
-        message: "發生未知錯誤，請稍後再試",
-      };
-    }
+    } 
     // 顯示錯誤視窗
     showError.value = true;
   }
@@ -715,21 +709,7 @@ const addCategory = async () => {
           code: error.response.data.code,
           message: error.response.data.message || "null",
         };
-      } else if (error.request) {
-        // 請求已發送但沒有收到回應
-        errorMsg.value = {
-          status: "timeout",
-          code: 0,
-          message: "伺服器回應超時，請稍後再試",
-        };
-      } else {
-        // 發生其他錯誤（例如設定錯誤等）
-        errorMsg.value = {
-          status: 0,
-          code: 0,
-          message: "發生未知錯誤，請稍後再試",
-        };
-      }
+      } 
       // 顯示錯誤視窗
       showError.value = true;
     }
@@ -783,21 +763,7 @@ const editCategory = async (category) => {
           code: error.response.data.code,
           message: error.response.data.message || "null",
         };
-      } else if (error.request) {
-        // 請求已發送但沒有收到回應
-        errorMsg.value = {
-          status: "timeout",
-          code: 0,
-          message: "伺服器回應超時，請稍後再試",
-        };
-      } else {
-        // 發生其他錯誤（例如設定錯誤等）
-        errorMsg.value = {
-          status: 0,
-          code: 0,
-          message: "發生未知錯誤，請稍後再試",
-        };
-      }
+      } 
       // 顯示錯誤視窗
       showError.value = true;
     }
@@ -864,21 +830,7 @@ const addChapter = async (category) => {
           code: error.response.data.code,
           message: error.response.data.message || "null",
         };
-      } else if (error.request) {
-        // 請求已發送但沒有收到回應
-        errorMsg.value = {
-          status: "timeout",
-          code: 0,
-          message: "伺服器回應超時，請稍後再試",
-        };
-      } else {
-        // 發生其他錯誤（例如設定錯誤等）
-        errorMsg.value = {
-          status: 0,
-          code: 0,
-          message: "發生未知錯誤，請稍後再試",
-        };
-      }
+      } 
       // 顯示錯誤視窗
       showError.value = true;
     }
@@ -934,21 +886,7 @@ const editChapter = async (chapter) => {
           code: error.response.data.code,
           message: error.response.data.message || "null",
         };
-      } else if (error.request) {
-        // 請求已發送但沒有收到回應
-        errorMsg.value = {
-          status: "timeout",
-          code: 0,
-          message: "伺服器回應超時，請稍後再試",
-        };
-      } else {
-        // 發生其他錯誤（例如設定錯誤等）
-        errorMsg.value = {
-          status: 0,
-          code: 0,
-          message: "發生未知錯誤，請稍後再試",
-        };
-      }
+      } 
       // 顯示錯誤視窗
       showError.value = true;
     }
@@ -1014,21 +952,7 @@ const addPart = async (category, chapter) => {
           code: error.response.data.code,
           message: error.response.data.message || "null",
         };
-      } else if (error.request) {
-        // 請求已發送但沒有收到回應
-        errorMsg.value = {
-          status: "timeout",
-          code: 0,
-          message: "伺服器回應超時，請稍後再試",
-        };
-      } else {
-        // 發生其他錯誤（例如設定錯誤等）
-        errorMsg.value = {
-          status: 0,
-          code: 0,
-          message: "發生未知錯誤，請稍後再試",
-        };
-      }
+      } 
       // 顯示錯誤視窗
       showError.value = true;
     }
@@ -1083,21 +1007,7 @@ const editPart = async (part) => {
           code: error.response.data.code,
           message: error.response.data.message || "null",
         };
-      } else if (error.request) {
-        // 請求已發送但沒有收到回應
-        errorMsg.value = {
-          status: "timeout",
-          code: 0,
-          message: "伺服器回應超時，請稍後再試",
-        };
-      } else {
-        // 發生其他錯誤（例如設定錯誤等）
-        errorMsg.value = {
-          status: 0,
-          code: 0,
-          message: "發生未知錯誤，請稍後再試",
-        };
-      }
+      } 
       // 顯示錯誤視窗
       showError.value = true;
     }

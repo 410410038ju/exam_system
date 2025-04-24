@@ -582,6 +582,9 @@ import axios from "axios";
 import AdminNavBar from "../../components/AdminNavBar.vue";
 import ErrorModal from "../../components/APIerror.vue";
 import * as XLSX from "xlsx";
+import { useIdleLogout } from "../../composables/useIdleLogout";
+
+useIdleLogout();
 
 // 初始化 Vue Router
 const router = useRouter();
@@ -738,21 +741,7 @@ const loadUsers = async () => {
         code: error.response.data.code,
         message: error.response.data.message || "null",
       };
-    } else if (error.request) {
-      // 請求已發送但沒有收到回應
-      errorMsg.value = {
-        status: "timeout",
-        code: 0,
-        message: "伺服器回應超時，請稍後再試",
-      };
-    } else {
-      // 發生其他錯誤（例如設定錯誤等）
-      errorMsg.value = {
-        status: 0,
-        code: 0,
-        message: "發生未知錯誤，請稍後再試",
-      };
-    }
+    } 
     // 顯示錯誤視窗
     showError.value = true;
   }
@@ -780,10 +769,10 @@ const searchUsers = () => {
 
 // 新增人員
 const addUser = () => {
-  if (!isNewPasswordValid.value) {
+  /*if (!isNewPasswordValid.value) {
     alert("密碼不符合要求");
     return;
-  }
+  }*/
 
   if (!newUser.name || !newUser.id || !newUser.password) {
     alert("請輸入完整資料！");
@@ -882,21 +871,7 @@ const addUser = async () => {
         code: error.response.data.code,
         message: error.response.data.message || "null",
       };
-    } else if (error.request) {
-      // 請求已發送但沒有收到回應
-      errorMsg.value = {
-        status: "timeout",
-        code: 0,
-        message: "伺服器回應超時，請稍後再試",
-      };
-    } else {
-      // 發生其他錯誤（例如設定錯誤等）
-      errorMsg.value = {
-        status: 0,
-        code: 0,
-        message: "發生未知錯誤，請稍後再試",
-      };
-    }
+    } 
     // 顯示錯誤視窗
     showError.value = true;
   }
@@ -1078,21 +1053,7 @@ const saveChanges = async () => {
         code: error.response.data.code,
         message: error.response.data.message || "null",
       };
-    } else if (error.request) {
-      // 請求已發送但沒有收到回應
-      errorMsg.value = {
-        status: "timeout",
-        code: 0,
-        message: "伺服器回應超時，請稍後再試",
-      };
-    } else {
-      // 發生其他錯誤（例如設定錯誤等）
-      errorMsg.value = {
-        status: 0,
-        code: 0,
-        message: "發生未知錯誤，請稍後再試",
-      };
-    }
+    } 
     // 顯示錯誤視窗
     showError.value = true;
   }
@@ -1186,21 +1147,7 @@ const deleteUser = async (id) => {
         code: error.response.data.code,
         message: error.response.data.message || "null",
       };
-    } else if (error.request) {
-      // 請求已發送但沒有收到回應
-      errorMsg.value = {
-        status: "timeout",
-        code: 0,
-        message: "伺服器回應超時，請稍後再試",
-      };
-    } else {
-      // 發生其他錯誤（例如設定錯誤等）
-      errorMsg.value = {
-        status: 0,
-        code: 0,
-        message: "發生未知錯誤，請稍後再試",
-      };
-    }
+    } 
     // 顯示錯誤視窗
     showError.value = true;
     }
@@ -1268,21 +1215,7 @@ const unlockUser = async (empId) => {
         code: error.response.data.code,
         message: error.response.data.message || "null",
       };
-    } else if (error.request) {
-      // 請求已發送但沒有收到回應
-      errorMsg.value = {
-        status: "timeout",
-        code: 0,
-        message: "伺服器回應超時，請稍後再試",
-      };
-    } else {
-      // 發生其他錯誤（例如設定錯誤等）
-      errorMsg.value = {
-        status: 0,
-        code: 0,
-        message: "發生未知錯誤，請稍後再試",
-      };
-    }
+    } 
     // 顯示錯誤視窗
     showError.value = true;
   }
@@ -1367,21 +1300,7 @@ const exportToExcel = async () => {
         code: error.response.data.code,
         message: error.response.data.message || "null",
       };
-    } else if (error.request) {
-      // 請求已發送但沒有收到回應
-      errorMsg.value = {
-        status: "timeout",
-        code: 0,
-        message: "伺服器回應超時，請稍後再試",
-      };
-    } else {
-      // 發生其他錯誤（例如設定錯誤等）
-      errorMsg.value = {
-        status: 0,
-        code: 0,
-        message: "發生未知錯誤，請稍後再試",
-      };
-    }
+    } 
     // 顯示錯誤視窗
     showError.value = true;
   }

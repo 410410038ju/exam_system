@@ -40,10 +40,22 @@
 </template>
 
 <script setup>
-import { ref, reactive, onMounted, onUnmounted, computed } from "vue";
+import {
+  ref,
+  reactive,
+  onMounted,
+  onUnmounted,
+  onBeforeUnmount,
+  computed,
+} from "vue";
 import { useRouter } from "vue-router";
+import { useIdleLogout } from "../../composables/useIdleLogout";
+
+useIdleLogout();
 
 const router = useRouter();
+
+const examId = ref(null);
 
 // 測驗名稱
 const examName = ref("數學期末考");
@@ -81,6 +93,41 @@ const questions = ref([
 const userAnswers = ref(
   questions.value.map((q) => (q.type === "多選題" ? [] : null))
 );
+
+const getExam = async () => {
+  const token = localStorage.getItem("authToken");
+  try {
+    const response = await axios.post(
+      "http://172.16.46.163/csexam/user/exam/paper",
+      {
+        examId: examId,
+      },
+      {
+        headers: { Authorization: `Bearer ${token}` },
+      }
+    );
+
+    const data = response.data;
+
+    if (data.code === "0000") {
+      // 讀取測驗資料
+    } else {
+      alert(data.message || "讀取測驗失敗");
+    }
+  } catch (error) {
+    if (error.response) {
+      if (error.response.data.code) {
+        alert(error.response.data.message);
+        // EE001 查無考試
+      } else {
+        alert("錯誤訊息:", error.response.data.message);
+      }
+    } else {
+      alert("發生錯誤，請稍後再試");
+    }
+    console.error("讀取測驗失敗:", error);
+  }
+};
 
 // 計算已答題數
 const answeredQuestions = computed(() => {
@@ -120,11 +167,21 @@ const formattedTime = () => {
 // 當組件掛載時開始計時
 onMounted(() => {
   startCountdown();
+  const storedExamId = localStorage.getItem("examId"); // 從 localStorage 中讀取 examId
+  if (storedExamId) {
+    examId.value = storedExamId;
+    console.log("接收到的 examId:", examId.value);
+  }
+  getExam();
 });
 
 // 當組件卸載時清除計時器，防止內存泄漏
 onUnmounted(() => {
   clearInterval(timer);
+});
+
+onBeforeUnmount(() => {
+  localStorage.removeItem("examId");
 });
 </script>
 

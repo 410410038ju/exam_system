@@ -208,13 +208,12 @@ button {
 
 <script>
 export default {
-  name: 'App',
+  name: "App",
 };
 </script>
 
 <style>
-
 .content {
-  padding-top: 20px; 
+  padding-top: 20px;
 }
 </style>

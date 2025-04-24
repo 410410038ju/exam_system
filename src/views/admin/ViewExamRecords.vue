@@ -17,6 +17,18 @@
               v-model="query.examName"
               type="text"
               placeholder="輸入測驗名稱"
+              @keyup.enter="searchExam"
+            />
+          </div>
+
+          <div class="form-group" id="creatorId-group">
+            <label for="creatorId">測驗出題者員編</label>
+            <input
+              id="creatorId"
+              v-model="query.creatorId"
+              type="text"
+              placeholder="輸入測驗出題者員編"
+              @keyup.enter="searchExam"
             />
           </div>
 
@@ -118,13 +130,49 @@
           <thead>
             <tr>
               <th>編號</th>
-              <th>測驗編號</th>
+              <th
+                @click="setOrderBy('examId')"
+                :class="{ active: query.orderBy === 'examId' }"
+              >
+                測驗編號
+                <i :class="getSortIcon('examId')"></i>
+              </th>
               <th>測驗名稱</th>
-              <th>答題時間</th>
-              <th>及格分數</th>
-              <th>測驗開始日期</th>
-              <th>測驗結束日期</th>
-              <th>測驗出題者員編</th>
+              <th
+                @click="setOrderBy('limitTime')"
+                :class="{ active: query.orderBy === 'limitTime' }"
+              >
+                答題時間
+                <i :class="getSortIcon('limitTime')"></i>
+              </th>
+              <th
+                @click="setOrderBy('targetScore')"
+                :class="{ active: query.orderBy === 'targetScore' }"
+              >
+                及格分數
+                <i :class="getSortIcon('targetScore')"></i>
+              </th>
+              <th
+                @click="setOrderBy('startDate')"
+                :class="{ active: query.orderBy === 'startDate' }"
+              >
+                測驗開始日期
+                <i :class="getSortIcon('startDate')"></i>
+              </th>
+              <th
+                @click="setOrderBy('endDate')"
+                :class="{ active: query.orderBy === 'endDate' }"
+              >
+                測驗結束日期
+                <i :class="getSortIcon('endDate')"></i>
+              </th>
+              <th
+                @click="setOrderBy('creatorId')"
+                :class="{ active: query.orderBy === 'creatorId' }"
+              >
+                測驗出題者員編
+                <i :class="getSortIcon('creatorId')"></i>
+              </th>
               <th>狀態</th>
             </tr>
           </thead>
@@ -139,8 +187,8 @@
               <td>{{ exam.examName }}</td>
               <td>{{ exam.limitTime }}</td>
               <td>{{ exam.targetScore }}</td>
-              <td>{{ exam.startDate }}</td>
-              <td>{{ exam.endDate }}</td>
+              <td>{{ exam.startDate?.replaceAll("-", "/") }}</td>
+              <td>{{ exam.endDate?.replaceAll("-", "/") }}</td>
               <td>{{ exam.creatorId }}</td>
               <td>{{ getStatusName(exam.status) }}</td>
             </tr>
@@ -216,6 +264,9 @@ import AdminNavBar from "../../components/AdminNavBar.vue";
 import { ref, computed, watch, onMounted, onBeforeUnmount } from "vue";
 import { useRouter } from "vue-router";
 import axios from "axios";
+import { useIdleLogout } from "../../composables/useIdleLogout";
+
+useIdleLogout();
 
 const router = useRouter();
 
@@ -234,23 +285,35 @@ const query = ref({
 const exams = ref([
   {
     examId: 3,
+    groupId: 3,
     examName: "考卷1",
+    limitTime: 30, // 答題時間（分鐘）
+    targetScore: 60, // 及格分數
     startDate: "2025-04-01",
     endDate: "2025-04-10",
+    creatorId: "T001", // 出題者員編
     status: "ongoing",
   },
   {
     examId: 5,
+    groupId: 5,
     examName: "考卷2",
+    limitTime: 45,
+    targetScore: 70,
     startDate: "2025-04-05",
     endDate: "2025-04-12",
+    creatorId: "T002",
     status: "done",
   },
   {
     examId: 8,
+    groupId: 8,
     examName: "考卷3",
+    limitTime: 20,
+    targetScore: 50,
     startDate: "2025-04-03",
     endDate: "2025-04-15",
+    creatorId: "T003",
     status: "canceled",
   },
 ]);
@@ -270,6 +333,30 @@ const getStatusName = (status) => {
     default:
       return status;
   }
+};
+
+// 設置排序條件
+const setOrderBy = (column) => {
+  if (query.value.orderBy === column) {
+    // 如果已經是這個欄位，則切換排序順序
+    query.value.orderType = query.value.orderType === "desc" ? "asc" : "desc";
+  } else {
+    // 如果是新的欄位，則選擇此欄位並設為降序
+    query.value.orderBy = column;
+    query.value.orderType = "desc";
+  }
+
+  searchExam();
+};
+
+// 根據當前排序條件來返回箭頭圖示的class
+const getSortIcon = (column) => {
+  if (query.value.orderBy === column) {
+    return query.value.orderType === "asc"
+      ? "fas fa-arrow-up"
+      : "fas fa-arrow-down";
+  }
+  return "fas fa-arrow-up"; // 預設箭頭朝上
 };
 
 // 查詢過濾函式
@@ -313,13 +400,16 @@ onBeforeUnmount(() => {
 
 </script>
 -->
-<!-- API 
+<!-- API
 <script setup>
 import AdminNavBar from "../../components/AdminNavBar.vue";
 import ErrorModal from "../../components/APIerror.vue";
 import { ref, computed, watch, onMounted } from "vue";
 import { useRouter } from "vue-router";
 import axios from "axios";
+import { useIdleLogout } from "../../composables/useIdleLogout";
+
+useIdleLogout();
 
 const router = useRouter();
 
@@ -336,11 +426,14 @@ const errorMsg = ref({
 // 查詢條件的狀態
 const query = ref({
   examName: "",
+  creatorId: "",
   startDate: "",
   endDate: "",
   status: "",
   page: 1,
   size: 10,
+  orderBy: "examId",
+  orderType: "desc",
 });
 
 const filteredExams = ref([]); // 顯示用的資料
@@ -365,12 +458,44 @@ const getStatusName = (status) => {
   }
 };
 
+// 設置排序條件
+const setOrderBy = (column) => {
+  if (query.value.orderBy === column) {
+    // 如果已經是這個欄位，則切換排序順序
+    query.value.orderType = query.value.orderType === "desc" ? "asc" : "desc";
+  } else {
+    // 如果是新的欄位，則選擇此欄位並設為降序
+    query.value.orderBy = column;
+    query.value.orderType = "desc";
+  }
+
+  searchExam();
+};
+
+// 根據當前排序條件來返回箭頭圖示的class
+const getSortIcon = (column) => {
+  if (query.value.orderBy === column) {
+    return query.value.orderType === "asc"
+      ? "fas fa-arrow-up"
+      : "fas fa-arrow-down";
+  }
+  return "fas fa-arrow-up"; // 預設箭頭朝上
+};
+
 // 查詢考卷API
 const searchExam = async () => {
   const token = localStorage.getItem("authToken");
 
-  if (!query.value.startDate || !query.value.endDate) {
+  /*if (!query.value.startDate || !query.value.endDate) {
     alert("請填寫起始日與結束日");
+    return;
+  }*/
+
+  if (
+    (query.value.startDate && !query.value.endDate) ||
+    (!query.value.startDate && query.value.endDate)
+  ) {
+    alert("請同時填寫起始日與結束日，或兩者皆不填");
     return;
   }
 
@@ -389,11 +514,14 @@ const searchExam = async () => {
         },
         params: {
           examName: query.value.examName || undefined,
+          creatorId: query.value.creatorId || undefined,
           startDate: query.value.startDate || undefined,
           endDate: query.value.endDate || undefined,
           status: query.value.status || undefined,
           page: query.value.page - 1, // 後端是從 0 開始，所以要 -1
           size: query.value.size,
+          orderBy: query.value.orderBy,
+          orderType: query.value.orderType,
         },
       }
     );
@@ -420,31 +548,17 @@ const searchExam = async () => {
         code: error.response.data.code,
         message: error.response.data.message || "null",
       };
-    } else if (error.request) {
-      // 請求已發送但沒有收到回應
-      errorMsg.value = {
-        status: "timeout",
-        code: 0,
-        message: "伺服器回應超時，請稍後再試",
-      };
-    } else {
-      // 發生其他錯誤（例如設定錯誤等）
-      errorMsg.value = {
-        status: 0,
-        code: 0,
-        message: "發生未知錯誤，請稍後再試",
-      };
-    }
+    } 
     // 顯示錯誤視窗
     showError.value = true;
   }
 };
 
 // 查詢條件變動時，跳回第 1 頁並自動查詢
-/* 待測試
 watch(
   () => [
     query.examName,
+    query.creatorId,
     query.startDate,
     query.endDate,
     query.status,
@@ -454,7 +568,6 @@ watch(
     searchExam();
   }
 );
-*/
 
 // 上一頁
 const prevPage = () => {
@@ -479,7 +592,7 @@ const goToExamInfo = (examId) => {
   if (selectedExam) {
     localStorage.setItem("selectedExam", JSON.stringify(selectedExam));
   }
-  router.push({ name: "ExamInfo", params: { id: examId } });
+  router.push({ name: "ExamInfo" });
 };
 
 // 當錯誤視窗按下確認後跳轉到首頁
@@ -498,7 +611,6 @@ onMounted(() => {
   query.value.startDate = toISODate(today);
   query.value.endDate = toISODate(oneMonthLater);
 });
-
 </script>
 -->
 <style scoped>
@@ -542,22 +654,27 @@ onMounted(() => {
   display: flex;
   flex-direction: column;
   flex-grow: 1;
+  align-items: center;
 }
 
 .form-group#examName-group {
-  flex-grow: 1;
+  flex-grow: 2;
+}
+
+.form-group#creatorId-group {
+  flex-grow: 0.8;
 }
 
 .form-group#startDate-group {
-  flex-grow: 1;
+  flex-grow: 1.2;
 }
 
 .form-group#endDate-group {
-  flex-grow: 1;
+  flex-grow: 1.2;
 }
 
 .form-group#status-group {
-  flex-grow: 1;
+  flex-grow: 0.8;
 }
 
 /* 標籤文字 */
@@ -567,7 +684,7 @@ onMounted(() => {
   color: #333;
   margin-bottom: 8px;
   text-align: center;
-  margin-left: 10px;
+  line-height: 1;
 }
 
 /* 輸入欄位與下拉選單 */
@@ -662,6 +779,17 @@ thead th {
   padding: 12px;
   font-size: 16px;
   font-weight: bold;
+}
+
+thead th.active i {
+  color: #086600; /* 可以替換成你想要的顏色 */
+  transition: color 0.3s ease, transform 0.3s ease;
+  transform: scale(1.1); /* 在顏色改變時讓字體輕微放大 */
+}
+
+thead th i {
+  margin-left: 5px;
+  color: #aaa; /* 預設箭頭顏色 */
 }
 
 /* 表格內容 */

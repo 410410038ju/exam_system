@@ -68,14 +68,14 @@ const routes = [
     path: "/open_exam",  
     name: "OpenExam", 
     component: OpenExam,
-    meta: { title: "新增考卷" },
+    meta: { title: "新增測驗" },
 
   },
   {
     path: "/view_exam_records",
     name: "ViewExamRecords",
     component: ViewExamRecords,
-    meta: { title: "查看所有考卷" },
+    meta: { title: "查看測驗紀錄" },
   },
   {
     path: "/create_question_data",

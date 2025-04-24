@@ -15,6 +15,7 @@
             v-model="username"
             placeholder="帳號"
             class="input-field"
+            @keyup.enter="login"
           />
 
           <label for="password">密碼：</label>
@@ -23,6 +24,7 @@
             v-model="password"
             placeholder="密碼"
             class="input-field"
+            @keyup.enter="login"
           />
 
           <button @click="login" class="btn-primary">登入</button>

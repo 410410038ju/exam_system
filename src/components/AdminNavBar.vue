@@ -239,6 +239,7 @@ nav {
           v-model="confirmPassword"
           placeholder="再次輸入新密碼"
           class="input-field"
+          @keyup.enter="saveNewPassword"
         />
 
         <div class="button-container">

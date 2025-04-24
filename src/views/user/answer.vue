@@ -73,6 +73,9 @@
 <script setup>
 import { ref, reactive, onMounted, onUnmounted, computed } from "vue";
 import { useRouter } from "vue-router";
+import { useIdleLogout } from "../../composables/useIdleLogout";
+
+useIdleLogout();
 
 const router = useRouter();
 

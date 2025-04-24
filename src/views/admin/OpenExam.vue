@@ -1,4 +1,4 @@
-<!-- 不用API -->
+<!-- 不用API 
 <template>
   <div class="container">
     <AdminNavBar />
@@ -203,6 +203,9 @@
 import { reactive, ref, computed, onMounted, toRaw } from "vue";
 import AdminNavBar from "../../components/AdminNavBar.vue";
 import axios from "axios";
+import { useIdleLogout } from "../../composables/useIdleLogout";
+
+useIdleLogout();
 
 // 用 reactive 來管理 testData
 const testData = reactive({
@@ -389,8 +392,8 @@ const totalQuestionAmount = computed(() => {
 });
 </script>
 
-
-<!-- API 
+-->
+<!-- API -->
 <template>
   <div class="container">
     <ErrorModal
@@ -545,7 +548,6 @@ const totalQuestionAmount = computed(() => {
             </div>
 
             <div>
-              
               <p>
                 此節題目數量：{{
                   getSelectedPartId !== "尚未選擇節"
@@ -565,6 +567,7 @@ const totalQuestionAmount = computed(() => {
                 min="1"
                 :max="questionCount"
                 class="input-number"
+                @keyup.enter="saveRangeItem"
                 required
               />
             </div>
@@ -606,7 +609,13 @@ const totalQuestionAmount = computed(() => {
 import { ref, reactive, computed, watch, onMounted } from "vue";
 import AdminNavBar from "../../components/AdminNavBar.vue";
 import ErrorModal from "../../components/APIerror.vue";
+import { useRouter } from "vue-router";
 import axios from "axios";
+import { useIdleLogout } from "../../composables/useIdleLogout";
+
+useIdleLogout();
+
+const router = useRouter();
 
 // 控制錯誤視窗顯示與否
 const showError = ref(false);
@@ -695,21 +704,7 @@ const fetchRangeData = async () => {
         code: error.response.data.code,
         message: error.response.data.message || "null",
       };
-    } else if (error.request) {
-      // 請求已發送但沒有收到回應
-      errorMsg.value = {
-        status: "timeout",
-        code: 0,
-        message: "伺服器回應超時，請稍後再試",
-      };
-    } else {
-      // 發生其他錯誤（例如設定錯誤等）
-      errorMsg.value = {
-        status: 0,
-        code: 0,
-        message: "發生未知錯誤，請稍後再試",
-      };
-    }
+    } 
     // 顯示錯誤視窗
     showError.value = true;
   }
@@ -768,6 +763,19 @@ const fetchQuestionCount = async (partId) => {
     }
   } catch (error) {
     console.error("API請求失敗：", error);
+    if (
+      error.response.data.message === "請求未提供token" ||
+      error.response.data.message === "token無效或已過期，請重新登入"
+    ) {
+      // 來自伺服器的錯誤回應（例如 404, 500 等）
+      errorMsg.value = {
+        status: error.response.status,
+        code: error.response.data.code,
+        message: error.response.data.message || "null",
+      };
+    } 
+    // 顯示錯誤視窗
+    showError.value = true;
   }
 };
 
@@ -931,8 +939,18 @@ const submitTest = async () => {
       alert("新增測驗失敗: " + response.data.message);
     }
   } catch (error) {
+    if (error.response) {
+      if (error.response.data.code) {
+        alert(error.response.data.message);
+        // EE002 考試名稱重複，請重新命名
+      } else {
+        alert("錯誤訊息:", error.response.data.message);
+      }
+    } else {
+      alert("測驗新增失敗！");
+    }
     console.error("提交測驗資料失敗：", error.message);
-    alert("測驗新增失敗！");
+
     if (
       error.response.data.message === "請求未提供token" ||
       error.response.data.message === "token無效或已過期，請重新登入"
@@ -942,20 +960,6 @@ const submitTest = async () => {
         status: error.response.status,
         code: error.response.data.code,
         message: error.response.data.message || "null",
-      };
-    } else if (error.request) {
-      // 請求已發送但沒有收到回應
-      errorMsg.value = {
-        status: "timeout",
-        code: 0,
-        message: "伺服器回應超時，請稍後再試",
-      };
-    } else {
-      // 發生其他錯誤（例如設定錯誤等）
-      errorMsg.value = {
-        status: 0,
-        code: 0,
-        message: "發生未知錯誤，請稍後再試",
       };
     }
     // 顯示錯誤視窗

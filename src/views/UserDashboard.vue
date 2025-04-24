@@ -52,6 +52,7 @@
           v-model="confirmPassword"
           placeholder="再次輸入新密碼"
           class="input-field"
+          @keyup.enter="saveNewPassword"
         />
 
         <div class="button-container">
@@ -65,45 +66,41 @@
       </div>
     </div>
 
-    <!-- 表格區域 -->
+    <!-- 測驗資料表格 -->
     <div class="table-container">
       <table>
         <thead>
           <tr>
             <th>測驗名稱</th>
-            <!-- <th>業務種類</th> -->
-            <!-- <th>測驗範圍</th> -->
-            <th>答題時間</th>
-            <th>測驗進行時間</th>
-            <th>及格分數</th>
-            <th>出題者</th>
-            <!-- <th>題數</th> -->
             <th>考試類型</th>
+            <th>答題時間</th>
+            <th>及格分數</th>
+            <th>測驗進行日期</th>
+            <th>出題者</th>
             <th>狀態</th>
           </tr>
         </thead>
         <tbody>
-          <tr v-for="exam in exams" :key="exam.id">
-            <td>{{ exam.name }}</td>
-            <!-- <td>{{ exam.category }}</td> -->
-            <!-- <td>{{ exam.scope }}</td> -->
-            <td>{{ exam.duration }} 分鐘</td>
-            <td>{{ exam.startTime }} 至 {{ exam.endTime }}</td>
-            <td>{{ exam.passingScore }} 分</td>
-            <!-- 顯示及格分數 -->
-            <td>{{ exam.creator }}</td>
-            <!-- 顯示出題者 -->
-
-            <td>{{ exam.examType }}</td>
-            <!-- 顯示考試類型 -->
+          <tr v-for="exam in exams" :key="exam.examId">
+            <td>{{ exam.title }}</td>
+            <td>{{ getKindName(exam.kind) }}</td>
+            <td>{{ exam.limitTime }} 分鐘</td>
+            <td>{{ exam.targetScore }} 分</td>
+            <td>
+              {{ exam.startDate?.replaceAll("-", "/") }} 至
+              {{ exam.endDate?.replaceAll("-", "/") }}
+            </td>
+            <td>{{ exam.creatorId }}</td>
             <td>
               <button
-                v-if="exam.status === 'notStarted'"
-                @click="startExam(exam.id)"
+                v-if="exam.status === 'ongoing'"
+                @click="startExam(exam.examId)"
+                class="start-exam-btn"
               >
                 開始測驗
               </button>
-              <span v-else>已完成</span>
+              <span v-else-if="exam.status === 'done'">已結束</span>
+              <span v-else>已取消</span>
             </td>
           </tr>
         </tbody>
@@ -246,46 +243,77 @@ export default {
 </script>
 -->
 
-<!-- 沒有API -->
 <script setup>
 import { ref, watch, onMounted } from "vue";
 import { useRouter } from "vue-router";
 import axios from "axios";
+import { useIdleLogout } from "../composables/useIdleLogout";
+
+useIdleLogout();
 
 const router = useRouter();
 
 const userName = ref("");
 const userId = ref("");
-const exams = ref([
+// 模擬測驗資料
+const mockExams = [
   {
-    id: 1,
-    name: "數學期末考",
-    scope: "代數、幾何",
-    duration: 60,
-    startTime: "2025-02-20 09:00",
-    endTime: "2025-02-20 10:00",
-    passingScore: 60, // 及格分數
-    creator: "李老師", // 出題者
-    category: "數學", // 業務種類
-    questionsCount: 50, // 題數
-    examType: "一般考試", // 考試類型
-    status: "notStarted", // 考試狀態
+    examId: 8,
+    title: "testest",
+    status: "ongoing",
+    targetScore: 80,
+    limitTime: 100,
+    startDate: "2025-04-01",
+    endDate: "2025-05-29",
+    creatorId: "123",
+    kind: "first",
   },
   {
-    id: 2,
-    name: "英文聽力測驗",
-    scope: "聽力理解",
-    duration: 30,
-    startTime: "2025-02-21 14:00",
-    endTime: "2025-02-21 14:30",
-    passingScore: 40, // 及格分數
-    creator: "王老師", // 出題者
-    category: "語言", // 業務種類
-    questionsCount: 30, // 題數
-    examType: "補考", // 考試類型
-    status: "completed", // 考試狀態
+    examId: 20,
+    title: "testest(補考)",
+    status: "done",
+    targetScore: 80,
+    limitTime: 20,
+    startDate: "2025-04-14",
+    endDate: "2025-06-20",
+    creatorId: "123",
+    kind: "makeup",
   },
-]);
+  {
+    examId: 21,
+    title: "0411測驗(補考)",
+    status: "canceled",
+    targetScore: 80,
+    limitTime: 20,
+    startDate: "2025-04-14",
+    endDate: "2025-06-20",
+    creatorId: "123",
+    kind: "first",
+  },
+  {
+    examId: 23,
+    title: "測試",
+    status: "ongoing",
+    targetScore: 50,
+    limitTime: 30,
+    startDate: "2025-04-15",
+    endDate: "2025-06-27",
+    kind: "first",
+    creatorId: "1213213",
+  },
+  {
+    examId: 41,
+    title: "0423test",
+    status: "ongoing",
+    targetScore: 60,
+    limitTime: 40,
+    startDate: "2025-04-23",
+    endDate: "2025-04-30",
+    kind: "first",
+    creatorId: "123456",
+  },
+];
+const exams = ref([]); // 存儲測驗資料
 
 const showPasswordModal = ref(false); // 控制修改密碼對話框顯示
 const oldPassword = ref(""); // 舊密碼
@@ -293,222 +321,57 @@ const newPassword = ref(""); // 新密碼
 const confirmPassword = ref(""); // 確認新密碼
 const isPasswordValid = ref(false); // 確認密碼是否符合規定
 
-const loggedInUser = JSON.parse(localStorage.getItem("loggedInUser"));
+// 考試種類英文名稱轉中文名稱
+const getKindName = (kind) => {
+  switch (kind) {
+    case "first":
+      return "一般考試";
+    case "makeup":
+      return "補考";
+    default:
+      return kind;
+  }
+};
 
 // 檢查登入狀況
 const checkLogin = () => {
+  const loggedInUser = JSON.parse(localStorage.getItem("loggedInUser"));
   if (!loggedInUser) {
     alert("尚未登入");
     router.push("/"); // 跳轉到 Home.vue（根路由）
-  }
-};
-
-onMounted(() => {
-  checkLogin();
-  const loggedInUser = JSON.parse(localStorage.getItem("loggedInUser"));
-  if (loggedInUser) {
-    userName.value = loggedInUser.name;
-    userId.value = loggedInUser.id;
-  }
-});
-
-const modifyPassword = () => {
-  showPasswordModal.value = true;
-};
-
-watch(newPassword, () => {
-  const regex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{12,}$/;
-  isPasswordValid.value = regex.test(newPassword.value);
-});
-
-// 儲存新密碼
-const saveNewPassword = () => {
-  const users = JSON.parse(localStorage.getItem("users")) || [];
-
-  const user = users.find((user) => user.id === userId.value);
-
-  if (!user) {
-    alert("用戶未找到");
-    return;
-  }
-
-  if (oldPassword.value !== user.password) {
-    alert("舊密碼錯誤");
-    return;
-  }
-
-  if (newPassword.value !== confirmPassword.value) {
-    alert("新密碼和確認密碼不一致");
-    return;
-  }
-
-  if (!isPasswordValid.value) {
-    alert("密碼不符合要求");
-    return;
-  }
-
-  user.password = newPassword.value;
-
-  localStorage.setItem("users", JSON.stringify(users));
-  alert("密碼已成功修改");
-
-  oldPassword.value = "";
-  newPassword.value = "";
-  confirmPassword.value = "";
-  showPasswordModal.value = false;
-};
-
-// 儲存新密碼/修改密碼API
-/*
-const saveNewPassword = async () => {
-
-  const loggedInUser = JSON.parse(localStorage.getItem("loggedInUser"));
-  const empId = loggedInUser.empId;
-  if (!loggedInUser || !empId) {
-    alert("尚未登入！");
-    router.push("/"); // 若找不到 empId，導回首頁
-    return;
-  }
-
-  if (newPassword.value !== confirmPassword.value) {
-    alert("兩次輸入的新密碼不一致，請重新輸入！");
-    confirmPassword.value = "";
-    return;
-  }
-
-  if (!isPasswordValid.value) {
-    alert("密碼不符合要求");
-    return;
-  }
-
-  try {
-    const response = await axios.put(
-      "http://172.16.46.163/csexam/api/change-password", // 修改密碼的 API
-      {
-        empId: empId, // 傳送 empId
-        oldPassword: oldPassword.value, // 舊密碼
-        newPassword: newPassword.value, // 新密碼
-      }
-    );
-
-    if (response.data.code === "0000") {
-      alert("密碼已成功更新，請重新登入");
-      router.push("/");
-    }
-  } catch (error) {
-    if (error.response) {
-      if (error.response.data.code === "UE006") {
-        alert("舊密碼錯誤，" + error.response.data.message.slice(-6));
-        // alert(error.response.data.message.slice(-6));
-      } else if (error.response.data.code) {
-        alert(error.response.data.message);
-        // 針對其他錯誤代碼顯示不同的錯誤訊息
-        // UE002 使用者不存在
-        // UE006 密碼錯誤，剩餘N次機會
-        // 9999 密碼規則不符合(其他問題)
-      } else {
-        alert("錯誤訊息:", error.response.data.message);
-      }
-    } else {
-      alert("發生錯誤，請稍後再試");
-    }
-    console.error("修改密碼失敗", error);
-    alert(error.response?.data?.message || "修改密碼失敗，請稍後再試！");
-  }
-
-  // 清空輸入框內容
-  oldPassword.value = "";
-  newPassword.value = "";
-  confirmPassword.value = "";
-  showPasswordModal.value = false;
-};
-*/
-
-const cancelChangePassword = () => {
-  showPasswordModal.value = false;
-};
-
-const logout = () => {
-  localStorage.removeItem("loggedInUser");
-  sessionStorage.clear();
-  // localStorage.removeItem('authToken');
-  // delete axios.defaults.headers['Authorization'];  // 清除預設 header
-  router.push("/");
-};
-
-const startExam = (examId) => {
-  // alert(`開始測驗：${examId}`);
-  const exam = exams.value.find((exam) => exam.id === examId);
-  exam.status = "completed";
-  router.push("/testing");
-};
-</script>
-
-<!-- API 
-<script setup>
-import { ref, watch, onMounted } from "vue";
-import { useRouter } from "vue-router";
-import axios from "axios";
-
-const router = useRouter();
-
-const userName = ref("");
-const userId = ref("");
-const exams = ref([
-  {
-    id: 1,
-    name: "數學期末考",
-    scope: "代數、幾何",
-    duration: 60,
-    startTime: "2025-02-20 09:00",
-    endTime: "2025-02-20 10:00",
-    passingScore: 60, // 及格分數
-    creator: "李老師", // 出題者
-    category: "數學", // 業務種類
-    questionsCount: 50, // 題數
-    examType: "一般考試", // 考試類型
-    status: "notStarted", // 考試狀態
-  },
-  {
-    id: 2,
-    name: "英文聽力測驗",
-    scope: "聽力理解",
-    duration: 30,
-    startTime: "2025-02-21 14:00",
-    endTime: "2025-02-21 14:30",
-    passingScore: 40, // 及格分數
-    creator: "王老師", // 出題者
-    category: "語言", // 業務種類
-    questionsCount: 30, // 題數
-    examType: "補考", // 考試類型
-    status: "completed", // 考試狀態
-  },
-]);
-
-const showPasswordModal = ref(false); // 控制修改密碼對話框顯示
-const oldPassword = ref(""); // 舊密碼
-const newPassword = ref(""); // 新密碼
-const confirmPassword = ref(""); // 確認新密碼
-const isPasswordValid = ref(false); // 確認密碼是否符合規定
-
-const loggedInUser = JSON.parse(localStorage.getItem("loggedInUser"));
-
-// 檢查登入狀況
-const checkLogin = () => {
-  if (!loggedInUser) {
-    alert("尚未登入");
-    router.push("/"); // 跳轉到 Home.vue（根路由）
-  }
-};
-
-onMounted(() => {
-  checkLogin();
-  const loggedInUser = JSON.parse(localStorage.getItem("loggedInUser"));
-  if (loggedInUser) {
+  } else {
     userName.value = loggedInUser.username;
     userId.value = loggedInUser.empId;
   }
-});
+};
+
+// 取得測驗資料
+const fetchExams = async () => {
+  // 模擬等待效果
+  await new Promise((resolve) => setTimeout(resolve, 500));
+  exams.value = mockExams;
+};
+
+// 取得測驗資料API
+/*
+const fetchExams = async () => {
+  const token = localStorage.getItem("authToken"); // 取得存儲的 TOKEN
+  try {
+    const response = await axios.get("http://172.16.46.163/csexam/user/exam", {
+      headers: {
+        Authorization: `Bearer ${token}`, // 加入 TOKEN 到請求頭部
+      },
+    });
+    if (response.data.code === "0000") {
+      exams.value = response.data.data.examList; // 更新測驗資料
+    } else {
+      alert("無法取得測驗資料");
+    }
+  } catch (error) {
+    console.error("無法取得測驗資料", error);
+    alert("取得測驗資料發生錯誤");
+  }
+};*/
 
 const modifyPassword = () => {
   showPasswordModal.value = true;
@@ -629,6 +492,7 @@ const cancelChangePassword = () => {
 const logout = () => {
   localStorage.removeItem("loggedInUser");
   sessionStorage.clear();
+  // localStorage.clear();
   // localStorage.removeItem('authToken');
   // delete axios.defaults.headers['Authorization'];  // 清除預設 header
   router.push("/");
@@ -636,12 +500,18 @@ const logout = () => {
 
 const startExam = (examId) => {
   // alert(`開始測驗：${examId}`);
-  const exam = exams.value.find((exam) => exam.id === examId);
-  exam.status = "completed";
+  // const exam = exams.value.find((exam) => exam.id === examId);
+  // exam.status = "completed";
+  localStorage.setItem("examId", examId);
   router.push("/testing");
 };
+
+onMounted(() => {
+  checkLogin();
+  fetchExams();
+});
 </script>
--->
+
 <style scoped>
 #app {
   margin: 0;
@@ -671,7 +541,7 @@ const startExam = (examId) => {
   left: 0;
   width: 100%;
   padding: 20px; /* 可調整為你需要的間距 */
-  background-color: #c1f1ff; /* 背景色，讓header不會透明 */
+  background-color: #2000a1; /* 背景色，讓header不會透明 */
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1); /* 加入陰影效果 */
   z-index: 1000; /* 確保 header 在其他內容上方 */
 }
@@ -686,11 +556,13 @@ const startExam = (examId) => {
 .name {
   font-size: 20px;
   margin: 0 20px;
+  color: white;
 }
 
 .user-id {
   font-size: 20px;
   margin: 0 20px;
+  color: white;
 }
 
 /* 頁面頭部的動作區域 */
@@ -825,35 +697,50 @@ label {
 /* 表格區域 */
 .table-container {
   padding: 20px;
-  background-color: #fff;
 }
 
 /* 調整表格 */
 table {
   width: 100%;
   border-collapse: collapse;
+  border: 2px solid #ccc;
   background-color: #ffffff;
   table-layout: fixed;
+  border-collapse: collapse;
+  border: 1px solid #ddd;
+}
+
+table tr {
+  border-bottom: 1px solid #ddd; /* 只設定每一行底部的邊框 */
+}
+
+tbody tr:nth-child(even) {
+  background-color: #f9f9f9;
+}
+
+tbody tr:hover {
+  background-color: #f1f1f1;
 }
 
 table th,
 table td {
   word-wrap: break-word;
   height: 70px;
+  border: none;
+  padding: 10px;
 }
 
 /* 表格表頭 */
 table th {
-  padding: 10px;
-  background-color: #42b883; /* 綠色背景 */
-  color: white;
+  background-color: #d8d8d8; /* 綠色背景 */
+  color: black;
   text-align: center;
   font-size: 20px;
+  height: 30px;
 }
 
 /* 表格單元格 */
 table td {
-  padding: 10px;
   border: 1px solid #ddd;
   text-align: center;
   font-size: 16px;
@@ -907,7 +794,21 @@ button:hover {
 /* 已完成的文本 */
 span {
   font-size: 14px;
-  color: #888; /* 灰色文字 */
+  color: black;
   font-weight: bold;
+}
+
+.actions .logout-btn {
+  background-color: #ff4d4d;
+  color: white;
+}
+
+.start-exam-btn {
+  background-color: #ab47bc;
+  color: white;
+}
+
+.start-exam-btn:hover {
+  background-color: #962da8;
 }
 </style>
