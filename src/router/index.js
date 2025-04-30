@@ -1,6 +1,10 @@
-import { createRouter, createWebHashHistory, createWebHistory } from "vue-router";
+import {
+  createRouter,
+  createWebHashHistory,
+  createWebHistory,
+} from "vue-router";
 import Home from "../views/Home.vue";
-import ChangePassword from '../views/ChangePassword.vue'; 
+import ChangePassword from "../views/ChangePassword.vue";
 import AdminDashboard from "../views/AdminDashboard.vue";
 import UserDashboard from "../views/UserDashboard.vue";
 import UserList from "../views/admin/UserList.vue";
@@ -9,6 +13,7 @@ import ModifyQuestion from "../views/admin/ModifyQuestion.vue";
 import ManageQuestionBankTypes from "../views/admin/ManageQuestionBankTypes.vue";
 import OpenExam from "../views/admin/OpenExam.vue";
 import ViewExamRecords from "../views/admin/ViewExamRecords.vue";
+import ScoreList from "../views/admin/ScoreList.vue";
 import CreateQuestionData from "../views/admin/create_question/CreateQuestionData.vue";
 import Testing from "../views/user/testing.vue";
 import Answer from "../views/user/answer.vue";
@@ -23,8 +28,8 @@ const routes = [
     meta: { title: "首頁" }, //設定標題
   },
   {
-    path: '/change-password', 
-    name: 'change-password',
+    path: "/change-password",
+    name: "change-password",
     component: ChangePassword,
     meta: { title: "修改密碼" },
   },
@@ -50,32 +55,37 @@ const routes = [
     path: "/create_question",
     name: "CreateQuestion",
     component: CreateQuestion,
-    meta: { title: "新增題庫" },
+    meta: { title: "新增題目" },
   },
   {
     path: "/modify_question",
     name: "ModifyQuestion",
     component: ModifyQuestion,
-    meta: { title: "修改題庫" },
+    meta: { title: "題目管理" },
   },
   {
     path: "/manage_question_bank_types",
     name: "ManageQuestionBankTypes",
     component: ManageQuestionBankTypes,
-    meta: { title: "管理題庫類別"},
+    meta: { title: "管理題目類別" },
   },
-  {  
-    path: "/open_exam",  
-    name: "OpenExam", 
+  {
+    path: "/open_exam",
+    name: "OpenExam",
     component: OpenExam,
     meta: { title: "新增測驗" },
-
   },
   {
     path: "/view_exam_records",
     name: "ViewExamRecords",
     component: ViewExamRecords,
-    meta: { title: "查看測驗紀錄" },
+    meta: { title: "測驗管理" },
+  },
+  {
+    path: "/score_list",
+    name: "ScoreList",
+    component: ScoreList,
+    meta: { title: "成績列表" },
   },
   {
     path: "/create_question_data",
@@ -87,7 +97,7 @@ const routes = [
     path: "/exam_info",
     name: "ExamInfo",
     component: ExamInfo,
-    meta: { title: "測驗內容" },
+    meta: { title: "測驗詳情" },
   },
   {
     path: "/answer_record",

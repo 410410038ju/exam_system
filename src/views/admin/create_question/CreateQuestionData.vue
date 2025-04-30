@@ -1193,9 +1193,8 @@ const submitToAPI = async (questionData) => {
         code: error.response.data.code,
         message: error.response.data.message || "null",
       };
-    } 
-    // 顯示錯誤視窗
-    showError.value = true;
+      showError.value = true;
+    }
   }
 };
 

@@ -9,6 +9,10 @@
 
     <div class="search-container">
       <form @submit.prevent="searchQuestions" class="form">
+        <button @click="addQuestion" class="add-question-btn">
+          <i class="fa fa-plus"></i> 新增題目
+        </button>
+
         <div class="form-group" id="questionoType-group">
           <label for="questionType">題型</label>
           <select v-model="searchParams.questionType" id="questionType">
@@ -521,6 +525,7 @@ import ErrorModal from "../../components/APIerror.vue";
 import { useIdleLogout } from "../../composables/useIdleLogout";
 
 useIdleLogout();
+const router = useRouter();
 
 // 控制錯誤視窗顯示與否
 const showError = ref(false);
@@ -657,6 +662,10 @@ const pageInfo = ref({
   totalPages: 0,
 });
 
+const addQuestion = () => {
+  router.push("/create_question");
+};
+
 // 計算屬性過濾正確答案
 const correctAnswers = computed(() => {
   return results.value.map((question) => {
@@ -742,6 +751,7 @@ const searchQuestions = async () => {
     }
   } catch (error) {
     console.error("發生錯誤:", error);
+    alert("發生錯誤，請稍後再試");
     if (
       error.response.data.message === "請求未提供token" ||
       error.response.data.message === "token無效或已過期，請重新登入"
@@ -752,9 +762,8 @@ const searchQuestions = async () => {
         code: error.response.data.code,
         message: error.response.data.message || "null",
       };
-    } 
-    // 顯示錯誤視窗
-    showError.value = true;
+      showError.value = true;
+    }
   }
 };
 
@@ -875,9 +884,9 @@ const editQuestion = async (question) => {
         code: error.response.data.code,
         message: error.response.data.message || "null",
       };
+      showError.value = true;
     } 
-    // 顯示錯誤視窗
-    showError.value = true;
+
   }
 };
 */
@@ -927,6 +936,7 @@ const saveEdit = async () => {
     }
   } catch (error) {
     console.error("發生錯誤:", error);
+    alert("資料儲存失敗，請稍後再試");
     if (
       error.response.data.message === "請求未提供token" ||
       error.response.data.message === "token無效或已過期，請重新登入"
@@ -937,9 +947,9 @@ const saveEdit = async () => {
         code: error.response.data.code,
         message: error.response.data.message || "null",
       };
+      showError.value = true;
     } 
-    // 顯示錯誤視窗
-    showError.value = true;
+  
   }
 };
 */
@@ -1005,9 +1015,8 @@ const deleteQuestion = async (question) => {
         code: error.response.data.code,
         message: error.response.data.message || "null",
       };
-    } 
-    // 顯示錯誤視窗
-    showError.value = true;
+      showError.value = true;
+    }
   }
 };
 
@@ -1066,6 +1075,27 @@ button {
   gap: 1rem;
   align-items: flex-end;
   justify-content: space-between;
+}
+
+.add-question-btn {
+  background-color: #2b90fc; /* 藍色背景 */
+  color: white; /* 白色文字 */
+  padding: 12px; /* 上下12px、左右24px的內邊距 */
+  border: none; /* 無邊框 */
+  border-radius: 5px; /* 圓角邊框 */
+  font-size: 16px; /* 字體大小 */
+  cursor: pointer; /* 滑鼠指標變成手指 */
+  display: inline-flex; /* 使用 flex 排列 */
+  align-items: center; /* 垂直居中對齊 */
+  transition: background-color 0.3s ease; /* 平滑過渡效果 */
+}
+
+.add-question-btn i {
+  margin-right: 8px; /* 圖示與文字之間的間距 */
+}
+
+.add-question-btn:hover {
+  background-color: #0056b3; /* 滑鼠懸停時顏色變深 */
 }
 
 /* 單一欄位區塊 */
@@ -1567,6 +1597,11 @@ textarea::placeholder {
 
   .form-group {
     width: 100%; /* 讓每個欄位佔滿整行 */
+  }
+
+  .add-question-btn {
+    width: 100%; /* 按鈕在小螢幕上也撐滿整行 */
+    margin-top: 1rem; /* 按鈕與輸入欄位保持距離 */
   }
 
   /* 調整搜尋按鈕在小螢幕的樣式 */

@@ -35,94 +35,187 @@
             測驗{{ getStatusName(exam.status) }}
           </p>
         </div>
-
         <div class="exam-info-content">
-          <p>及格分數：{{ exam.targetScore }}</p>
-          <p>答題時間：{{ exam.limitTime }}</p>
-          <!-- <p>總題數：20 題</p> -->
-          <p>測驗出題者：{{ exam.creatorId }}</p>
-          <p>
-            測驗進行日期：{{ exam.startDate?.replaceAll("-", "/") }} ~
-            {{ exam.endDate?.replaceAll("-", "/") }}
-            <button class="edit-time-btn" @click="showModal = true">
-              修改測驗日期
-            </button>
-          </p>
+          <div class="exam-info-text">
+            <p>及格分數：{{ exam.targetScore }} 分</p>
+            <p>答題時間：{{ exam.limitTime }} 分鐘</p>
+            <!-- <p>總題數：20 題</p> -->
+            <p>測驗出題者員工編號：{{ exam.creatorId }}</p>
+            <p>
+              測驗進行日期：{{ exam.startDate?.replaceAll("-", "/") }} ~
+              {{ exam.endDate?.replaceAll("-", "/") }}
+              <button class="edit-time-btn" @click="showModal = true">
+                修改測驗日期
+              </button>
+            </p>
+          </div>
+          <table class="exam-range-table">
+            <thead>
+              <tr>
+                <th
+                  colspan="4"
+                  style="
+                    text-align: center;
+                    font-size: 18px;
+                    background-color: #b3e0ff;
+                  "
+                >
+                  測驗範圍
+                </th>
+              </tr>
+              <tr>
+                <th>業務種類</th>
+                <th>章</th>
+                <th>節</th>
+                <th>題數</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>存款篇</td>
+                <td>第一章通則</td>
+                <td>01-01 存款經辦員應有之認識</td>
+                <td>5</td>
+              </tr>
+              <tr>
+                <td>存款篇</td>
+                <td>第一章通則</td>
+                <td>01-02 存款種類</td>
+                <td>5</td>
+              </tr>
+            </tbody>
+          </table>
         </div>
       </div>
 
-      <!-- <table class="exam-range-table">
-        <thead>
-          <tr>
-            <th>業務種類</th>
-            <th>章</th>
-            <th>節</th>
-            <th>題數</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td>第 1 章</td>
-            <td>第 1 節</td>
-            <td>HTML 基礎</td>
-            <td>5</td>
-          </tr>
-          <tr>
-            <td>第 1 章</td>
-            <td>第 2 節</td>
-            <td>HTML 表單</td>
-            <td>5</td>
-          </tr>
-         
-        </tbody>
-      </table> -->
-
       <div class="action-buttons">
+        <button class="btn" @click="MakeupExam">補考測驗</button>
         <button class="btn" @click="openMakeupExam">開啟補考測驗</button>
-        <button class="btn" @click="viewMakeupRecords">查看補考紀錄</button>
+        <button class="btn" @click="viewMakeupRecords">
+          {{ score_btn_Text }}
+        </button>
         <button class="btn" @click="exportGrades">匯出成績</button>
       </div>
 
-      <!-- 成績表格 
-      <table class="exam-records-table">
-        <thead>
-          <tr>
-            <th>索引</th>
-            <th>員工編號</th>
-            <th>姓名</th>
-            <th>交卷時間</th>
-            <th>成績</th>
-            <th>操作</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td>1</td>
-            <td>2025001</td>
-            <td>張三</td>
-            <td>2025.04.14 11:20</td>
-            <td>85</td>
-            <td>
-              <button class="view-record-btn" @click="viewAnswerRecord">
-                答題記錄
-              </button>
-            </td>
-          </tr>
-          <tr>
-            <td>2</td>
-            <td>2025002</td>
-            <td>李四</td>
-            <td>2025.04.14 11:25</td>
-            <td>78</td>
-            <td>
-              <button class="view-record-btn" @click="viewAnswerRecord">
-                答題記錄
-              </button>
-            </td>
-          </tr>
-     
-        </tbody>
-      </table>-->
+      <!-- 原始成績表格 -->
+      <div class="exam-score" v-show="isOriginalScore">
+        <!-- 搜尋欄位和搜尋按鈕 -->
+        <div class="search-bar">
+          <input
+            type="text"
+            v-model="searchQuery"
+            placeholder="搜尋員工編號或姓名"
+            @keyup.enter="filterRecords"
+          />
+          <button class="search-btn" @click="filterRecords">搜尋</button>
+        </div>
+        <!-- 成績表格 -->
+        <table class="exam-records-table">
+          <thead>
+            <tr>
+              <!-- 全選框 -->
+              <th>
+                <input
+                  type="checkbox"
+                  v-model="selectAll"
+                  @change="toggleSelectAll"
+                />全選
+              </th>
+              <th>索引</th>
+              <th>員工編號</th>
+              <th>姓名</th>
+              <th>交卷時間</th>
+              <th>成績</th>
+              <th>及格與否</th>
+              <th>操作</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="(record, index) in filteredRecords" :key="index">
+              <!-- 單個選取框 -->
+              <td>
+                <input
+                  type="checkbox"
+                  v-model="selectedRecords"
+                  :value="record.empId"
+                />
+              </td>
+              <td>{{ index + 1 }}</td>
+              <td>{{ record.empId }}</td>
+              <td>{{ record.userName }}</td>
+              <td>{{ record.submissionTime }}</td>
+              <td>{{ record.score }}</td>
+              <td :class="record.pass === '及格' ? 'text-green' : 'text-red'">
+                {{ record.pass }}
+              </td>
+              <td>
+                <button class="view-record-btn" @click="viewAnswerRecord">
+                  答題記錄
+                </button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- 補考成績表格 -->
+      <div class="exam-score" v-show="!isOriginalScore">
+        <!-- 搜尋欄位和搜尋按鈕 -->
+        <div class="search-bar">
+          <input
+            type="text"
+            v-model="searchQuery"
+            placeholder="搜尋員工編號或姓名"
+            @keyup.enter="makeupSearch"
+          />
+          <button class="search-btn" @click="makeupSearch">搜尋</button>
+        </div>
+
+        <table class="exam-records-table">
+          <thead>
+            <tr>
+              <th>索引</th>
+              <th>員工編號</th>
+              <th>姓名</th>
+              <th>狀態</th>
+              <th>交卷時間</th>
+              <th>補考成績</th>
+              <th>操作</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="(record, index) in makeupfilteredRecords" :key="index">
+              <td>{{ index + 1 }}</td>
+              <td>{{ record.empId }}</td>
+              <td>{{ record.userName }}</td>
+              <td>
+                <span
+                  :class="
+                    record.status === 'done' ? 'badge-green' : 'badge-red'
+                  "
+                >
+                  <span
+                    class="status-circle"
+                    :style="{
+                      backgroundColor:
+                        record.status === 'done' ? '#28a745' : '#dc3545',
+                    }"
+                  ></span>
+                  {{ getMakeupStatusName(record.status) }}
+                </span>
+              </td>
+
+              <td>{{ record.submissionTime }}</td>
+              <td>{{ record.score }}</td>
+              <td>
+                <button class="view-record-btn" @click="viewAnswerRecord">
+                  答題記錄
+                </button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
 
       <!-- 修改作答時間 modal -->
       <div v-if="showModal" class="modal-overlay">
@@ -144,7 +237,7 @@
         </div>
       </div>
 
-      <!-- 補考設定 Modal -->
+      <!-- 補考設定 Modal
       <div v-if="showMakeupModal" class="makeup-modal-overlay">
         <div class="makeup-modal">
           <button @click="showMakeupModal = false" class="close-btn">×</button>
@@ -154,12 +247,65 @@
             <p class="exam-name">{{ exam.examName }}</p>
           </div>
           <div class="form-group">
-            <label>開始日期：</label>
+            <label>及格分數：</label>
+            <input
+              type="number"
+              v-model="makeupTargetScore"
+              min="1"
+              @keyup.enter="submitMakeupExam"
+            />
+          </div>
+          <div class="form-group">
+            <label>補考開始日期：</label>
             <input type="date" v-model="makeupStartDate" class="date-input" />
           </div>
           <div class="form-group">
-            <label>結束日期：</label>
+            <label>補考結束日期：</label>
             <input type="date" v-model="makeupEndDate" class="date-input" />
+          </div>
+          <div class="form-group">
+            <label>答題時間(分鐘)：</label>
+            <input
+              type="number"
+              v-model="makeupLimitTime"
+              min="1"
+              @keyup.enter="submitMakeupExam"
+            />
+          </div>
+          <div class="modal-actions">
+            <button @click="submitMakeupExam" class="confirm-btn">確認</button>
+            <button @click="showMakeupModal = false" class="cancel-btn">
+              取消
+            </button>
+          </div>
+        </div>
+      </div>
+       -->
+
+      <!-- 補考設定(有選人設定) Modal -->
+      <div v-if="showMakeupModal" class="makeup-modal-overlay">
+        <div class="makeup-modal">
+          <button @click="showMakeupModal = false" class="close-btn">×</button>
+          <h3>設定補考測驗</h3>
+          <div
+            class="status-bar"
+            :class="{
+              'status-bar-selected': selectedRecords.length > 0,
+              'status-bar-unselected': selectedRecords.length === 0,
+            }"
+          >
+            <span v-if="selectedRecords.length > 0">
+              <i class="fas fa-check-circle"></i>
+              已選擇 {{ selectedRecords.length }} 名同仁，請設置補考其他事項
+            </span>
+            <span v-else>
+              <i class="fas fa-exclamation-triangle"></i>
+              尚未選擇任何同仁
+            </span>
+          </div>
+          <div class="form-group">
+            <label>測驗名稱：</label>
+            <p class="exam-name">{{ exam.examName }}</p>
           </div>
           <div class="form-group">
             <label>及格分數：</label>
@@ -169,6 +315,14 @@
               min="1"
               @keyup.enter="submitMakeupExam"
             />
+          </div>
+          <div class="form-group">
+            <label>補考開始日期：</label>
+            <input type="date" v-model="makeupStartDate" class="date-input" />
+          </div>
+          <div class="form-group">
+            <label>補考結束日期：</label>
+            <input type="date" v-model="makeupEndDate" class="date-input" />
           </div>
           <div class="form-group">
             <label>答題時間(分鐘)：</label>
@@ -194,7 +348,7 @@
 <script setup>
 import AdminNavBar from "../../../components/AdminNavBar.vue";
 import ErrorModal from "../../../components/APIerror.vue";
-import { ref, computed, watch, onMounted } from "vue";
+import { ref, reactive, computed, watch, onMounted } from "vue";
 import { useRouter } from "vue-router";
 import axios from "axios";
 import { useIdleLogout } from "../../../composables/useIdleLogout";
@@ -213,6 +367,11 @@ const errorMsg = ref({
   message: "",
 });
 
+// 按鈕顯示的文字
+const score_btn_Text = ref("查看補考紀錄");
+
+const isOriginalScore = ref(true); // 顯示哪個成績表格 預設是True: 原始，False:補考
+
 const showModal = ref(false);
 const newStartTime = ref("");
 const newEndTime = ref("");
@@ -225,6 +384,93 @@ const makeupTargetScore = ref("");
 
 const exam = ref({});
 
+// 儲存選擇的員工ID
+const selectedRecords = ref([]);
+
+// 儲存是否選擇了全選
+const selectAll = ref(false);
+
+// 假資料
+const records = ref([
+  {
+    empId: "2025001",
+    userName: "張三",
+    submissionTime: "2025.04.14 11:20",
+    score: 85,
+    pass: "及格",
+  },
+  {
+    empId: "2025002",
+    userName: "李四",
+    submissionTime: "2025.04.14 11:25",
+    score: 78,
+    pass: "及格",
+  },
+  {
+    empId: "0123456",
+    userName: "小明",
+    submissionTime: "2025.04.14 13:25",
+    score: 58,
+    pass: "不及格",
+  },
+  // 可以根據需要添加更多測試數據
+]);
+
+// 補考假資料
+const makeupRecords = ref([
+  {
+    empId: "2025001",
+    userName: "張三",
+    status: "pending",
+  },
+  {
+    empId: "2025002",
+    userName: "李四",
+    submissionTime: "2025.04.16 10:30",
+    score: 78,
+    status: "done",
+  },
+  {
+    empId: "2025003",
+    userName: "王五",
+    submissionTime: "2025.04.16 11:00",
+    score: 92,
+    status: "done",
+  },
+  // 可以添加更多假資料來測試顯示效果
+]);
+
+// 搜尋欄位的輸入文字
+const searchQuery = ref("");
+const filteredRecords = ref(records.value);
+const makeupfilteredRecords = ref(makeupRecords.value);
+
+// 全選/全不選功能(只選empId)
+const toggleSelectAll = () => {
+  if (selectAll.value) {
+    selectedRecords.value = filteredRecords.value.map((record) => record.empId);
+  } else {
+    selectedRecords.value = [];
+  }
+};
+
+/*
+// 全選/全不選功能(選擇整筆資料)
+// 切換「全選」時
+function toggleSelectAll() {
+  if (selectAll.value) {
+    selectedRecords.value = [...filteredRecords.value]
+  } else {
+    selectedRecords.value = []
+  }
+}
+
+// 如果使用者單勾或取消勾選，反映到 selectAll 狀態
+watch(selectedRecords, (newVal) => {
+  selectAll.value = newVal.length === filteredRecords.value.length
+})
+*/
+
 // 狀態英文名稱轉中文名稱
 const getStatusName = (status) => {
   switch (status) {
@@ -234,6 +480,18 @@ const getStatusName = (status) => {
       return "已結束";
     case "canceled":
       return "已取消";
+    default:
+      return status;
+  }
+};
+
+// 補考狀態英文名稱轉中文名稱
+const getMakeupStatusName = (status) => {
+  switch (status) {
+    case "pending":
+      return "未繳";
+    case "done":
+      return "已繳";
     default:
       return status;
   }
@@ -295,6 +553,7 @@ const confirmEdit = async () => {
     }
   } catch (error) {
     console.error("修改作答時間失敗:", error);
+    alert("修改作答時間失敗，請稍後再試");
     if (
       error.response.data.message === "請求未提供token" ||
       error.response.data.message === "token無效或已過期，請重新登入"
@@ -305,10 +564,14 @@ const confirmEdit = async () => {
         code: error.response.data.code,
         message: error.response.data.message || "null",
       };
+      showError.value = true;
     }
-    // 顯示錯誤視窗
-    showError.value = true;
   }
+};
+
+const MakeupExam = () => {
+  console.log("補考測驗");
+  alert("功能尚未實作");
 };
 
 const openMakeupExam = () => {
@@ -317,7 +580,12 @@ const openMakeupExam = () => {
   // alert("功能尚未實作");
 };
 
-const submitMakeupExam = () => {
+const submitMakeupExam = async () => {
+  /*if (selectedRecords.value.length === 0) {
+    alert("請先選擇要補考的同仁");
+    return;
+  }*/
+
   if (
     !makeupLimitTime.value ||
     !makeupStartDate.value ||
@@ -327,34 +595,125 @@ const submitMakeupExam = () => {
     alert("請填寫所有欄位！");
     return;
   }
-  // 這邊可接 API 發送邏輯
+
+  const start = new Date(makeupStartDate.value);
+  const end = new Date(makeupEndDate.value);
+  if (end < start) {
+    alert("結束日期不能早於開始日期！");
+    return;
+  }
+
   console.log({
+    groupId: exam.value.groupId,
     limitTime: makeupLimitTime.value,
     startDate: makeupStartDate.value,
     endDate: makeupEndDate.value,
     targetScore: makeupTargetScore.value,
   });
-  
+
+  const token = localStorage.getItem("authToken");
+
+  try {
+    const response = await axios.post(
+      "http://172.16.46.163/csexam/admin/exam/make-up",
+      {
+        groupId: exam.value.groupId,
+        startDate: makeupStartDate.value,
+        endDate: makeupEndDate.value,
+        targetScore: Number(makeupTargetScore.value),
+        limitTime: Number(makeupLimitTime.value),
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+
+    if (response.data.code === "0000") {
+      alert("已開啟補考測驗");
+
+      // 清空資料
+      makeupLimitTime.value = "";
+      makeupStartDate.value = "";
+      makeupEndDate.value = "";
+      makeupTargetScore.value = "";
+      showMakeupModal.value = false;
+    } else {
+      alert(response.data.message || "新增補考測驗失敗！");
+    }
+  } catch (error) {
+    if (error.response) {
+      if (error.response.data.code) {
+        alert(error.response.data.message);
+        // EE003 補考考試已存在
+      } else {
+        alert("錯誤訊息:", error.response.data.message);
+      }
+    } else {
+      alert("發生錯誤，請稍後再試");
+    }
+    console.error(error);
+    if (
+      error.response.data.message === "請求未提供token" ||
+      error.response.data.message === "token無效或已過期，請重新登入"
+    ) {
+      // 來自伺服器的錯誤回應（例如 404, 500 等）
+      errorMsg.value = {
+        status: error.response.status,
+        code: error.response.data.code,
+        message: error.response.data.message || "null",
+      };
+      showError.value = true;
+    }
+  }
+
   // 清空資料
   makeupLimitTime.value = "";
   makeupStartDate.value = "";
   makeupEndDate.value = "";
   makeupTargetScore.value = "";
   showMakeupModal.value = false;
-  alert("已開啟補考測驗");
-  // EE003 補考考試已存在
 };
 
 const viewMakeupRecords = () => {
-  console.log("查看補考紀錄");
-  alert("功能尚未實作");
-  // 這裡可以執行查看補考紀錄的邏輯
+  // alert("功能尚未實作");
+  isOriginalScore.value = !isOriginalScore.value;
+
+  // 根據當前顯示的 div 切換按鈕文字
+  if (isOriginalScore.value) {
+    score_btn_Text.value = "查看補考紀錄";
+  } else {
+    score_btn_Text.value = "查看原始成績";
+  }
 };
 
 const exportGrades = () => {
   console.log("匯出成績");
   alert("功能尚未實作");
   // 這裡可以執行匯出成績的邏輯
+};
+
+// 搜尋原始成績
+const filterRecords = () => {
+  // 根據員工編號或姓名進行過濾
+  filteredRecords.value = records.value.filter((record) => {
+    return (
+      record.empId.includes(searchQuery.value) ||
+      record.userName.includes(searchQuery.value)
+    );
+  });
+};
+
+// 搜尋補考成績
+const makeupSearch = () => {
+  // 根據員工編號或姓名進行過濾
+  makeupfilteredRecords.value = makeupRecords.value.filter((makeupRecord) => {
+    return (
+      makeupRecord.empId.includes(searchQuery.value) ||
+      makeupRecord.userName.includes(searchQuery.value)
+    );
+  });
 };
 
 const viewAnswerRecord = (index) => {
@@ -393,8 +752,15 @@ body {
   top: 0;
   left: 0;
   width: 100%;
-  height: 100%;
+  min-width: 1000px;
+  min-height: 100vh;
   background-color: #eee;
+
+  /*  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  min-height: 100vh;  */
 }
 
 .content {
@@ -438,7 +804,6 @@ body {
   margin-top: 0;
   border-radius: 0;
   width: 100%;
-  /* max-width: 800px; */
 }
 
 .exam-info-card h2 {
@@ -447,13 +812,6 @@ body {
   margin-bottom: 10px;
   color: #333;
   text-align: left;
-}
-
-.exam-info-card p {
-  text-align: left;
-  margin: 5px 0;
-  font-size: 16px;
-  color: #555;
 }
 
 .status-wrapper {
@@ -511,6 +869,27 @@ body {
   padding: 10px 20px;
   width: 100%;
   background-color: #eee;
+
+  display: flex; /* 啟用 flex 布局 */
+  justify-content: space-between; /* 讓子元素分散排列 */
+  align-items: flex-start; /* 預設上對齊 */
+  align-items: stretch;
+}
+
+.exam-info-text {
+  width: 50%;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between; /* 讓內容上下平均分散 */
+  height: 100%;
+}
+
+.exam-info-text p {
+  text-align: left;
+  margin: 15px 0;
+  font-size: 16px;
+  color: #555;
 }
 
 .edit-time-btn {
@@ -530,11 +909,13 @@ body {
 }
 
 .exam-range-table {
-  width: 80%;
+  width: 50%;
   max-width: 800px;
   margin: 20px auto;
   border-collapse: collapse;
   font-size: 16px;
+  margin-right: 10px;
+  /* margin: 0; */
 }
 
 .exam-range-table th,
@@ -545,13 +926,17 @@ body {
 }
 
 .exam-range-table th {
-  background-color: #f0f0f0;
+  background-color: #f1d8ff;
   font-weight: bold;
   color: #333;
 }
 
-.exam-range-table tr:nth-child(even) {
+/* .exam-range-table tr:nth-child(even) {
   background-color: #fcfcfc;
+} */
+
+.exam-range-table tr {
+  background-color: white;
 }
 
 /* 按鈕容器 */
@@ -686,6 +1071,46 @@ body {
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
 }
 
+.status-bar {
+  padding: 10px 16px;
+  border-radius: 0;
+  font-size: 16px;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 16px;
+  /* box-sizing: border-box; */
+}
+
+.status-bar span {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.status-bar-selected {
+  background-color: #e2fafa;
+  border: 2px solid #bde7e6;
+  color: #005782;
+}
+
+.status-bar-selected i {
+  font-size: 18px;
+  color: #4290e4;
+}
+
+.status-bar-unselected {
+  background-color: #fdd8d8;
+  border: 2px solid #e2bebe;
+  color: #820000;
+}
+
+.status-bar-unselected i {
+  font-size: 18px;
+  color: #e44242;
+}
+
 .makeup-modal h3 {
   margin: 0;
   margin-bottom: 15px;
@@ -748,14 +1173,14 @@ body {
 }
 
 .close-btn {
-  padding: auto;
+  padding: 0 10px;
   margin: auto;
   position: absolute;
   top: 10px;
   right: 10px;
   background: transparent;
   border: none;
-  font-size: 20px;
+  font-size: 30px;
   cursor: pointer;
   color: black;
   transition: color 0.2s ease;
@@ -765,11 +1190,47 @@ body {
   color: #333;
 }
 
+.exam-score {
+  border: 1px solid #333;
+  margin-top: 30px;
+  padding: 20px;
+}
+
+.search-bar {
+  margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+}
+
+.search-bar input {
+  width: 150px;
+  padding: 8px;
+  font-size: 14px;
+  border-radius: 5px;
+  border: 1px solid #ccc;
+}
+
+.search-bar button {
+  padding: 8px 16px;
+  margin-left: 10px;
+  font-size: 14px;
+  background-color: #4caf50;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.search-bar button:hover {
+  background-color: #38833c;
+}
+
 /* 答題紀錄表格樣式 */
 .exam-records-table {
-  width: 80%;
-  max-width: 800px;
-  margin: 20px auto;
+  width: 100%;
+  /* max-width: 800px; */
+  margin: 20px auto 0;
   border-collapse: collapse;
   font-size: 16px;
 }
@@ -788,6 +1249,42 @@ body {
 
 .exam-records-table tr:nth-child(even) {
   background-color: #fcfcfc;
+}
+
+.text-green {
+  color: #28a745; /* 比較柔和的綠色 */
+  font-weight: bold;
+}
+
+.text-red {
+  color: #dc3545; /* 比較柔和的紅色 */
+  font-weight: bold;
+}
+
+.badge-green {
+  color: #28a745; /* 文字顏色 */
+  padding-left: 15px; /* 給文字留出空間，讓圓形不會被擠到 */
+  font-weight: bold;
+  font-size: 16px;
+  position: relative; /* 用於定位圓形 */
+}
+
+.badge-red {
+  color: #dc3545; /* 文字顏色 */
+  padding-left: 15px; /* 給文字留出空間，讓圓形不會被擠到 */
+  font-weight: bold;
+  font-size: 16px;
+  position: relative; /* 用於定位圓形 */
+}
+
+.status-circle {
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 12px;
+  height: 12px;
+  border-radius: 50%; /* 讓它變成圓形 */
 }
 
 /* 答題記錄按鈕樣式 */

@@ -1,10 +1,10 @@
-<!-- 不需要API的程式碼 
+<!-- 不需要API的程式碼 -->
 <template>
   <div class="container">
     <AdminNavBar />
 
     <div class="content">
-      <h1>請選擇題庫範圍</h1>
+      <h1>請選擇題目範圍</h1>
 
       <div class="form-group">
         <div class="form-container">
@@ -286,7 +286,7 @@ onMounted(() => {
 </script>
 -->
 
-<!-- API -->
+<!-- API 
 <template>
   <div class="container">
     <ErrorModal
@@ -298,7 +298,7 @@ onMounted(() => {
     <AdminNavBar />
 
     <div class="content">
-      <h1>請選擇題庫範圍</h1>
+      <h1>請選擇題目範圍</h1>
 
       <div class="form-group">
         <div class="form-container">
@@ -486,9 +486,8 @@ const fetchData = async () => {
         code: error.response.data.code,
         message: error.response.data.message || "null",
       };
-    } 
-    // 顯示錯誤視窗
-    showError.value = true;
+      showError.value = true;
+    }
   }
 };
 
@@ -559,9 +558,8 @@ const addCategory = async () => {
         code: error.response.data.code,
         message: error.response.data.message || "null",
       };
-    } 
-    // 顯示錯誤視窗
-    showError.value = true;
+      showError.value = true;
+    }
   }
 };
 
@@ -608,9 +606,8 @@ const addChapter = async () => {
         code: error.response.data.code,
         message: error.response.data.message || "null",
       };
-    } 
-    // 顯示錯誤視窗
-    showError.value = true;
+      showError.value = true;
+    }
   }
 };
 
@@ -657,9 +654,8 @@ const addPart = async () => {
         code: error.response.data.code,
         message: error.response.data.message || "null",
       };
-    } 
-    // 顯示錯誤視窗
-    showError.value = true;
+      showError.value = true;
+    }
   }
 };
 

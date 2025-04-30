@@ -10,6 +10,10 @@
       <!-- 查詢考卷 -->
       <div class="search-container">
         <div class="query-form">
+          <button @click="addExam" class="add-exam-btn">
+            <i class="fa fa-plus"></i> 新增測驗
+          </button>
+
           <div class="form-group" id="examName-group">
             <label for="examName">測驗名稱</label>
             <input
@@ -376,6 +380,10 @@ const searchExam = () => {
   });
 };
 
+const addExam = () => {
+  router.push("/open_exam");
+};
+
 const goToExamInfo = (examId) => {
   // router.push({ name: 'ExamInfo', params: { id: examId } });
   const selectedExam = filteredExams.value.find((e) => e.examId === examId);
@@ -387,24 +395,23 @@ const goToExamInfo = (examId) => {
 
 onMounted(() => {
   // 檢查是否已經重新整理過
-  if (!localStorage.getItem('reloaded')) {
-    localStorage.setItem('reloaded', 'true');
+  if (!localStorage.getItem("reloaded")) {
+    localStorage.setItem("reloaded", "true");
     window.location.reload();
   }
 });
 
 onBeforeUnmount(() => {
   // 當頁面卸載時重置 'reloaded' 為 false
-  localStorage.removeItem('reloaded');
+  localStorage.removeItem("reloaded");
 });
-
 </script>
 -->
 <!-- API
 <script setup>
 import AdminNavBar from "../../components/AdminNavBar.vue";
 import ErrorModal from "../../components/APIerror.vue";
-import { ref, computed, watch, onMounted } from "vue";
+import { ref, computed, watch, onMounted, onBeforeUnmount } from "vue";
 import { useRouter } from "vue-router";
 import axios from "axios";
 import { useIdleLogout } from "../../composables/useIdleLogout";
@@ -482,6 +489,10 @@ const getSortIcon = (column) => {
   return "fas fa-arrow-up"; // 預設箭頭朝上
 };
 
+const addExam = () => {
+  router.push("/open_exam");
+};
+
 // 查詢考卷API
 const searchExam = async () => {
   const token = localStorage.getItem("authToken");
@@ -538,6 +549,7 @@ const searchExam = async () => {
     }
   } catch (error) {
     console.error("搜尋測驗失敗：", error);
+    alert("搜尋失敗，資料庫出現問題");
     if (
       error.response.data.message === "請求未提供token" ||
       error.response.data.message === "token無效或已過期，請重新登入"
@@ -548,9 +560,8 @@ const searchExam = async () => {
         code: error.response.data.code,
         message: error.response.data.message || "null",
       };
-    } 
-    // 顯示錯誤視窗
-    showError.value = true;
+      showError.value = true;
+    }
   }
 };
 
@@ -610,6 +621,17 @@ onMounted(() => {
 
   query.value.startDate = toISODate(today);
   query.value.endDate = toISODate(oneMonthLater);
+
+  // 檢查是否已經重新整理過
+  if (!localStorage.getItem("reloaded")) {
+    localStorage.setItem("reloaded", "true");
+    window.location.reload();
+  }
+});
+
+onBeforeUnmount(() => {
+  // 當頁面卸載時重置 'reloaded' 為 false
+  localStorage.removeItem("reloaded");
 });
 </script>
 -->
@@ -622,7 +644,7 @@ onMounted(() => {
   width: 100%;
   margin: 0 auto; */
 
-  max-width: 1200px;
+  min-width: 1200px;
   margin: 0 auto;
   padding: 20px;
   padding-top: 100px;
@@ -649,6 +671,26 @@ onMounted(() => {
   justify-content: space-between;
 }
 
+.add-exam-btn {
+  background-color: #00ab06; /* 綠色背景 */
+  color: white; /* 白色文字 */
+  padding: 10px 20px; /* 上下10px、左右20px的內邊距 */
+  border: none; /* 無邊框 */
+  border-radius: 5px; /* 圓角邊框 */
+  font-size: 16px; /* 字體大小 */
+  cursor: pointer; /* 滑鼠指標變成手指 */
+  display: inline-flex; /* 使用 flex 排列 */
+  align-items: center; /* 垂直居中對齊 */
+}
+
+.add-exam-btn i {
+  margin-right: 8px; /* 圖示與文字之間的間距 */
+}
+
+.add-exam-btn:hover {
+  background-color: #018605; /* 滑鼠懸停時顏色變深 */
+}
+
 .form-group {
   /*flex: 1 1 200px;  */
   display: flex;
@@ -662,19 +704,19 @@ onMounted(() => {
 }
 
 .form-group#creatorId-group {
-  flex-grow: 0.8;
+  flex-grow: 0.5;
 }
 
 .form-group#startDate-group {
-  flex-grow: 1.2;
+  flex-grow: 1;
 }
 
 .form-group#endDate-group {
-  flex-grow: 1.2;
+  flex-grow: 1;
 }
 
 .form-group#status-group {
-  flex-grow: 0.8;
+  flex-grow: 0.5;
 }
 
 /* 標籤文字 */

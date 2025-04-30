@@ -309,12 +309,13 @@ const login = () => {
       alert("密碼錯誤 3 次，帳號已被鎖定！");
     } else {
       alert(`密碼錯誤，還剩下 ${3 - user.failedAttempts} 次機會`);
+      password.value = "";
     }
 
     localStorage.setItem("users", JSON.stringify(users));
   }
 
-  password.value = "";
+  
 };
 
 // 登入API
@@ -471,6 +472,10 @@ onMounted(() => {
   // 刪除 localStorage 中的 authToken
   localStorage.removeItem("authToken");
   localStorage.removeItem("empid");
+  localStorage.removeItem("loggedInUser");
+  // delete axios.defaults.headers['Authorization']; 
+  // localStorage.clear();
+  // sessionStorage.clear();
 });
 
 // 呼叫初始化 admin 用戶

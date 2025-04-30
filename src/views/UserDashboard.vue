@@ -288,7 +288,7 @@ const mockExams = [
     startDate: "2025-04-14",
     endDate: "2025-06-20",
     creatorId: "123",
-    kind: "first",
+    kind: "makeup",
   },
   {
     examId: 23,

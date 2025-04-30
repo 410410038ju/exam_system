@@ -4,7 +4,7 @@
     <AdminNavBar />
     <div class="content">
       <div class="header">
-        <h1>管理題庫類別</h1>
+        <h1>管理題目類別</h1>
 
         <div class="search">
           <input
@@ -49,7 +49,7 @@
                 v-if="chapterIndex === 0 && sectionIndex === 0"
                 :rowspan="getCategoryRowSpan(category) || 1"
               >
-              <span v-html="highlightText(category)"></span>
+                <span v-html="highlightText(category)"></span>
                 <div class="buttons-container">
                   <button
                     v-if="category !== '暫無章'"
@@ -84,7 +84,7 @@
                     : 1
                 "
               >
-              <span v-html="highlightText(chapter)"></span>
+                <span v-html="highlightText(chapter)"></span>
                 <template v-if="chapter !== '暫無章'">
                   <div class="buttons-container">
                     <button
@@ -168,7 +168,7 @@ const refreshCategories = () => {
 // 關鍵字搜尋
 const search = () => {
   const query = searchQuery.value.toLowerCase();
-  highlightedText.value = query;  // 保存搜尋關鍵字
+  highlightedText.value = query; // 保存搜尋關鍵字
 
   if (query) {
     filteredCategories.value = categories.filter((category) => {
@@ -186,7 +186,6 @@ const search = () => {
     filteredCategories.value = [...categories]; // 若搜尋框為空，顯示所有類別
   }
 };
-
 
 // 高亮顯示匹配的文字
 const highlightText = (text) => {
@@ -332,7 +331,7 @@ const deleteSection = (category, chapter, index) => {
     <AdminNavBar />
     <div class="content">
       <div class="header">
-        <h1>管理題庫類別</h1>
+        <h1>管理題目類別</h1>
 
       
         <div class="search">
@@ -451,7 +450,7 @@ const deleteSection = (category, chapter, index) => {
     <AdminNavBar />
     <div class="content">
       <div class="header">
-        <h1>管理題庫類別</h1>
+        <h1>管理題目類別</h1>
 
         <div class="search">
           <input
@@ -616,9 +615,9 @@ const fetchExamData = async () => {
         code: error.response.data.code,
         message: error.response.data.message || "null",
       };
+      showError.value = true;
     } 
-    // 顯示錯誤視窗
-    showError.value = true;
+   
   }
 };
 
@@ -709,9 +708,9 @@ const addCategory = async () => {
           code: error.response.data.code,
           message: error.response.data.message || "null",
         };
+        showError.value = true;
       } 
-      // 顯示錯誤視窗
-      showError.value = true;
+    
     }
   } else if (!newCategory) {
     return;
@@ -748,11 +747,11 @@ const editCategory = async (category) => {
         fetchExamData();
         refreshCategories();
       } else {
-        alert("編輯失敗！");
+        alert("更新失敗！");
       }
     } catch (error) {
       console.error("錯誤:", error);
-      alert("編輯業務種類失敗");
+      alert("更新業務種類失敗");
       if (
         error.response.data.message === "請求未提供token" ||
         error.response.data.message === "token無效或已過期，請重新登入"
@@ -763,9 +762,9 @@ const editCategory = async (category) => {
           code: error.response.data.code,
           message: error.response.data.message || "null",
         };
+        showError.value = true;
       } 
-      // 顯示錯誤視窗
-      showError.value = true;
+     
     }
   } else if (!newCategoryName) {
     return;
@@ -816,10 +815,12 @@ const addChapter = async (category) => {
         fetchExamData();
         refreshCategories();
       } else {
-        alert("新增章節失敗: " + response.data.message);
+        alert("新增章失敗: " + response.data.message);
       }
     } catch (error) {
-      alert("發生錯誤: " + error.message);
+      // alert("發生錯誤: " + error.message);
+      console.error("錯誤:", error);
+      alert("新增章失敗");
       if (
         error.response.data.message === "請求未提供token" ||
         error.response.data.message === "token無效或已過期，請重新登入"
@@ -830,9 +831,9 @@ const addChapter = async (category) => {
           code: error.response.data.code,
           message: error.response.data.message || "null",
         };
+        showError.value = true;
       } 
-      // 顯示錯誤視窗
-      showError.value = true;
+      
     }
   } else if (!newChapter) {
     return;
@@ -872,10 +873,12 @@ const editChapter = async (chapter) => {
         fetchExamData();
         refreshCategories();
       } else {
-        alert("更新章節失敗: " + response.data.message);
+        alert("更新章失敗: " + response.data.message);
       }
     } catch (error) {
-      alert("發生錯誤: " + error.message);
+      // alert("發生錯誤: " + error.message);
+      console.error("錯誤:", error);
+      alert("更新章失敗");
       if (
         error.response.data.message === "請求未提供token" ||
         error.response.data.message === "token無效或已過期，請重新登入"
@@ -886,9 +889,9 @@ const editChapter = async (chapter) => {
           code: error.response.data.code,
           message: error.response.data.message || "null",
         };
+        showError.value = true;
       } 
-      // 顯示錯誤視窗
-      showError.value = true;
+    
     }
   } else if (!newChapterName) {
     return;
@@ -941,7 +944,9 @@ const addPart = async (category, chapter) => {
         alert("新增節失敗: " + response.data.message);
       }
     } catch (error) {
-      alert("發生錯誤: " + error.message);
+      // alert("發生錯誤: " + error.message);
+      console.error("錯誤:", error);
+      alert("新增節失敗");
       if (
         error.response.data.message === "請求未提供token" ||
         error.response.data.message === "token無效或已過期，請重新登入"
@@ -952,9 +957,9 @@ const addPart = async (category, chapter) => {
           code: error.response.data.code,
           message: error.response.data.message || "null",
         };
+        showError.value = true;
       } 
-      // 顯示錯誤視窗
-      showError.value = true;
+      
     }
   } else if (!newPart) {
     return;
@@ -996,7 +1001,9 @@ const editPart = async (part) => {
         alert("更新節失敗: " + response.data.message);
       }
     } catch (error) {
-      alert("發生錯誤: " + error.message);
+      // alert("發生錯誤: " + error.message);
+      console.error("錯誤:", error);
+      alert("更新節失敗");
       if (
         error.response.data.message === "請求未提供token" ||
         error.response.data.message === "token無效或已過期，請重新登入"
@@ -1007,9 +1014,9 @@ const editPart = async (part) => {
           code: error.response.data.code,
           message: error.response.data.message || "null",
         };
+        showError.value = true;
       } 
-      // 顯示錯誤視窗
-      showError.value = true;
+  
     }
   } else if (!newPartName) {
     return;

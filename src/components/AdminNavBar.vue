@@ -149,20 +149,20 @@ nav {
             >人員管理</router-link
           >
         </li>
-        <li>
+        <!-- <li>
           <router-link
             :to="{ name: 'CreateQuestion' }"
             class="nav-item"
             active-class="active"
             >新增題庫</router-link
           >
-        </li>
+        </li> -->
         <li>
           <router-link
             :to="{ name: 'ModifyQuestion' }"
             class="nav-item"
             active-class="active"
-            >修改題庫</router-link
+            >題目管理</router-link
           >
         </li>
         <li>
@@ -170,23 +170,31 @@ nav {
             :to="{ name: 'ManageQuestionBankTypes' }"
             class="nav-item"
             active-class="active"
-            >管理題庫類別</router-link
+            >管理題目類別</router-link
           >
         </li>
-        <li>
+        <!-- <li>
           <router-link
             :to="{ name: 'OpenExam' }"
             class="nav-item"
             active-class="active"
             >新增測驗</router-link
           >
-        </li>
+        </li> -->
         <li>
           <router-link
             :to="{ name: 'ViewExamRecords' }"
             class="nav-item"
             active-class="active"
-            >查看測驗紀錄</router-link
+            >測驗管理</router-link
+          >
+        </li>
+        <li>
+          <router-link
+            :to="{ name: 'ScoreList' }"
+            class="nav-item"
+            active-class="active"
+            >成績列表</router-link
           >
         </li>
         <li>
@@ -254,7 +262,6 @@ nav {
     </div>
   </div>
 </template>
-
 
 <script setup>
 import { ref, reactive, watch, onMounted } from "vue";
@@ -442,8 +449,9 @@ const cancelChangePassword = () => {
 const logout = () => {
   // 清除登入資訊
   localStorage.removeItem("loggedInUser");
-  sessionStorage.clear();
-  // localStorage.removeItem('authToken');
+  localStorage.removeItem("authToken");
+  // sessionStorage.clear();
+  // localStorage.clear();
   // delete axios.defaults.headers['Authorization'];  // 清除預設 header
   router.push("/");
 };
@@ -728,6 +736,3 @@ label {
 }
 */
 </style>
-
-
-

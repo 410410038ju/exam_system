@@ -28,13 +28,14 @@
       <!-- 右側按鈕區 -->
       <div class="Buttons">
         <button @click="navigateTo('user_list')">人員管理</button>
-        <button @click="navigateTo('create_question')">新增題庫</button>
-        <button @click="navigateTo('modify_question')">修改題庫</button>
+        <!-- <button @click="navigateTo('create_question')">新增題庫</button> -->
+        <button @click="navigateTo('modify_question')">題目管理</button>
         <button @click="navigateTo('manage_question_bank_types')">
-          管理題庫類別
+          管理題目類別
         </button>
-        <button @click="navigateTo('open_exam')">新增測驗</button>
-        <button @click="navigateTo('view_exam_records')">查看測驗紀錄</button>
+        <!-- <button @click="navigateTo('open_exam')">新增測驗</button> -->
+        <button @click="navigateTo('view_exam_records')">測驗管理</button>
+        <button @click="navigateTo('score_list')">成績列表</button>
         <button @click="logout" class="logout-btn">登出</button>
       </div>
     </div>

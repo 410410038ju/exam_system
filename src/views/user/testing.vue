@@ -15,7 +15,7 @@
     <div class="exam-container">
       <div v-for="(question, index) in questions" :key="index" class="question">
         <p class="question-text">{{ index + 1 }}. {{ question.text }}</p>
-        <p class="question-type">【{{ question.type }}】</p>
+        <p class="question-type">【{{ question.questionType }}】</p>
         <div class="options">
           <label
             v-for="(option, i) in question.options"
@@ -23,7 +23,7 @@
             class="option"
           >
             <input
-              :type="question.type === '多選題' ? 'checkbox' : 'radio'"
+              :type="question.questionType === '多選題' ? 'checkbox' : 'radio'"
               :name="'question-' + index"
               :value="option"
               v-model="userAnswers[index]"
@@ -34,6 +34,29 @@
       </div>
       <div class="submit-container">
         <button class="submit-btn" @click="submitExam">交卷</button>
+      </div>
+    </div>
+
+    <!-- 交卷確認視窗 -->
+    <div v-if="showConfirmModal" class="modal-overlay">
+      <div class="modal">
+        <button class="close-btn" @click="cancelSubmit">✕</button>
+        <p class="modal-title">提交考卷</p>
+        <hr />
+        <p class="modal-message">
+          {{
+            answeredCount === totalQuestions
+              ? "答題時間尚未截止，確定要交卷嗎？"
+              : `還有 ${
+                  totalQuestions - answeredCount
+                } 題未作答，確定要交卷嗎？`
+          }}
+        </p>
+
+        <div class="modal-actions">
+          <button @click="confirmSubmit" class="confirm">確定</button>
+          <button @click="cancelSubmit" class="cancel">取消</button>
+        </div>
       </div>
     </div>
   </div>
@@ -48,6 +71,7 @@ import {
   onBeforeUnmount,
   computed,
 } from "vue";
+import axios from "axios";
 import { useRouter } from "vue-router";
 import { useIdleLogout } from "../../composables/useIdleLogout";
 
@@ -61,37 +85,49 @@ const examId = ref(null);
 const examName = ref("數學期末考");
 
 // 剩餘時間（秒）
-const timeLeft = ref(30 * 60); // 30分鐘 = 1800秒
+const timeLeft = ref(0.1 * 60); // 30分鐘 = 1800秒
 let timer = null;
 
 // 答題進度
 const totalQuestions = ref(4); // 假設總共有10題
 
+const isAutoSubmit = ref(false); // 判斷是否是自動交卷
+
+// Modal 顯示控制
+const showConfirmModal = ref(false);
+const pendingSubmit = ref(false);
+
+// 計算已答題數
+const answeredCount = computed(
+  () =>
+    userAnswers.value.filter((ans) => ans !== null && ans.length !== 0).length
+);
+
 const questions = ref([
   {
     text: "以下哪一項是 Vue.js 的特性？",
-    type: "單選題",
+    questionType: "單選題",
     options: ["雙向資料綁定", "單向資料流", "虛擬 DOM", "以上皆是"],
   },
   {
     text: "Vue 3 中引入了哪一個 Composition API？",
-    type: "單選題",
+    questionType: "單選題",
     options: ["data()", "methods()", "ref()", "computed()"],
   },
   {
     text: "Vue.js 是一個前端框架？",
-    type: "是非題",
+    questionType: "是非題",
     options: ["對", "錯"],
   },
   {
     text: "以下哪些是 Vue.js 的特性？",
-    type: "多選題",
+    questionType: "多選題",
     options: ["雙向資料綁定", "單向資料流", "虛擬 DOM", "以上皆是"],
   },
 ]);
 
 const userAnswers = ref(
-  questions.value.map((q) => (q.type === "多選題" ? [] : null))
+  questions.value.map((q) => (q.questionType === "多選題" ? [] : ""))
 );
 
 const getExam = async () => {
@@ -137,10 +173,36 @@ const answeredQuestions = computed(() => {
 });
 
 // 交卷按鈕的點擊處理
+/*
 const submitExam = () => {
   clearInterval(timer); // 清除計時器，防止額外觸發
   console.log("提交答案：", userAnswers.value);
   router.push("/answer"); // 跳轉至結果頁
+};
+*/
+
+// 點交卷按鈕 -> 顯示 Modal
+const submitExam = () => {
+  if (isAutoSubmit.value) {
+    // 自動交卷就直接送出
+    confirmSubmit();
+  } else {
+    // 手動交卷才顯示確認視窗
+    showConfirmModal.value = true;
+  }
+};
+
+// 點確認 -> 執行真正交卷
+const confirmSubmit = () => {
+  clearInterval(timer); // 清除計時器，防止額外觸發
+  console.log("提交答案：", userAnswers.value);
+  showConfirmModal.value = false;
+  router.push("/answer"); // 原本的交卷動作
+};
+
+// 點取消 -> 關閉 Modal
+const cancelSubmit = () => {
+  showConfirmModal.value = false;
 };
 
 // 倒數計時
@@ -150,6 +212,7 @@ const startCountdown = () => {
       timeLeft.value--;
     } else {
       clearInterval(timer);
+      isAutoSubmit.value = true; // 自動交卷 flag
       submitExam(); // 時間到，執行交卷
     }
   }, 1000);
@@ -289,5 +352,75 @@ onBeforeUnmount(() => {
 .option {
   display: block;
   margin: 10px 0;
+}
+
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 999;
+}
+
+.modal {
+  background-color: white;
+  padding: 20px;
+  border-radius: 5px;
+  width: 300px;
+  text-align: center;
+  position: relative;
+}
+
+.close-btn {
+  position: absolute;
+  top: 8px;
+  right: 12px;
+  border: none;
+  background: none;
+  font-size: 20px;
+  cursor: pointer;
+  padding: 6px 12px;
+}
+
+.modal-title {
+  font-weight: bold;
+  font-size: 18px;
+  margin: 5px;
+  text-align: left;
+  margin-bottom: 12px;
+}
+
+.modal-message {
+  margin: 16px 0;
+  font-size: 16px;
+}
+
+.modal-actions {
+  display: flex;
+  justify-content: space-around;
+  margin-top: 16px;
+}
+
+.confirm {
+  background-color: #4caf50;
+  color: white;
+  padding: 8px 16px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.cancel {
+  background-color: #f44336;
+  color: white;
+  padding: 8px 16px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
 }
 </style>

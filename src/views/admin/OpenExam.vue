@@ -1,4 +1,4 @@
-<!-- 不用API 
+<!-- 不用API -->
 <template>
   <div class="container">
     <AdminNavBar />
@@ -393,7 +393,7 @@ const totalQuestionAmount = computed(() => {
 </script>
 
 -->
-<!-- API -->
+<!-- API 
 <template>
   <div class="container">
     <ErrorModal
@@ -704,9 +704,9 @@ const fetchRangeData = async () => {
         code: error.response.data.code,
         message: error.response.data.message || "null",
       };
+      showError.value = true;
     } 
-    // 顯示錯誤視窗
-    showError.value = true;
+   
   }
 };
 
@@ -763,6 +763,7 @@ const fetchQuestionCount = async (partId) => {
     }
   } catch (error) {
     console.error("API請求失敗：", error);
+    alert("獲取題目數量失敗，請稍後再試");
     if (
       error.response.data.message === "請求未提供token" ||
       error.response.data.message === "token無效或已過期，請重新登入"
@@ -773,9 +774,9 @@ const fetchQuestionCount = async (partId) => {
         code: error.response.data.code,
         message: error.response.data.message || "null",
       };
+      showError.value = true;
     } 
-    // 顯示錯誤視窗
-    showError.value = true;
+    
   }
 };
 
@@ -961,9 +962,9 @@ const submitTest = async () => {
         code: error.response.data.code,
         message: error.response.data.message || "null",
       };
+      showError.value = true;
     }
-    // 顯示錯誤視窗
-    showError.value = true;
+   
   }
 };
 

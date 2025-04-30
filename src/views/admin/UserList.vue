@@ -741,9 +741,10 @@ const loadUsers = async () => {
         code: error.response.data.code,
         message: error.response.data.message || "null",
       };
+      showError.value = true;
     } 
-    // 顯示錯誤視窗
-    showError.value = true;
+   
+    
   }
 };
 */
@@ -871,9 +872,9 @@ const addUser = async () => {
         code: error.response.data.code,
         message: error.response.data.message || "null",
       };
+      showError.value = true;
     } 
-    // 顯示錯誤視窗
-    showError.value = true;
+    
   }
 
   Object.assign(newUser, {
@@ -1053,9 +1054,9 @@ const saveChanges = async () => {
         code: error.response.data.code,
         message: error.response.data.message || "null",
       };
+      showError.value = true;
     } 
-    // 顯示錯誤視窗
-    showError.value = true;
+  
   }
 };
 */
@@ -1147,9 +1148,9 @@ const deleteUser = async (id) => {
         code: error.response.data.code,
         message: error.response.data.message || "null",
       };
+      showError.value = true;
     } 
-    // 顯示錯誤視窗
-    showError.value = true;
+    
     }
   } else {
     // alert("輸入人員編號錯誤");
@@ -1215,9 +1216,8 @@ const unlockUser = async (empId) => {
         code: error.response.data.code,
         message: error.response.data.message || "null",
       };
-    } 
-    // 顯示錯誤視窗
-    showError.value = true;
+      showError.value = true;
+    }
   }
 };
 
@@ -1290,6 +1290,7 @@ const exportToExcel = async () => {
     }
   } catch (error) {
     console.error("下載檔案時發生錯誤:", error);
+    alert("下載檔案時發生錯誤，請稍後再試");
     if (
       error.response.data.message === "請求未提供token" ||
       error.response.data.message === "token無效或已過期，請重新登入"
@@ -1300,9 +1301,9 @@ const exportToExcel = async () => {
         code: error.response.data.code,
         message: error.response.data.message || "null",
       };
+      showError.value = true;
     } 
-    // 顯示錯誤視窗
-    showError.value = true;
+  
   }
 };
 */

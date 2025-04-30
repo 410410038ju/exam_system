@@ -56,7 +56,7 @@ const fetchData = async () => {
         message: "發生未知錯誤，請稍後再試",
       };
     }
-    // 顯示錯誤視窗
+    // 顯示錯誤視窗 
     showError.value = true;
   }
 };
