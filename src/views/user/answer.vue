@@ -5,7 +5,7 @@
         <div>
           <button class="back-btn" @click="backtoList">返回考試列表</button>
         </div>
-        <div class="exam-name">{{ examName }}</div>
+        <div class="exam-name">{{ exam.title }}</div>
         <div class="time-left">剩餘時間： {{ formattedTime }}</div>
       </div>
       <div class="right-header">
@@ -79,8 +79,15 @@ useIdleLogout();
 
 const router = useRouter();
 
-// 測驗名稱
-const examName = ref("數學期末考");
+import { useExamStore } from "../../stores/examStore";
+
+const examStore = useExamStore();
+const exam = examStore.currentExam;
+
+if (!exam) {
+  // 沒資料可能是直接進入頁面而不是從按鈕進來，你可以導回列表
+  console.warn("未帶入測驗資料");
+}
 
 // 剩餘時間（秒）
 const timeLeft = ref(2 * 60); // 2分鐘

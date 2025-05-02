@@ -91,7 +91,7 @@
       <div class="action-buttons">
         <button class="btn" @click="MakeupExam">補考測驗</button>
         <button class="btn" @click="openMakeupExam">開啟補考測驗</button>
-        <button class="btn" @click="viewMakeupRecords">
+        <button class="btn" @click="viewMakeupRecords" :class="{'original-score': isOriginalScore, 'makeup-score': !isOriginalScore}"> 
           {{ score_btn_Text }}
         </button>
         <button class="btn" @click="exportGrades">匯出成績</button>
@@ -99,8 +99,10 @@
 
       <!-- 原始成績表格 -->
       <div class="exam-score" v-show="isOriginalScore">
+        
         <!-- 搜尋欄位和搜尋按鈕 -->
         <div class="search-bar">
+          <h2>原始成績</h2>
           <input
             type="text"
             v-model="searchQuery"
@@ -162,6 +164,7 @@
       <div class="exam-score" v-show="!isOriginalScore">
         <!-- 搜尋欄位和搜尋按鈕 -->
         <div class="search-bar">
+          <h2>補考成績</h2>
           <input
             type="text"
             v-model="searchQuery"
@@ -208,7 +211,7 @@
               <td>{{ record.submissionTime }}</td>
               <td>{{ record.score }}</td>
               <td>
-                <button class="view-record-btn" @click="viewAnswerRecord">
+                <button class="view-record-btn" @click="viewAnswerRecord" v-if="record.status === 'done'">
                   答題記錄
                 </button>
               </td>
@@ -966,6 +969,17 @@ body {
   background-color: #38833c; /* 按鈕懸停時變色 */
 }
 
+.original-score {
+  background-color: #4caf50; /* 原始成績顏色 */
+  color: white;
+}
+
+.makeup-score {
+  background-color: #ff9800; /* 補考紀錄顏色 */
+  color: white;
+}
+
+
 /*
 .btn:nth-child(1) {
   background-color: #4caf50;
@@ -1201,6 +1215,11 @@ body {
   display: flex;
   align-items: center;
   justify-content: flex-end;
+}
+
+.search-bar h2 {
+  margin: 0;
+  margin-right: auto;
 }
 
 .search-bar input {

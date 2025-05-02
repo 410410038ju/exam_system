@@ -248,10 +248,12 @@ import { ref, watch, onMounted } from "vue";
 import { useRouter } from "vue-router";
 import axios from "axios";
 import { useIdleLogout } from "../composables/useIdleLogout";
+import { useExamStore } from "../stores/examStore";
 
 useIdleLogout();
 
 const router = useRouter();
+const examStore = useExamStore();
 
 const userName = ref("");
 const userId = ref("");
@@ -502,6 +504,11 @@ const startExam = (examId) => {
   // alert(`開始測驗：${examId}`);
   // const exam = exams.value.find((exam) => exam.id === examId);
   // exam.status = "completed";
+
+  const exam = exams.value.find((e) => e.examId === examId);
+  if (!exam) return;
+  examStore.setCurrentExam(exam);
+
   localStorage.setItem("examId", examId);
   router.push("/testing");
 };

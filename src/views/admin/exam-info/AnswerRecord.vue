@@ -134,10 +134,16 @@ const isCorrect = (question) => {
   return question.userAnswer === question.correctAnswer;
 };
 
+
 // ✅ 返回考試列表時應該確保計時器被清除
 const backtoList = () => {
-  router.push("/exam_info");
+  // router.push("/exam_info");
+  router.back();
 };
+
+
+
+
 </script>
 
 <style scoped>

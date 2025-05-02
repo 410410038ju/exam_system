@@ -140,7 +140,14 @@ nav {
   <div class="nav-container">
     <nav class="navbar">
       <div class="nav-title">管理系統</div>
-      <ul class="nav-list">
+
+      <!-- 漢堡選單（只在選單關閉時顯示） -->
+      <div class="hamburger" @click="toggleMenu" v-show="!menuOpen">☰</div>
+
+      <!-- 叉叉按鈕（只在選單開啟時顯示） -->
+      <div class="closemenu-btn" @click="closeMenu" v-show="menuOpen">×</div>
+
+      <ul class="nav-list" :class="{ open: menuOpen }">
         <li>
           <router-link
             :to="{ name: 'UserList' }"
@@ -207,6 +214,7 @@ nav {
         </li>
       </ul>
     </nav>
+
     <!-- 修改密碼表單 -->
     <div v-if="showPasswordModal" class="modal">
       <div class="modal-content">
@@ -216,6 +224,7 @@ nav {
         </h2>
         <label for="oldPassword">舊密碼：</label>
         <input
+          id="oldPassword"
           type="password"
           v-model="oldPassword"
           placeholder="輸入舊密碼"
@@ -224,6 +233,7 @@ nav {
 
         <label for="newPassword">新密碼：</label>
         <input
+          id="newPassword"
           type="password"
           v-model="newPassword"
           placeholder="輸入新密碼"
@@ -243,6 +253,7 @@ nav {
 
         <label for="confirmPassword">再次輸入新密碼：</label>
         <input
+          id="confirmPassword"
           type="password"
           v-model="confirmPassword"
           placeholder="再次輸入新密碼"
@@ -275,6 +286,7 @@ const oldPassword = ref(""); // 舊密碼
 const newPassword = ref(""); // 新密碼
 const confirmPassword = ref(""); // 確認新密碼
 const isPasswordValid = ref(false); // 確認密碼是否符合規定
+const menuOpen = ref(false); // 響應式選單
 
 const loggedInUser = JSON.parse(localStorage.getItem("loggedInUser"));
 
@@ -284,6 +296,16 @@ const checkLogin = () => {
     alert("尚未登入");
     router.push("/"); // 跳轉到 Home.vue（根路由）
   }
+};
+
+// 切換選單顯示與隱藏
+const toggleMenu = () => {
+  menuOpen.value = !menuOpen.value;
+};
+
+// 關閉選單
+const closeMenu = () => {
+  menuOpen.value = false;
 };
 
 const modifyPassword = () => {
@@ -542,6 +564,42 @@ body {
   background-color: #a40202; /* 懸停時顏色更深 */
 }
 
+/* 將漢堡選單和關閉按鈕放置在同一位置 */
+.hamburger,
+.closemenu-btn {
+  position: absolute;
+  top: 10px;
+  right: 20px;
+  font-size: 30px;
+  color: white;
+  cursor: pointer;
+}
+
+/* 默認情況下，漢堡選單和關閉按鈕都不顯示 */
+.hamburger,
+.closemenu-btn {
+  display: none;
+}
+
+/* 當選單開啟時，顯示叉叉按鈕，並隱藏漢堡選單 */
+.nav-list.open .hamburger {
+  display: none;
+}
+
+/* 當選單開啟時，顯示叉叉按鈕 */
+.nav-list.open .closemenu-btn {
+  display: block;
+}
+
+/* 當選單關閉時，顯示漢堡選單，並隱藏叉叉 */
+.nav-list:not(.open) .hamburger {
+  display: block;
+}
+
+.nav-list:not(.open) .closemenu-btn {
+  display: none;
+}
+
 /* modal 設置 */
 .modal {
   position: fixed;
@@ -648,23 +706,55 @@ label {
   color: #333;
 }
 
-/*
+/* 隱藏導航列，當螢幕小時才顯示 */
 @media (max-width: 768px) {
   .navbar {
-    flex-direction: column; 
+    flex-direction: column;
     align-items: flex-start;
     padding: 10px 20px;
   }
 
   .nav-title {
     font-size: 20px;
-    margin-bottom: 10px;
+    margin: auto 3px;
+  }
+
+  /* 顯示漢堡選單 */
+  .hamburger {
+    display: block;
+    cursor: pointer;
+    font-size: 30px;
+    color: white;
+    top: 5px;
+  }
+
+  .closemenu-btn {
+    display: block;
+    position: absolute;
+    top: 0;
+    right: 20px;
+    font-size: 40px;
+    color: white;
+    cursor: pointer;
   }
 
   .nav-list {
     flex-direction: column;
     width: 100%;
     gap: 10px;
+    display: none; /* 隱藏選單 */
+  }
+
+  /* 選單顯示時 */
+  .nav-list.open {
+    display: flex;
+    flex-direction: column;
+    position: absolute;
+    top: 50px; /* 距離頂部 */
+    right: 0;
+    background-color: #00bcd4;
+    width: 100%;
+    padding: 10px;
   }
 
   .nav-item {
@@ -675,14 +765,14 @@ label {
 
   .changepassword-btn,
   .logout-btn {
-    width: 100%;
+    width: 80%;
     justify-content: center;
     font-size: 16px;
-    margin: 6px 0;
+    margin: 6px auto;
   }
 
   .modal-content {
-    width: 90%; 
+    width: 90%;
     padding: 15px;
   }
 
@@ -707,12 +797,8 @@ label {
     font-size: 14px;
     padding: 8px;
   }
-
-  .close-btn {
-    font-size: 24px;
-  }
 }
-
+/*
 
 @media (max-width: 480px) {
   .nav-title {

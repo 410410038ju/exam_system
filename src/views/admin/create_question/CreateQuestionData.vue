@@ -1,278 +1,291 @@
 <!-- 不用API的版本 
 <template>
-  <div class="container">
-    <div class="createquestion-container">
-      <form @submit.prevent="submitQuestion">
-        <div class="createquestion-content">
-          <h1>出題</h1>
-          <div class="question-num">第 {{ currentQuestionCount + 1 }} 題</div>
-
-          <div class="form-group">
-            <label for="question-type">選擇題型</label>
-            <select
-              id="question-type"
-              v-model="questionType"
-              @change="changeQuestionType"
-            >
-              <option value="true-false">是非題</option>
-              <option value="single-choice">單選題</option>
-              <option value="multiple-choice">複選題</option>
-            </select>
-          </div>
-
-          <div class="questionType-container">
-            <div v-if="questionType === 'true-false'" class="question-form">
-              <div class="form-group">
-                <label for="true-false-question-text">題目</label>
-                <textarea
-                  v-model="trueFalseQuestionText"
-                  placeholder="請輸入是非題問題敘述"
-                  rows="5"
-                  cols="30"
-                  required
-                ></textarea>
-              </div>
-              <div class="form-group">
-                <label for="true-false-answer">正確答案</label>
-
-                <div class="answer-group">
-                  <input
-                    type="radio"
-                    id="trueOption"
-                    value="true"
-                    v-model="trueFalseAnswer"
-                  />
-                  <label for="trueOption" class="tf-ans answer-option"
-                    >是</label
-                  >
-
-                  <input
-                    type="radio"
-                    id="falseOption"
-                    value="false"
-                    v-model="trueFalseAnswer"
-                  />
-                  <label for="falseOption" class="tf-ans answer-option"
-                    >否</label
-                  >
-                </div>
-              </div>
-            </div>
-
-            <div v-if="questionType === 'single-choice'" class="question-form">
-              <div class="form-group">
-                <label for="single-choice-question-text">題目</label>
-                <textarea
-                  v-model="singleChoiceQuestionText"
-                  placeholder="請輸入單選題問題敘述"
-                  rows="5"
-                  cols="30"
-                  required
-                ></textarea>
-              </div>
-              <div v-for="(option, index) in singleChoiceOptions" :key="index">
-                <label :for="'single-choice-option' + (index + 1)"
-                  >選項 {{ String.fromCharCode(65 + index) }}</label
-                >
-                <textarea
-                  cols="30"
-                  rows="1"
-                  v-model="singleChoiceOptions[index]"
-                  :placeholder="'請輸入選項 ' + String.fromCharCode(65 + index)"
-                  required
-                ></textarea>
-              </div>
-              <div class="form-group">
-                <label for="single-choice-answer">正確答案</label>
-
-                <div class="answer-group">
-                  <input
-                    type="radio"
-                    v-model="singleChoiceAnswer"
-                    :value="1"
-                    class="answer-option"
-                  />
-                  選項 A
-                  <input
-                    type="radio"
-                    v-model="singleChoiceAnswer"
-                    :value="2"
-                    class="answer-option"
-                  />
-                  選項 B
-                  <input
-                    type="radio"
-                    v-model="singleChoiceAnswer"
-                    :value="3"
-                    class="answer-option"
-                  />
-                  選項 C
-                  <input
-                    type="radio"
-                    v-model="singleChoiceAnswer"
-                    :value="4"
-                    class="answer-option"
-                  />
-                  選項 D
-                  <input
-                    type="radio"
-                    v-model="singleChoiceAnswer"
-                    :value="5"
-                    class="answer-option"
-                  />
-                  選項 E
-                </div>
-              </div>
-            </div>
-
-            <div
-              v-if="questionType === 'multiple-choice'"
-              class="question-form"
-            >
-              <div class="form-group">
-                <label for="multiple-choice-question-text">題目</label>
-                <textarea
-                  v-model="multipleChoiceQuestionText"
-                  placeholder="請輸入複選題問題敘述"
-                  rows="5"
-                  cols="30"
-                  required
-                ></textarea>
-              </div>
-              <div
-                v-for="(option, index) in multipleChoiceOptions"
-                :key="index"
-              >
-                <label :for="'multiple-choice-option' + (index + 1)"
-                  >選項 {{ String.fromCharCode(65 + index) }}</label
-                >
-                <textarea
-                  cols="30"
-                  rows="1"
-                  v-model="multipleChoiceOptions[index]"
-                  :placeholder="'請輸入選項 ' + String.fromCharCode(65 + index)"
-                  required
-                ></textarea>
-              </div>
-              <div class="form-group">
-                <label for="multiple-choice-answer">正確答案</label>
-                <div class="answer-group">
-                  <input
-                    type="checkbox"
-                    v-model="multipleChoiceAnswers"
-                    :value="1"
-                    class="answer-option"
-                  />
-                  選項 A
-                  <input
-                    type="checkbox"
-                    v-model="multipleChoiceAnswers"
-                    :value="2"
-                    class="answer-option"
-                  />
-                  選項 B
-                  <input
-                    type="checkbox"
-                    v-model="multipleChoiceAnswers"
-                    :value="3"
-                    class="answer-option"
-                  />
-                  選項 C
-                  <input
-                    type="checkbox"
-                    v-model="multipleChoiceAnswers"
-                    :value="4"
-                    class="answer-option"
-                  />
-                  選項 D
-                  <input
-                    type="checkbox"
-                    v-model="multipleChoiceAnswers"
-                    :value="5"
-                    class="answer-option"
-                  />
-                  選項 E
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-        <div class="form-group form-group-btn">
-          <button type="submit" class="button">提交題目</button>
-        </div>
-      </form>
+  <div class="page-wrapper">
+    <div class="nav">
+      <div class="info">業務種類：{{ examInfo.category }}</div>
+      <div class="info">
+        測驗範圍：{{ examInfo.chapter }} {{ examInfo.section }}
+      </div>
+      <button class="finish-btn" @click="endCreateQuestion">結束出題</button>
     </div>
+    <div class="container">
+      <div class="createquestion-container">
+        <form @submit.prevent="submitQuestion">
+          <div class="createquestion-content">
+            <h1>出題</h1>
+            <div class="question-num">第 {{ currentQuestionCount + 1 }} 題</div>
 
-    <div class="question-container">
-      <div class="question-content">
-        <div class="examInfo">
-          <div class="info">業務種類：{{ examInfo.category }}</div>
-          <div class="info">
-            測驗範圍：{{ examInfo.chapter }} {{ examInfo.section }}
-          </div>
-        </div>
-        <h2>目前已提交題目</h2>
-        <table
-          border="1"
-          style="width: 100%; margin-top: 20px; border-collapse: collapse"
-        >
-          <thead>
-            <tr>
-              <th>題號</th>
-              <th>題型</th>
-              <th>題目</th>
-              <th>選項</th>
-              <th>正確答案</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr v-for="(question, index) in submittedQuestions" :key="index">
-              <td>{{ index + 1 }}</td>
-              <td>
-                <span v-if="question.type === 'true-false'">是非題</span>
-                <span v-else-if="question.type === 'single-choice'"
-                  >單選題</span
-                >
-                <span v-else-if="question.type === 'multiple-choice'"
-                  >複選題</span
-                >
-              </td>
+            <div class="form-group">
+              <label for="question-type">選擇題型</label>
+              <select
+                id="question-type"
+                v-model="questionType"
+                @change="changeQuestionType"
+              >
+                <option value="true-false">是非題</option>
+                <option value="single-choice">單選題</option>
+                <option value="multiple-choice">複選題</option>
+              </select>
+            </div>
 
-              <td>{{ question.text }}</td>
-              
-              <td>
-                <div v-for="(option, index) in question.options" :key="index">
-                  {{ String.fromCharCode(65 + index) }}. {{ option }}
+            <div class="questionType-container">
+              <div v-if="questionType === 'true-false'" class="question-form">
+                <div class="form-group">
+                  <label for="true-false-question-text">題目</label>
+                  <textarea
+                    v-model="trueFalseQuestionText"
+                    placeholder="請輸入是非題問題敘述"
+                    rows="5"
+                    cols="30"
+                    required
+                  ></textarea>
                 </div>
-              </td>
-              <td>
-                <div v-if="typeof question.correctAnswer === 'string'">
-                  {{
-                    String.fromCharCode(
-                      65 + question.options.indexOf(question.correctAnswer)
-                    )
-                  }}. {{ question.correctAnswer }}
-                </div>
+                <div class="form-group">
+                  <label for="true-false-answer">正確答案</label>
 
-                <div v-else>
-                  <div
-                    v-for="(answer, index) in question.correctAnswer"
-                    :key="index"
-                  >
-                    {{
-                      String.fromCharCode(
-                        65 + question.options.indexOf(answer)
-                      )
-                    }}. {{ answer }}
+                  <div class="answer-group">
+                    <input
+                      type="radio"
+                      id="trueOption"
+                      value="true"
+                      v-model="trueFalseAnswer"
+                    />
+                    <label for="trueOption" class="tf-ans answer-option"
+                      >是</label
+                    >
+
+                    <input
+                      type="radio"
+                      id="falseOption"
+                      value="false"
+                      v-model="trueFalseAnswer"
+                    />
+                    <label for="falseOption" class="tf-ans answer-option"
+                      >否</label
+                    >
                   </div>
                 </div>
-              </td>
-            </tr>
-          </tbody>
-        </table>
+              </div>
+
+              <div
+                v-if="questionType === 'single-choice'"
+                class="question-form"
+              >
+                <div class="form-group">
+                  <label for="single-choice-question-text">題目</label>
+                  <textarea
+                    v-model="singleChoiceQuestionText"
+                    placeholder="請輸入單選題問題敘述"
+                    rows="5"
+                    cols="30"
+                    required
+                  ></textarea>
+                </div>
+                <div
+                  v-for="(option, index) in singleChoiceOptions"
+                  :key="index"
+                >
+                  <label :for="'single-choice-option' + (index + 1)"
+                    >選項 {{ String.fromCharCode(65 + index) }}</label
+                  >
+                  <textarea
+                    cols="30"
+                    rows="2"
+                    v-model="singleChoiceOptions[index]"
+                    :placeholder="
+                      '請輸入選項 ' + String.fromCharCode(65 + index)
+                    "
+                  
+                  ></textarea>
+                </div>
+                <div class="form-group">
+                  <label for="single-choice-answer">正確答案</label>
+
+                  <div class="answer-group">
+                    <input
+                      type="radio"
+                      v-model="singleChoiceAnswer"
+                      :value="1"
+                      class="answer-option"
+                    />
+                    選項 A
+                    <input
+                      type="radio"
+                      v-model="singleChoiceAnswer"
+                      :value="2"
+                      class="answer-option"
+                    />
+                    選項 B
+                    <input
+                      type="radio"
+                      v-model="singleChoiceAnswer"
+                      :value="3"
+                      class="answer-option"
+                    />
+                    選項 C
+                    <input
+                      type="radio"
+                      v-model="singleChoiceAnswer"
+                      :value="4"
+                      class="answer-option"
+                    />
+                    選項 D
+                    <input
+                      type="radio"
+                      v-model="singleChoiceAnswer"
+                      :value="5"
+                      class="answer-option"
+                    />
+                    選項 E
+                  </div>
+                </div>
+              </div>
+
+              <div
+                v-if="questionType === 'multiple-choice'"
+                class="question-form"
+              >
+                <div class="form-group">
+                  <label for="multiple-choice-question-text">題目</label>
+                  <textarea
+                    v-model="multipleChoiceQuestionText"
+                    placeholder="請輸入複選題問題敘述"
+                    rows="5"
+                    cols="30"
+                    required
+                  ></textarea>
+                </div>
+                <div
+                  v-for="(option, index) in multipleChoiceOptions"
+                  :key="index"
+                >
+                  <label :for="'multiple-choice-option' + (index + 1)"
+                    >選項 {{ String.fromCharCode(65 + index) }}</label
+                  >
+                  <textarea
+                    cols="30"
+                    rows="2"
+                    v-model="multipleChoiceOptions[index]"
+                    :placeholder="
+                      '請輸入選項 ' + String.fromCharCode(65 + index)
+                    "
+                  
+                  ></textarea>
+                </div>
+                <div class="form-group">
+                  <label for="multiple-choice-answer">正確答案</label>
+                  <div class="answer-group">
+                    <input
+                      type="checkbox"
+                      v-model="multipleChoiceAnswers"
+                      :value="1"
+                      class="answer-option"
+                    />
+                    選項 A
+                    <input
+                      type="checkbox"
+                      v-model="multipleChoiceAnswers"
+                      :value="2"
+                      class="answer-option"
+                    />
+                    選項 B
+                    <input
+                      type="checkbox"
+                      v-model="multipleChoiceAnswers"
+                      :value="3"
+                      class="answer-option"
+                    />
+                    選項 C
+                    <input
+                      type="checkbox"
+                      v-model="multipleChoiceAnswers"
+                      :value="4"
+                      class="answer-option"
+                    />
+                    選項 D
+                    <input
+                      type="checkbox"
+                      v-model="multipleChoiceAnswers"
+                      :value="5"
+                      class="answer-option"
+                    />
+                    選項 E
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="form-group form-group-btn">
+            <button type="submit" class="button">提交題目</button>
+          </div>
+        </form>
       </div>
-      <div class="form-group form-group-btn end-btn">
-        <button class="button" @click="endCreateQuestion">結束出題</button>
+
+      <div class="question-container">
+        <div class="question-content">
+          <h2>目前已提交題目</h2>
+          <table
+            border="1"
+            style="width: 100%; margin-top: 20px; border-collapse: collapse"
+          >
+            <thead>
+              <tr>
+                <th>題號</th>
+                <th>題型</th>
+                <th>題目</th>
+                <th>選項</th>
+                <th>正確答案</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="(question, index) in submittedQuestions" :key="index">
+                <td>{{ index + 1 }}</td>
+                <td>
+                  <span v-if="question.type === 'true-false'">是非題</span>
+                  <span v-else-if="question.type === 'single-choice'"
+                    >單選題</span
+                  >
+                  <span v-else-if="question.type === 'multiple-choice'"
+                    >複選題</span
+                  >
+                </td>
+
+                <td>{{ question.text }}</td>
+
+                <td>
+                  <div v-for="(option, index) in question.options" :key="index">
+                    {{ String.fromCharCode(65 + index) }}. {{ option }}
+                  </div>
+                </td>
+                <td>
+                  <div v-if="typeof question.correctAnswer === 'string'">
+                    {{
+                      String.fromCharCode(
+                        65 + question.options.indexOf(question.correctAnswer)
+                      )
+                    }}. {{ question.correctAnswer }}
+                  </div>
+
+                  <div v-else>
+                    <div
+                      v-for="(answer, index) in question.correctAnswer"
+                      :key="index"
+                    >
+                      {{
+                        String.fromCharCode(
+                          65 + question.options.indexOf(answer)
+                        )
+                      }}. {{ answer }}
+                    </div>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="form-group form-group-btn end-btn">
+          <button class="button" @click="endCreateQuestion">結束出題</button>
+        </div>
       </div>
     </div>
   </div>
@@ -510,32 +523,88 @@ body {
   align-items: flex-start;
   height: 100vh;
   background-color: #f4f4f4;
-  padding: 20px;
+  padding: 0;
   margin: 0;
+}
+
+.page-wrapper {
+  width: 100%;
+  min-height: 100vh; /* 至少和視窗一樣高 */
+  padding: 0 0 20px;
+  margin: 0;
+  background-color: #f4f4f9;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  overflow: hidden;
+}
+
+.nav {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px;
+  background-color: #5d5a5a;
+  width: 100%;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 1000;
+  gap: 20px;
+}
+
+.info {
+  /* text-align: left; */
+  font-size: 20px;
+  color: white;
+}
+
+.finish-btn {
+  background-color: #20bec8;
+  color: white;
+  margin: 0;
+  margin-left: auto;
+  padding: 12px 20px;
+  border: none;
+  border-radius: 6px;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.finish-btn:hover {
+  background-color: #1598a1;
 }
 
 /* 主容器樣式 */
 .container {
   display: flex;
   justify-content: space-between;
-  gap: 50px;
+  gap: 30px;
   align-items: flex-start;
-  height: 97vh;
-  max-width: 1300px;
-  margin: 10px auto;
+  max-width: 1450px;
+  position: relative;
+  width: 100%;
+  margin: 90px auto 0;
+  padding: 0;
+  background-color: #f4f4f9;
+  overflow: hidden;
 }
 
 /* 出題容器與考試資訊容器的樣式 */
 .createquestion-container,
 .question-container {
   width: 70%;
-  height: 100%;
+  height: 90%;
   padding: 20px;
   border-radius: 8px;
   box-sizing: border-box;
   overflow-y: auto;
-  border: 1px solid #ddd;
+  border: 1px solid #aaa;
   position: relative;
+  background-color: white;
+  max-height: 630px;
 }
 
 .createquestion-content {
@@ -545,13 +614,13 @@ body {
   padding-top: 0;
   box-sizing: border-box;
   overflow-y: auto;
-  min-height: 625px;
+  min-height: 540px;
   /* min-height: 825px */
 }
 
 .question-content {
   padding: 0 20px;
-  min-height: 600px;
+  min-height: 520px;
   /* min-height: 800px */
   box-sizing: border-box;
   overflow: hidden; /* 讓內部不要有滾動條 */
@@ -569,11 +638,6 @@ h2 {
 .question-num {
   font-size: 20px;
   text-align: left;
-}
-
-.info {
-  text-align: left;
-  font-size: 20px;
 }
 
 /*
@@ -624,7 +688,7 @@ textarea {
 }
 
 textarea:focus {
-  border-color: #4caf50;
+  border-color: #20bec8;
   outline: none;
 }
 
@@ -642,7 +706,7 @@ select {
 
 input[type="text"]:focus,
 select:focus {
-  border-color: #4caf50; /* 聚焦時邊框變綠 */
+  border-color: #20bec8; /* 聚焦時邊框變綠 */
   outline: none;
 }
 
@@ -654,13 +718,13 @@ select:focus {
 }
 
 /* 按鈕樣式 */
-button.button {
+.button {
   position: sticky;
   bottom: 20px; /* 讓 div A 置於 div B 的底部 */
   left: 50%; /* 水平居中 */
   transform: translateX(-50%);
   padding: 12px 20px;
-  background-color: #4caf50;
+  background-color: #20bec8;
   color: white;
   border: none;
   border-radius: 6px;
@@ -669,8 +733,8 @@ button.button {
   transition: background-color 0.3s ease;
 }
 
-button.button:hover {
-  background-color: #45a049;
+.button:hover {
+  background-color: #1598a1;
 }
 
 .end-btn {
@@ -736,286 +800,297 @@ tr:hover {
 }
 </style>
 -->
-<!-- API-->
+<!-- API -->
 <template>
-  <div class="container">
-    <ErrorModal
-      v-model="showError"
-      :message="errorMsg"
-      @confirm="handleRedirect"
-    />
-
-    <div class="createquestion-container">
-      <form @submit.prevent="submitQuestion">
-        <div class="createquestion-content">
-          <h1>出題</h1>
-          <div class="question-num">第 {{ currentQuestionCount + 1 }} 題</div>
-
-          <div class="form-group">
-            <label for="question-type">選擇題型</label>
-            <select
-              id="question-type"
-              v-model="questionType"
-              @change="changeQuestionType"
-            >
-              <option value="true-false">是非題</option>
-              <option value="single-choice">單選題</option>
-              <option value="multiple-choice">複選題</option>
-            </select>
-          </div>
-
-          <div class="questionType-container">
-            <div v-if="questionType === 'true-false'" class="question-form">
-              <div class="form-group">
-                <label for="true-false-question-text">題目</label>
-                <textarea
-                  v-model="trueFalseQuestionText"
-                  placeholder="請輸入是非題問題敘述"
-                  rows="5"
-                  cols="30"
-                  required
-                ></textarea>
-              </div>
-              <div class="form-group">
-                <label for="true-false-answer">正確答案</label>
-
-                <div class="answer-group">
-                  <input
-                    type="radio"
-                    id="trueOption"
-                    value="true"
-                    v-model="trueFalseAnswer"
-                  />
-                  <label for="trueOption" class="tf-ans answer-option"
-                    >是</label
-                  >
-
-                  <input
-                    type="radio"
-                    id="falseOption"
-                    value="false"
-                    v-model="trueFalseAnswer"
-                  />
-                  <label for="falseOption" class="tf-ans answer-option"
-                    >否</label
-                  >
-                </div>
-              </div>
-            </div>
-
-            <div v-if="questionType === 'single-choice'" class="question-form">
-              <div class="form-group">
-                <label for="single-choice-question-text">題目</label>
-                <textarea
-                  v-model="singleChoiceQuestionText"
-                  placeholder="請輸入單選題問題敘述"
-                  rows="5"
-                  cols="30"
-                  required
-                ></textarea>
-              </div>
-              <div v-for="(option, index) in singleChoiceOptions" :key="index">
-                <label :for="'single-choice-option' + (index + 1)"
-                  >選項 {{ String.fromCharCode(65 + index) }}</label
-                >
-                <textarea
-                  cols="30"
-                  rows="1"
-                  v-model="singleChoiceOptions[index]"
-                  :placeholder="'請輸入選項 ' + String.fromCharCode(65 + index)"
-                  required
-                ></textarea>
-              </div>
-              <div class="form-group">
-                <label for="single-choice-answer">正確答案</label>
-
-                <div class="answer-group">
-                  <input
-                    type="radio"
-                    v-model="singleChoiceAnswer"
-                    :value="1"
-                    class="answer-option"
-                  />
-                  選項 A
-                  <input
-                    type="radio"
-                    v-model="singleChoiceAnswer"
-                    :value="2"
-                    class="answer-option"
-                  />
-                  選項 B
-                  <input
-                    type="radio"
-                    v-model="singleChoiceAnswer"
-                    :value="3"
-                    class="answer-option"
-                  />
-                  選項 C
-                  <input
-                    type="radio"
-                    v-model="singleChoiceAnswer"
-                    :value="4"
-                    class="answer-option"
-                  />
-                  選項 D
-                  <input
-                    type="radio"
-                    v-model="singleChoiceAnswer"
-                    :value="5"
-                    class="answer-option"
-                  />
-                  選項 E
-                </div>
-              </div>
-            </div>
-
-            <div
-              v-if="questionType === 'multiple-choice'"
-              class="question-form"
-            >
-              <div class="form-group">
-                <label for="multiple-choice-question-text">題目</label>
-                <textarea
-                  v-model="multipleChoiceQuestionText"
-                  placeholder="請輸入複選題問題敘述"
-                  rows="5"
-                  cols="30"
-                  required
-                ></textarea>
-              </div>
-              <div
-                v-for="(option, index) in multipleChoiceOptions"
-                :key="index"
-              >
-                <label :for="'multiple-choice-option' + (index + 1)"
-                  >選項 {{ String.fromCharCode(65 + index) }}</label
-                >
-                <textarea
-                  cols="30"
-                  rows="1"
-                  v-model="multipleChoiceOptions[index]"
-                  :placeholder="'請輸入選項 ' + String.fromCharCode(65 + index)"
-                  required
-                ></textarea>
-              </div>
-              <div class="form-group">
-                <label for="multiple-choice-answer">正確答案</label>
-                <div class="answer-group">
-                  <input
-                    type="checkbox"
-                    v-model="multipleChoiceAnswers"
-                    :value="1"
-                    class="answer-option"
-                  />
-                  選項 A
-                  <input
-                    type="checkbox"
-                    v-model="multipleChoiceAnswers"
-                    :value="2"
-                    class="answer-option"
-                  />
-                  選項 B
-                  <input
-                    type="checkbox"
-                    v-model="multipleChoiceAnswers"
-                    :value="3"
-                    class="answer-option"
-                  />
-                  選項 C
-                  <input
-                    type="checkbox"
-                    v-model="multipleChoiceAnswers"
-                    :value="4"
-                    class="answer-option"
-                  />
-                  選項 D
-                  <input
-                    type="checkbox"
-                    v-model="multipleChoiceAnswers"
-                    :value="5"
-                    class="answer-option"
-                  />
-                  選項 E
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-        <div class="form-group form-group-btn">
-          <button type="submit" class="button">提交題目</button>
-        </div>
-      </form>
+  <div class="page-wrapper">
+    <div class="nav">
+      <div class="info">業務種類：{{ examInfo.category }}</div>
+      <div class="info">
+        測驗範圍：{{ examInfo.chapter }} {{ examInfo.section }}
+      </div>
+      <button class="finish-btn" @click="endCreateQuestion">結束出題</button>
     </div>
+    <div class="container">
+      <ErrorModal
+        v-model="showError"
+        :message="errorMsg"
+        @confirm="handleRedirect"
+      />
 
-    <div class="question-container">
-      <div class="question-content">
-        <div class="examInfo">
-          <div class="info">業務種類：{{ examInfo.categoryName }}</div>
-          <div class="info">
-            測驗範圍：{{ examInfo.chapterName }} {{ examInfo.partName }}
-          </div>
-        </div>
-        <h2>目前已提交題目</h2>
-        <table
-          border="1"
-          style="width: 100%; margin-top: 20px; border-collapse: collapse"
-        >
-          <thead>
-            <tr>
-              <th>題號</th>
-              <th>題型</th>
-              <th>題目</th>
-              <th>選項</th>
-              <th>正確答案</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr v-for="(question, index) in submittedQuestions" :key="index">
-              <td>{{ index + 1 }}</td>
-              <td>
-                <span v-if="question.type === 'true-false'">是非題</span>
-                <span v-else-if="question.type === 'single-choice'"
-                  >單選題</span
-                >
-                <span v-else-if="question.type === 'multiple-choice'"
-                  >複選題</span
-                >
-              </td>
+      <div class="createquestion-container">
+        <form @submit.prevent="submitQuestion">
+          <div class="createquestion-content">
+            <h1>出題</h1>
+            <div class="question-num">第 {{ currentQuestionCount + 1 }} 題</div>
 
-              <td>{{ question.text }}</td>
-              <td>
-                <div v-for="(option, index) in question.options" :key="index">
-                  {{ String.fromCharCode(65 + index) }}. {{ option }}
+            <div class="form-group">
+              <label for="question-type">選擇題型</label>
+              <select
+                id="question-type"
+                v-model="questionType"
+                @change="changeQuestionType"
+              >
+                <option value="true-false">是非題</option>
+                <option value="single-choice">單選題</option>
+                <option value="multiple-choice">複選題</option>
+              </select>
+            </div>
+
+            <div class="questionType-container">
+              <div v-if="questionType === 'true-false'" class="question-form">
+                <div class="form-group">
+                  <label for="true-false-question-text">題目</label>
+                  <textarea
+                    v-model="trueFalseQuestionText"
+                    placeholder="請輸入是非題問題敘述"
+                    rows="5"
+                    cols="30"
+                    required
+                  ></textarea>
                 </div>
-              </td>
-              <td>
-                <div v-if="typeof question.correctAnswer === 'string'">
-                  {{
-                    String.fromCharCode(
-                      65 + question.options.indexOf(question.correctAnswer)
-                    )
-                  }}. {{ question.correctAnswer }}
-                </div>
+                <div class="form-group">
+                  <label for="true-false-answer">正確答案</label>
 
-                <div v-else>
-                  <div
-                    v-for="(answer, index) in question.correctAnswer"
-                    :key="index"
-                  >
-                    {{
-                      String.fromCharCode(
-                        65 + question.options.indexOf(answer)
-                      )
-                    }}. {{ answer }}
+                  <div class="answer-group">
+                    <input
+                      type="radio"
+                      id="trueOption"
+                      value="true"
+                      v-model="trueFalseAnswer"
+                    />
+                    <label for="trueOption" class="tf-ans answer-option"
+                      >是</label
+                    >
+
+                    <input
+                      type="radio"
+                      id="falseOption"
+                      value="false"
+                      v-model="trueFalseAnswer"
+                    />
+                    <label for="falseOption" class="tf-ans answer-option"
+                      >否</label
+                    >
                   </div>
                 </div>
-              </td>
-            </tr>
-          </tbody>
-        </table>
+              </div>
+
+              <div
+                v-if="questionType === 'single-choice'"
+                class="question-form"
+              >
+                <div class="form-group">
+                  <label for="single-choice-question-text">題目</label>
+                  <textarea
+                    v-model="singleChoiceQuestionText"
+                    placeholder="請輸入單選題問題敘述"
+                    rows="5"
+                    cols="30"
+                    required
+                  ></textarea>
+                </div>
+                <div
+                  v-for="(option, index) in singleChoiceOptions"
+                  :key="index"
+                >
+                  <label :for="'single-choice-option' + (index + 1)"
+                    >選項 {{ String.fromCharCode(65 + index) }}</label
+                  >
+                  <textarea
+                    cols="30"
+                    rows="2"
+                    v-model="singleChoiceOptions[index]"
+                    :placeholder="
+                      '請輸入選項 ' + String.fromCharCode(65 + index)
+                    "
+                  ></textarea>
+                </div>
+                <div class="form-group">
+                  <label for="single-choice-answer">正確答案</label>
+
+                  <div class="answer-group">
+                    <input
+                      type="radio"
+                      v-model="singleChoiceAnswer"
+                      :value="1"
+                      class="answer-option"
+                    />
+                    選項 A
+                    <input
+                      type="radio"
+                      v-model="singleChoiceAnswer"
+                      :value="2"
+                      class="answer-option"
+                    />
+                    選項 B
+                    <input
+                      type="radio"
+                      v-model="singleChoiceAnswer"
+                      :value="3"
+                      class="answer-option"
+                    />
+                    選項 C
+                    <input
+                      type="radio"
+                      v-model="singleChoiceAnswer"
+                      :value="4"
+                      class="answer-option"
+                    />
+                    選項 D
+                    <input
+                      type="radio"
+                      v-model="singleChoiceAnswer"
+                      :value="5"
+                      class="answer-option"
+                    />
+                    選項 E
+                  </div>
+                </div>
+              </div>
+
+              <div
+                v-if="questionType === 'multiple-choice'"
+                class="question-form"
+              >
+                <div class="form-group">
+                  <label for="multiple-choice-question-text">題目</label>
+                  <textarea
+                    v-model="multipleChoiceQuestionText"
+                    placeholder="請輸入複選題問題敘述"
+                    rows="5"
+                    cols="30"
+                    required
+                  ></textarea>
+                </div>
+                <div
+                  v-for="(option, index) in multipleChoiceOptions"
+                  :key="index"
+                >
+                  <label :for="'multiple-choice-option' + (index + 1)"
+                    >選項 {{ String.fromCharCode(65 + index) }}</label
+                  >
+                  <textarea
+                    cols="30"
+                    rows="2"
+                    v-model="multipleChoiceOptions[index]"
+                    :placeholder="
+                      '請輸入選項 ' + String.fromCharCode(65 + index)
+                    "
+                  ></textarea>
+                </div>
+                <div class="form-group">
+                  <label for="multiple-choice-answer">正確答案</label>
+                  <div class="answer-group">
+                    <input
+                      type="checkbox"
+                      v-model="multipleChoiceAnswers"
+                      :value="1"
+                      class="answer-option"
+                    />
+                    選項 A
+                    <input
+                      type="checkbox"
+                      v-model="multipleChoiceAnswers"
+                      :value="2"
+                      class="answer-option"
+                    />
+                    選項 B
+                    <input
+                      type="checkbox"
+                      v-model="multipleChoiceAnswers"
+                      :value="3"
+                      class="answer-option"
+                    />
+                    選項 C
+                    <input
+                      type="checkbox"
+                      v-model="multipleChoiceAnswers"
+                      :value="4"
+                      class="answer-option"
+                    />
+                    選項 D
+                    <input
+                      type="checkbox"
+                      v-model="multipleChoiceAnswers"
+                      :value="5"
+                      class="answer-option"
+                    />
+                    選項 E
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="form-group form-group-btn">
+            <button type="submit" class="button">提交題目</button>
+          </div>
+        </form>
       </div>
-      <div class="form-group form-group-btn end-btn">
-        <button class="button" @click="endCreateQuestion">結束出題</button>
+
+      <div class="question-container">
+        <div class="question-content">
+          <h2>目前已提交題目</h2>
+          <table
+            border="1"
+            style="width: 100%; margin-top: 20px; border-collapse: collapse"
+          >
+            <thead>
+              <tr>
+                <th>題號</th>
+                <th>題型</th>
+                <th>題目</th>
+                <th>選項</th>
+                <th>正確答案</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="(question, index) in submittedQuestions" :key="index">
+                <td>{{ index + 1 }}</td>
+                <td>
+                  <span v-if="question.type === 'true-false'">是非題</span>
+                  <span v-else-if="question.type === 'single-choice'"
+                    >單選題</span
+                  >
+                  <span v-else-if="question.type === 'multiple-choice'"
+                    >複選題</span
+                  >
+                </td>
+
+                <td>{{ question.text }}</td>
+                <td>
+                  <div v-for="(option, index) in question.options" :key="index">
+                    {{ String.fromCharCode(65 + index) }}. {{ option }}
+                  </div>
+                </td>
+                <td>
+                  <div v-if="typeof question.correctAnswer === 'string'">
+                    {{
+                      String.fromCharCode(
+                        65 + question.options.indexOf(question.correctAnswer)
+                      )
+                    }}. {{ question.correctAnswer }}
+                  </div>
+
+                  <div v-else>
+                    <div
+                      v-for="(answer, index) in question.correctAnswer"
+                      :key="index"
+                    >
+                      {{
+                        String.fromCharCode(
+                          65 + question.options.indexOf(answer)
+                        )
+                      }}. {{ answer }}
+                    </div>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="form-group form-group-btn end-btn">
+          <button class="button" @click="endCreateQuestion">結束出題</button>
+        </div>
       </div>
     </div>
   </div>
@@ -1247,28 +1322,84 @@ body {
   margin: 0;
 }
 
+.page-wrapper {
+  width: 100%;
+  min-height: 100vh; /* 至少和視窗一樣高 */
+  padding: 0 0 20px;
+  margin: 0;
+  background-color: #f4f4f9;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  overflow: hidden;
+}
+
+.nav {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px;
+  background-color: #5d5a5a;
+  width: 100%;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 1000;
+  gap: 20px;
+}
+
+.info {
+  /* text-align: left; */
+  font-size: 20px;
+  color: white;
+}
+
+.finish-btn {
+  background-color: #20bec8;
+  color: white;
+  margin: 0;
+  margin-left: auto;
+  padding: 12px 20px;
+  border: none;
+  border-radius: 6px;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.finish-btn:hover {
+  background-color: #1598a1;
+}
+
 /* 主容器樣式 */
 .container {
   display: flex;
   justify-content: space-between;
-  gap: 50px;
+  gap: 30px;
   align-items: flex-start;
-  height: 97vh;
-  max-width: 1300px;
-  margin: 10px auto;
+  max-width: 1450px;
+  position: relative;
+  width: 100%;
+  margin: 100px auto 0;
+  padding: 0;
+  background-color: #f4f4f9;
+  overflow: hidden;
 }
 
 /* 出題容器與考試資訊容器的樣式 */
 .createquestion-container,
 .question-container {
   width: 70%;
-  height: 100%;
+  height: 90%;
   padding: 20px;
   border-radius: 8px;
   box-sizing: border-box;
   overflow-y: auto;
-  border: 1px solid #ddd;
+  border: 1px solid #aaa;
   position: relative;
+  background-color: white;
+  max-height: 900px;
 }
 
 .createquestion-content {
@@ -1355,7 +1486,7 @@ textarea {
 }
 
 textarea:focus {
-  border-color: #4caf50;
+  border-color: #20bec8;
   outline: none;
 }
 
@@ -1373,7 +1504,7 @@ select {
 
 input[type="text"]:focus,
 select:focus {
-  border-color: #4caf50; /* 聚焦時邊框變綠 */
+  border-color: #20bec8; /* 聚焦時邊框變綠 */
   outline: none;
 }
 
@@ -1385,13 +1516,13 @@ select:focus {
 }
 
 /* 按鈕樣式 */
-button.button {
+.button {
   position: sticky;
   bottom: 20px; /* 讓 div A 置於 div B 的底部 */
   left: 50%; /* 水平居中 */
   transform: translateX(-50%);
   padding: 12px 20px;
-  background-color: #4caf50;
+  background-color: #20bec8;
   color: white;
   border: none;
   border-radius: 6px;
@@ -1400,8 +1531,8 @@ button.button {
   transition: background-color 0.3s ease;
 }
 
-button.button:hover {
-  background-color: #45a049;
+.button:hover {
+  background-color: #1598a1;
 }
 
 .end-btn {

@@ -644,7 +644,7 @@ onBeforeUnmount(() => {
   width: 100%;
   margin: 0 auto; */
 
-  min-width: 1200px;
+  min-width: 1400px;
   margin: 0 auto;
   padding: 20px;
   padding-top: 100px;
@@ -668,11 +668,11 @@ onBeforeUnmount(() => {
   gap: 2rem;
   margin: auto;
   align-items: flex-end;
-  justify-content: space-between;
+  /* justify-content: space-between; */
 }
 
 .add-exam-btn {
-  background-color: #00ab06; /* 綠色背景 */
+  background-color: #22AAA1; /* 綠色背景 */
   color: white; /* 白色文字 */
   padding: 10px 20px; /* 上下10px、左右20px的內邊距 */
   border: none; /* 無邊框 */
@@ -681,6 +681,7 @@ onBeforeUnmount(() => {
   cursor: pointer; /* 滑鼠指標變成手指 */
   display: inline-flex; /* 使用 flex 排列 */
   align-items: center; /* 垂直居中對齊 */
+  height: 42.6px;
 }
 
 .add-exam-btn i {
@@ -688,7 +689,7 @@ onBeforeUnmount(() => {
 }
 
 .add-exam-btn:hover {
-  background-color: #018605; /* 滑鼠懸停時顏色變深 */
+  background-color: #019a90; /* 滑鼠懸停時顏色變深 */
 }
 
 .form-group {
@@ -812,19 +813,19 @@ td {
 
 /* 表頭 */
 thead {
-  background-color: #ca00c7;
-  color: white;
+  background-color: #dbcafe;
+  color: black;
   text-align: left;
 }
 
 thead th {
   padding: 12px;
   font-size: 16px;
-  font-weight: bold;
+  font-weight: 500;
 }
 
 thead th.active i {
-  color: #086600; /* 可以替換成你想要的顏色 */
+  color: #ff5959; /* 可以替換成你想要的顏色 */
   transition: color 0.3s ease, transform 0.3s ease;
   transform: scale(1.1); /* 在顏色改變時讓字體輕微放大 */
 }

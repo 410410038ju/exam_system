@@ -1,8 +1,9 @@
+<!-- 沒有API -->
 <template>
   <div class="container">
     <div class="header">
       <div class="left-header">
-        <div class="exam-name">{{ examName }}</div>
+        <div class="exam-name">{{ exam.title }}</div>
         <div class="time-left">剩餘時間： {{ formattedTime() }}</div>
       </div>
       <div class="right-header">
@@ -37,7 +38,6 @@
       </div>
     </div>
 
-    <!-- 交卷確認視窗 -->
     <div v-if="showConfirmModal" class="modal-overlay">
       <div class="modal">
         <button class="close-btn" @click="cancelSubmit">✕</button>
@@ -79,13 +79,25 @@ useIdleLogout();
 
 const router = useRouter();
 
+import { useExamStore } from "../../stores/examStore";
+
+const examStore = useExamStore();
+const exam = examStore.currentExam;
+
+if (!exam) {
+  // 沒資料可能是直接進入頁面而不是從按鈕進來，你可以導回列表
+  console.warn("未帶入測驗資料");
+  router.push("/user");
+}
+
 const examId = ref(null);
 
 // 測驗名稱
 const examName = ref("數學期末考");
 
 // 剩餘時間（秒）
-const timeLeft = ref(0.1 * 60); // 30分鐘 = 1800秒
+// const timeLeft = ref(30 * 60); // 30分鐘 = 1800秒
+const timeLeft = ref(exam ? exam.limitTime * 60 : 0);
 let timer = null;
 
 // 答題進度
@@ -219,12 +231,28 @@ const startCountdown = () => {
 };
 
 // 格式化時間顯示（將秒轉換為 MM:SS 格式）
+/*
 const formattedTime = () => {
   const minutes = Math.floor(timeLeft.value / 60)
     .toString()
     .padStart(2, "0");
   const seconds = (timeLeft.value % 60).toString().padStart(2, "0");
   return `${minutes}:${seconds}`;
+};
+*/
+const formattedTime = () => {
+  const totalSeconds = timeLeft.value;
+  const hours = Math.floor(totalSeconds / 3600)
+    .toString()
+    .padStart(2, "0");
+  const minutes = Math.floor((totalSeconds % 3600) / 60)
+    .toString()
+    .padStart(2, "0");
+  const seconds = (totalSeconds % 60).toString().padStart(2, "0");
+
+  return totalSeconds >= 3600
+    ? `${hours}:${minutes}:${seconds}`
+    : `${minutes}:${seconds}`;
 };
 
 // 當組件掛載時開始計時
@@ -247,7 +275,250 @@ onBeforeUnmount(() => {
   localStorage.removeItem("examId");
 });
 </script>
+-->
+<!-- API 
+<template>
+  <div class="container">
+    <div class="header">
+      <div class="left-header">
+        <div class="exam-name">{{ exam.title }}</div>
+        <div class="time-left">剩餘時間： {{ formattedTime() }}</div>
+      </div>
+      <div class="right-header">
+        <div class="progress">
+          答題進度： {{ answeredQuestions }} / {{ totalQuestions }}
+        </div>
+        <button class="submit-btn" @click="submitExam">交卷</button>
+      </div>
+    </div>
+    <div class="exam-container">
+      <div v-for="(question, index) in questions" :key="index" class="question">
+        <p class="question-text">{{ index + 1 }}. {{ question.question }}</p>
+        <p class="question-type">【{{ question.questionType }}】</p>
+        <div class="options">
+          <label
+            v-for="(option, i) in question.optionList"
+            :key="i"
+            class="option"
+          >
+            <input
+              :type="
+                question.questionType === 'multiple_choice'
+                  ? 'checkbox'
+                  : 'radio'
+              "
+              :name="'question-' + index"
+              :value="option.optionId"
+              v-model="userAnswers[index]"
+            />
+            {{ String.fromCharCode(65 + i) }}. {{ option.option }}
+          </label>
+        </div>
+      </div>
+      <div class="submit-container">
+        <button class="submit-btn" @click="submitExam">交卷</button>
+      </div>
+    </div>
 
+  
+    <div v-if="showConfirmModal" class="modal-overlay">
+      <div class="modal">
+        <button class="close-btn" @click="cancelSubmit">✕</button>
+        <p class="modal-title">提交考卷</p>
+        <hr />
+        <p class="modal-message">
+          {{
+            answeredCount === totalQuestions
+              ? "答題時間尚未截止，確定要交卷嗎？"
+              : `還有 ${
+                  totalQuestions - answeredCount
+                } 題未作答，確定要交卷嗎？`
+          }}
+        </p>
+
+        <div class="modal-actions">
+          <button @click="confirmSubmit" class="confirm">確定</button>
+          <button @click="cancelSubmit" class="cancel">取消</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</template>
+
+<script setup>
+import {
+  ref,
+  reactive,
+  onMounted,
+  onUnmounted,
+  onBeforeUnmount,
+  computed,
+} from "vue";
+import axios from "axios";
+import { useRouter } from "vue-router";
+const router = useRouter();
+
+import { useIdleLogout } from "../../composables/useIdleLogout";
+useIdleLogout();
+
+import { useExamStore } from "../../stores/examStore";
+
+const examStore = useExamStore();
+const exam = examStore.currentExam;
+
+if (!exam) {
+  // 沒資料可能是直接進入頁面而不是從按鈕進來，你可以導回列表
+  console.warn("未帶入測驗資料");
+  router.push("/user");
+}
+
+const examId = ref(null);
+
+// 測驗名稱
+const examName = ref("數學期末考");
+
+// 剩餘時間（秒）
+// const timeLeft = ref(30 * 60); // 30分鐘 = 1800秒
+const timeLeft = ref(exam ? exam.limitTime * 60 : 0);
+let timer = null;
+
+// 答題進度
+const totalQuestions = ref(4); // 假設總共有4題（將來由API回應決定）
+
+const isAutoSubmit = ref(false); // 判斷是否是自動交卷
+
+// Modal 顯示控制
+const showConfirmModal = ref(false);
+const pendingSubmit = ref(false);
+
+// 計算已答題數
+const answeredCount = computed(
+  () =>
+    userAnswers.value.filter((ans) => ans !== null && ans.length !== 0).length
+);
+
+// 從API獲取題目
+const questions = ref([]);
+
+const userAnswers = ref([]);
+
+// 根據API回應格式填充題目和選項
+const getExam = async () => {
+  const token = localStorage.getItem("authToken");
+  try {
+    const response = await axios.post(
+      "http://172.16.46.163/csexam/user/exam/paper",
+      { examId: examId },
+      {
+        headers: { Authorization: `Bearer ${token}` },
+      }
+    );
+
+    const data = response.data;
+
+    if (data.code === "0000") {
+      // 讀取測驗資料
+      questions.value = data.data.questionList;
+      userAnswers.value = questions.value.map((q) =>
+        q.questionType === "multiple_choice" ? [] : ""
+      );
+    } else {
+      alert(data.message || "讀取測驗失敗");
+    }
+  } catch (error) {
+    alert("發生錯誤，請稍後再試");
+    console.error("讀取測驗失敗:", error);
+  }
+};
+
+// 計算已答題數
+const answeredQuestions = computed(() => {
+  return userAnswers.value.filter(
+    (answer) => answer !== null && answer.length > 0
+  ).length;
+});
+
+// 交卷按鈕的點擊處理
+const submitExam = () => {
+  if (isAutoSubmit.value) {
+    // 自動交卷就直接送出
+    confirmSubmit();
+  } else {
+    // 手動交卷才顯示確認視窗
+    showConfirmModal.value = true;
+  }
+};
+
+// 點確認 -> 執行真正交卷
+const confirmSubmit = () => {
+  clearInterval(timer); // 清除計時器，防止額外觸發
+  console.log("提交答案：", userAnswers.value);
+  showConfirmModal.value = false;
+  router.push("/answer"); // 原本的交卷動作
+};
+
+// 點取消 -> 關閉 Modal
+const cancelSubmit = () => {
+  showConfirmModal.value = false;
+};
+
+// 倒數計時
+const startCountdown = () => {
+  timer = setInterval(() => {
+    if (timeLeft.value > 0) {
+      timeLeft.value--;
+    } else {
+      clearInterval(timer);
+      isAutoSubmit.value = true; // 自動交卷 flag
+      submitExam(); // 時間到，執行交卷
+    }
+  }, 1000);
+};
+
+// 格式化時間顯示（將秒轉換為 MM:SS 格式）
+/*const formattedTime = () => {
+  const minutes = Math.floor(timeLeft.value / 60)
+    .toString()
+    .padStart(2, "0");
+  const seconds = (timeLeft.value % 60).toString().padStart(2, "0");
+  return `${minutes}:${seconds}`;
+};*/
+const formattedTime = () => {
+  const totalSeconds = timeLeft.value;
+  const hours = Math.floor(totalSeconds / 3600)
+    .toString()
+    .padStart(2, "0");
+  const minutes = Math.floor((totalSeconds % 3600) / 60)
+    .toString()
+    .padStart(2, "0");
+  const seconds = (totalSeconds % 60).toString().padStart(2, "0");
+
+  return totalSeconds >= 3600
+    ? `${hours}:${minutes}:${seconds}`
+    : `${minutes}:${seconds}`;
+};
+
+// 當組件掛載時開始計時
+onMounted(() => {
+  startCountdown();
+  const storedExamId = localStorage.getItem("examId"); // 從 localStorage 中讀取 examId
+  if (storedExamId) {
+    examId.value = storedExamId;
+    console.log("接收到的 examId:", examId.value);
+  }
+  getExam();
+});
+
+// 當組件卸載時清除計時器，防止內存泄漏
+onUnmounted(() => {
+  clearInterval(timer);
+});
+
+onBeforeUnmount(() => {
+  localStorage.removeItem("examId");
+});
+</script>
+-->
 <style scoped>
 #app {
   position: relative;

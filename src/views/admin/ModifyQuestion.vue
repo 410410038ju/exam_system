@@ -1029,7 +1029,7 @@ const handleRedirect = () => {
 
 <style scoped>
 .container {
-  max-width: 1200px;
+  min-width: 1200px;
   margin: 0 auto;
   padding: 20px;
   padding-top: 100px;
@@ -1078,7 +1078,7 @@ button {
 }
 
 .add-question-btn {
-  background-color: #2b90fc; /* 藍色背景 */
+  background-color: #7371FC; /* 藍色背景 */
   color: white; /* 白色文字 */
   padding: 12px; /* 上下12px、左右24px的內邊距 */
   border: none; /* 無邊框 */
@@ -1095,7 +1095,7 @@ button {
 }
 
 .add-question-btn:hover {
-  background-color: #0056b3; /* 滑鼠懸停時顏色變深 */
+  background-color: #2f2cd9; /* 滑鼠懸停時顏色變深 */
 }
 
 /* 單一欄位區塊 */
@@ -1149,17 +1149,18 @@ button {
   padding: 10px;
   margin: 0;
   font-size: 16px;
-  background-color: #ffc145;
-  color: black;
+  font-weight: 500;
+  background-color: #ff9800;
+  color: white;
   border-radius: 5px;
-  border: 1px solid #ffc145;
+  border: 1px solid #ff9800;
   cursor: pointer;
   flex-grow: 0;
   transition: background-color 0.3s ease, transform 0.2s ease;
 }
 
 .search-btn:hover {
-  background-color: #e0a758;
+  background-color: #cc7b00;
 }
 
 .action-btn {
@@ -1280,7 +1281,7 @@ span[v-else] {
 .modal-content {
   position: relative; /* 讓關閉按鈕相對於此容器定位 */
   background-color: white;
-  padding: 30px;
+  padding: 20px 30px;
   border-radius: 12px; /* 更圓的邊角 */
   width: 600px;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
@@ -1290,6 +1291,10 @@ span[v-else] {
   flex-direction: column;
   align-items: stretch; /* 確保內部元素填滿 */
   text-align: center;
+}
+
+.modal-content h2 {
+  margin-top: 0;
 }
 
 .modal-content label {
@@ -1312,25 +1317,39 @@ span[v-else] {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  gap: 20px;
-  width: 40%;
+  gap: 10px;
+  width: 30%;
   margin: 0 auto;
 }
 
-.modal-actions button {
-  flex: 1;
+.save-btn {
+  background-color: #20bec8;
+  color: white;
   padding: 10px 20px;
   font-size: 16px;
-  background-color: #007bff;
-  color: white;
   border: none;
   border-radius: 4px;
   cursor: pointer;
   transition: background-color 0.3s ease;
 }
 
-.modal-actions button:hover {
-  background-color: #0056b3;
+.save-btn:hover {
+  background-color: #1f9199;
+}
+
+.cancel-btn {
+  background-color: #ebebeb;
+  color: black;
+  padding: 10px 20px;
+  font-size: 16px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.cancel-btn:hover {
+  background-color: #d1d1d1;
 }
 
 .modal-form-group {
@@ -1354,7 +1373,7 @@ span[v-else] {
   position: absolute;
   top: 10px;
   right: 10px;
-  padding: 10px 20px;
+  padding: 3px 10px;
   background: transparent;
   border: none;
   font-size: 20px;
@@ -1476,6 +1495,7 @@ textarea::placeholder {
 
 .option-group textarea {
   width: 900%;
+  height: 40px;
   padding: 8px;
   font-size: 14px;
   border: 1px solid #ccc;
