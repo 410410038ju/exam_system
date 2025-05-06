@@ -1078,7 +1078,7 @@ button {
 }
 
 .add-question-btn {
-  background-color: #7371FC; /* 藍色背景 */
+  background-color: #7371fc; /* 藍色背景 */
   color: white; /* 白色文字 */
   padding: 12px; /* 上下12px、左右24px的內邊距 */
   border: none; /* 無邊框 */
@@ -1164,7 +1164,7 @@ button {
 }
 
 .action-btn {
-  margin: auto 8px;
+  margin: 8px;
   padding: 10px 15px;
   border-radius: 5px;
 }
@@ -1238,6 +1238,46 @@ tr:nth-child(even) {
 td:last-child {
   text-align: center;
   padding: 0;
+}
+
+th:nth-child(1),
+td:nth-child(1) {
+  width: 4%;
+}
+
+th:nth-child(2),
+td:nth-child(2) {
+  width: 6%;
+}
+
+th:nth-child(3),
+td:nth-child(3) {
+  width: 8%;
+}
+
+th:nth-child(4),
+td:nth-child(4) {
+  width: 5%;
+}
+
+th:nth-child(5),
+td:nth-child(5) {
+  width: 23%;
+}
+
+th:nth-child(6),
+td:nth-child(6) {
+  width: 22%;
+}
+
+th:nth-child(7),
+td:nth-child(7) {
+  width: 22%;
+}
+
+th:nth-child(8),
+td:nth-child(8) {
+  width: 10%;
 }
 
 ul {

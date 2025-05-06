@@ -294,7 +294,9 @@ onBeforeUnmount(() => {
     <div class="exam-container">
       <div v-for="(question, index) in questions" :key="index" class="question">
         <p class="question-text">{{ index + 1 }}. {{ question.question }}</p>
-        <p class="question-type">【{{ question.questionType }}】</p>
+        <p class="question-type">
+          【{{ getTypeName(question.questionType) }}】
+        </p>
         <div class="options">
           <label
             v-for="(option, i) in question.optionList"
@@ -309,7 +311,13 @@ onBeforeUnmount(() => {
               "
               :name="'question-' + index"
               :value="option.optionId"
-              v-model="userAnswers[index]"
+              @change="
+                updateAnswer(
+                  index,
+                  option.optionId,
+                  question.questionType === 'multiple_choice'
+                )
+              "
             />
             {{ String.fromCharCode(65 + i) }}. {{ option.option }}
           </label>
@@ -320,7 +328,6 @@ onBeforeUnmount(() => {
       </div>
     </div>
 
-  
     <div v-if="showConfirmModal" class="modal-overlay">
       <div class="modal">
         <button class="close-btn" @click="cancelSubmit">✕</button>
@@ -367,7 +374,6 @@ const examStore = useExamStore();
 const exam = examStore.currentExam;
 
 if (!exam) {
-  // 沒資料可能是直接進入頁面而不是從按鈕進來，你可以導回列表
   console.warn("未帶入測驗資料");
   router.push("/user");
 }
@@ -383,13 +389,27 @@ const timeLeft = ref(exam ? exam.limitTime * 60 : 0);
 let timer = null;
 
 // 答題進度
-const totalQuestions = ref(4); // 假設總共有4題（將來由API回應決定）
+const totalQuestions = ref(null); // 假設總共有4題（將來由API回應決定）
 
 const isAutoSubmit = ref(false); // 判斷是否是自動交卷
 
 // Modal 顯示控制
 const showConfirmModal = ref(false);
 const pendingSubmit = ref(false);
+
+// 題型英文名稱轉中文名稱
+const getTypeName = (type) => {
+  switch (type) {
+    case "true_false":
+      return "是非題";
+    case "single_choice":
+      return "單選題";
+    case "multiple_choice":
+      return "複選題";
+    default:
+      return type;
+  }
+};
 
 // 計算已答題數
 const answeredCount = computed(
@@ -408,7 +428,7 @@ const getExam = async () => {
   try {
     const response = await axios.post(
       "http://172.16.46.163/csexam/user/exam/paper",
-      { examId: examId },
+      { examId: examId.value },
       {
         headers: { Authorization: `Bearer ${token}` },
       }
@@ -422,6 +442,12 @@ const getExam = async () => {
       userAnswers.value = questions.value.map((q) =>
         q.questionType === "multiple_choice" ? [] : ""
       );
+
+      // 計算總題數
+      totalQuestions.value = questions.value.length;
+
+      // 存進 sessionStorage
+      sessionStorage.setItem("questions", JSON.stringify(questions.value));
     } else {
       alert(data.message || "讀取測驗失敗");
     }
@@ -430,11 +456,69 @@ const getExam = async () => {
     console.error("讀取測驗失敗:", error);
   }
 };
+/* GPT給的，不知道要幹嘛
+const getExam = async () => {
+  try {
+    const token = localStorage.getItem("authToken");
+    const response = await axios.get(
+      `http://172.16.46.163/csexam/user/exam/view?examId=${examId.value}`,
+      {
+        headers: { Authorization: `Bearer ${token}` },
+      }
+    );
+
+    const questionData = response.data.data.questions;
+    questions.value = questionData.map((q) => {
+      return {
+        questionId: q.questionId,
+        questionTitle: q.questionTitle,
+        questionType: q.questionType,
+        optionList: q.optionList.map((opt) => ({
+          optionId: opt.optionId,
+          option: opt.option,
+          content: opt.content,
+        })),
+      };
+    });
+
+    // 初始化 userAnswers（選擇題用）
+    userAnswers.value = questions.value.map((q) =>
+      q.questionType === "multiple_choice" ? [] : ""
+    );
+  } catch (error) {
+    console.error("取得考題失敗:", error);
+  }
+};
+
+*/
+
+// 根據題型更新 userAnswers
+const updateAnswer = (index, optionId, isMultipleChoice) => {
+  if (isMultipleChoice) {
+    // 複選題，將選項加入數組
+    const selectedAnswers = userAnswers.value[index] || [];
+    if (selectedAnswers.includes(optionId)) {
+      // 如果已選擇，則移除該選項
+      userAnswers.value[index] = selectedAnswers.filter(
+        (id) => id !== optionId
+      );
+    } else {
+      // 否則新增該選項
+      selectedAnswers.push(optionId);
+      userAnswers.value[index] = selectedAnswers;
+    }
+  } else {
+    // 單選題，選擇一個答案
+    userAnswers.value[index] = optionId;
+  }
+};
 
 // 計算已答題數
 const answeredQuestions = computed(() => {
   return userAnswers.value.filter(
-    (answer) => answer !== null && answer.length > 0
+    (answer) =>
+      answer !== null &&
+      (Array.isArray(answer) ? answer.length > 0 : answer !== "")
   ).length;
 });
 
@@ -450,11 +534,111 @@ const submitExam = () => {
 };
 
 // 點確認 -> 執行真正交卷
-const confirmSubmit = () => {
+/*const confirmSubmit = async () => {
   clearInterval(timer); // 清除計時器，防止額外觸發
-  console.log("提交答案：", userAnswers.value);
   showConfirmModal.value = false;
-  router.push("/answer"); // 原本的交卷動作
+
+  const token = localStorage.getItem("authToken");
+
+  // 整理符合 API 格式的答案
+  const payload = {
+    examId: examId.value,
+    userAnswerList: questions.value.map((question, index) => {
+      const selected = userAnswers.value[index];
+      const selectedOptionIds = [];
+
+      question.optionList.forEach((option, i) => {
+        if (
+          (question.questionType === "multiple_choice" &&
+            selected.includes(option.option)) ||
+          (question.questionType !== "multiple_choice" &&
+            selected === option.option)
+        ) {
+          selectedOptionIds.push(option.optionId);
+        }
+      });
+
+      return {
+        questionId: question.questionId,
+        userAnswers: selectedOptionIds,
+      };
+    }),
+  };
+
+  try {
+    const response = await axios.post(
+      "http://172.16.46.163/csexam/user/examScore",
+      payload,
+      {
+        headers: { Authorization: `Bearer ${token}` },
+      }
+    );
+
+    if (response.data.code === "0000") {
+      router.push("/answer");
+    } else {
+      alert(response.data.message || "交卷失敗");
+    }
+  } catch (error) {
+    console.error("交卷錯誤:", error);
+    alert("交卷失敗，請稍後再試");
+  }
+};*/
+const confirmSubmit = async () => {
+  clearInterval(timer); // 清除計時器，防止額外觸發
+  showConfirmModal.value = false;
+
+  const token = localStorage.getItem("authToken");
+
+  // 整理符合 API 格式的答案
+  const payload = {
+    examId: examId.value,
+    userAnswerList: questions.value.map((question, index) => {
+      const selected = userAnswers.value[index];
+      const selectedOptionIds = [];
+
+      question.optionList.forEach((option) => {
+        if (
+          // 複選題，選中的選項
+          (question.questionType === "multiple_choice" &&
+            selected.includes(option.optionId)) ||
+          // 單選題，選中的選項
+          (question.questionType !== "multiple_choice" &&
+            selected === option.optionId)
+        ) {
+          selectedOptionIds.push(option.optionId);
+        }
+      });
+
+      return {
+        questionId: question.questionId,
+        userAnswers: selectedOptionIds, // 傳送選中的 optionId 陣列
+      };
+    }),
+  };
+
+  // ✅ 存進 sessionStorage
+  sessionStorage.setItem("UserAnswers", JSON.stringify(payload));
+
+  try {
+    const response = await axios.post(
+      "http://172.16.46.163/csexam/user/examScore",
+      payload,
+      {
+        headers: { Authorization: `Bearer ${token}` },
+      }
+    );
+
+    if (response.data.code === "0000") {
+      sessionStorage.setItem("ExamResult", JSON.stringify(response.data.data));
+      router.push("/answer");
+    } else {
+      alert(response.data.message || "交卷失敗");
+    }
+  } catch (error) {
+    console.error("交卷錯誤:", error);
+    alert("交卷失敗，請稍後再試");
+  }
 };
 
 // 點取消 -> 關閉 Modal

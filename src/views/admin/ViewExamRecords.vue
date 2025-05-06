@@ -779,7 +779,7 @@ button {
   padding: 8px 16px;
   border-radius: 4px;
   margin-top: 30px;
-  height: 40px;
+  height: 42.6px;
   cursor: pointer;
   font-size: 16px;
   border: 1px solid #20bec8;

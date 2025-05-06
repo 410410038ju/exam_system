@@ -82,7 +82,7 @@ useIdleLogout();
 const router = useRouter();
 
 // 測驗名稱
-const examName = ref("數學期末考");
+const examName = ref("VUE框架期末考");
 
 // 剩餘時間（秒）
 const timeLeft = ref(2 * 60); // 2分鐘
@@ -237,7 +237,7 @@ const backtoList = () => {
 }
 
 .answer-status {
-  float: right;
+  /* float: right; */
   font-weight: bold;
   font-size: 16px;
 }

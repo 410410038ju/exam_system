@@ -196,14 +196,14 @@ nav {
             >測驗管理</router-link
           >
         </li>
-        <li>
+        <!-- <li>
           <router-link
             :to="{ name: 'ScoreList' }"
             class="nav-item"
             active-class="active"
             >成績列表</router-link
           >
-        </li>
+        </li> -->
         <li>
           <button class="changepassword-btn" @click="modifyPassword">
             修改密碼

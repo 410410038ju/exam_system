@@ -804,9 +804,9 @@ tr:hover {
 <template>
   <div class="page-wrapper">
     <div class="nav">
-      <div class="info">業務種類：{{ examInfo.category }}</div>
+      <div class="info">業務種類：{{ examInfo.categoryName }}</div>
       <div class="info">
-        測驗範圍：{{ examInfo.chapter }} {{ examInfo.section }}
+        測驗範圍：{{ examInfo.chapterName }} {{ examInfo.partName }}
       </div>
       <button class="finish-btn" @click="endCreateQuestion">結束出題</button>
     </div>
@@ -1399,7 +1399,7 @@ body {
   border: 1px solid #aaa;
   position: relative;
   background-color: white;
-  max-height: 900px;
+  max-height: 830px;
 }
 
 .createquestion-content {
@@ -1409,12 +1409,12 @@ body {
   padding-top: 0;
   box-sizing: border-box;
   overflow-y: auto;
-  min-height: 825px;
+  min-height: 740px;
 }
 
 .question-content {
   padding: 0 20px;
-  min-height: 800px;
+  min-height: 720px;
   box-sizing: border-box;
   overflow: hidden; /* 讓內部不要有滾動條 */
 }

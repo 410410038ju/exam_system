@@ -1,3 +1,4 @@
+<!-- 沒有API 
 <template>
   <div class="container">
     <div class="header">
@@ -184,6 +185,269 @@ onUnmounted(() => {
   }
 });
 </script>
+-->
+
+<!-- API -->
+<template>
+  <div class="container">
+    <div class="header">
+      <div class="left-header">
+        <div>
+          <button class="back-btn" @click="backtoList">返回考試列表</button>
+        </div>
+        <div class="exam-name">{{ exam.title }}</div>
+        <div class="time-left">剩餘時間： {{ formattedTime }}</div>
+      </div>
+      <div class="right-header">
+        <div class="exam-score">試卷得分 {{ score }}</div>
+      </div>
+    </div>
+    <div class="exam-container">
+      <div v-for="(question, index) in questions" :key="index" class="question">
+        <p class="question-text">
+          {{ index + 1 }}. {{ question.question }}
+          <span
+            class="answer-status"
+            :class="isCorrect(question) ? 'correct' : 'wrong'"
+          >
+            {{ isCorrect(question) ? "✅ 正確" : "❌ 錯誤" }}
+          </span>
+          <span class="creator-p">{{ question.creatorId }}</span>
+        </p>
+        <p class="question-type">【{{ question.questionType }}】</p>
+        <div class="options">
+          <label
+            v-for="(option, i) in question.options"
+            :key="i"
+            class="option"
+          >
+            <input
+              :type="question.questionType === '複選題' ? 'checkbox' : 'radio'"
+              :name="'question-' + index"
+              :value="option"
+              :checked="isOptionChecked(question, option)"
+              disabled
+            />
+            {{ String.fromCharCode(65 + i) }}. {{ option }}
+          </label>
+        </div>
+        <div class="correct-answer">
+          <p>
+            正確答案：
+            <span v-if="Array.isArray(question.correctAnswer)">
+              {{
+                question.correctAnswer
+                  .map(
+                    (ans) =>
+                      `${String.fromCharCode(
+                        65 + question.options.indexOf(ans)
+                      )}. ${ans}`
+                  )
+                  .join(", ")
+              }}
+            </span>
+            <span v-else>
+              {{
+                String.fromCharCode(
+                  65 + question.options.indexOf(question.correctAnswer)
+                )
+              }}. {{ question.correctAnswer }}
+            </span>
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+</template>
+
+<script setup>
+import {
+  ref,
+  reactive,
+  onMounted,
+  onUnmounted,
+  onBeforeUnmount,
+  computed,
+} from "vue";
+import { useRouter } from "vue-router";
+import { useIdleLogout } from "../../composables/useIdleLogout";
+
+useIdleLogout();
+
+const router = useRouter();
+
+import { useExamStore } from "../../stores/examStore";
+
+const examStore = useExamStore();
+const exam = examStore.currentExam;
+
+if (!exam) {
+  // 沒資料可能是直接進入頁面而不是從按鈕進來，你可以導回列表
+  console.warn("未帶入測驗資料");
+}
+
+// 剩餘時間（秒）
+const timeLeft = ref(2 * 60); // 2分鐘
+let timer; // ✅ 初始化時不使用 null，避免 Vue 無法追蹤變更
+
+// const questions = ref([
+//   {
+//     question: "以下哪一項是 Vue.js 的特性？",
+//     questionType: "單選題",
+//     options: ["雙向資料綁定", "單向資料流", "虛擬 DOM", "以上皆是"],
+//     correctAnswer: "以上皆是",
+//     userAnswer: "雙向資料綁定", // ✅ 模擬已作答的答案
+//   },
+//   {
+//     question: "Vue 3 中引入了哪一個 Composition API？",
+//     questionType: "單選題",
+//     options: ["data()", "methods()", "ref()", "computed()"],
+//     correctAnswer: "ref()",
+//     userAnswer: "computed()", // ✅ 模擬已作答的答案
+//   },
+//   {
+//     question: "Vue.js 是一個前端框架？",
+//     questionType: "是非題",
+//     options: ["對", "錯"],
+//     correctAnswer: "對",
+//     userAnswer: "對", // ✅ 模擬已作答的答案
+//   },
+//   {
+//     question: "以下哪些是 Vue.js 的特性？",
+//     questionType: "多選題",
+//     options: ["雙向資料綁定", "單向資料流", "虛擬 DOM", "以上皆是"],
+//     correctAnswer: ["雙向資料綁定", "虛擬 DOM"],
+//     userAnswer: ["單向資料流", "虛擬 DOM"], // ✅ 模擬已作答的答案
+//   },
+// ]);
+
+// 假設你已經從 sessionStorage 取出以下三份資料：
+const rawQuestions = JSON.parse(sessionStorage.getItem("questions"));
+const rawUserAnswers = JSON.parse(sessionStorage.getItem("UserAnswers"));
+const rawExamResult = JSON.parse(sessionStorage.getItem("ExamResult"));
+
+const score = ref(rawExamResult?.score || 0);
+
+// 整理後的 questions 陣列
+const questions = ref([]);
+
+rawQuestions.forEach((q) => {
+  const userAns =
+    rawUserAnswers.userAnswerList.find((u) => u.questionId === q.questionId)
+      ?.userAnswers || [];
+  const correctAns =
+    rawExamResult.AnswerList.find((a) => a.questionId === q.questionId)
+      ?.correctAnswers || [];
+
+  // 取得選項 id -> 內容 的對應 map
+  const optionMap = new Map();
+  q.optionList.forEach((opt) => {
+    optionMap.set(opt.optionId, opt.option);
+  });
+
+  let userAnswerText = [];
+  if (Array.isArray(userAns)) {
+    userAnswerText = userAns.map((id) => optionMap.get(id)); // 處理多選題
+  } else {
+    userAnswerText = [optionMap.get(userAns)]; // 單選題與是非題處理
+  }
+
+  let correctAnswerText = [];
+  if (Array.isArray(correctAns)) {
+    correctAnswerText = correctAns.map((id) => optionMap.get(id)); // 多選題
+  } else {
+    correctAnswerText = [optionMap.get(correctAns)]; // 單選題與是非題
+  }
+
+  questions.value.push({
+    question: q.question,
+    creatorId: q.creatorId,
+    questionType: convertType(q.questionType),
+    options: q.optionList.map((opt) => opt.option),
+    correctAnswer: correctAnswerText,
+    userAnswer: userAnswerText,
+  });
+});
+
+// 題型轉換（依據你的格式）
+function convertType(type) {
+  switch (type) {
+    case "single_choice":
+      return "單選題";
+    case "multiple_choice":
+      return "複選題";
+    case "true_false":
+      return "是非題";
+    default:
+      return "未知題型";
+  }
+}
+
+const isOptionChecked = (question, option) => {
+  if (Array.isArray(question.userAnswer)) {
+    return question.userAnswer.includes(option);
+  }
+  return question.userAnswer === option;
+};
+
+const isCorrect = (question) => {
+  if (Array.isArray(question.correctAnswer)) {
+    return (
+      question.userAnswer.length === question.correctAnswer.length &&
+      question.userAnswer.every((ans) => question.correctAnswer.includes(ans))
+    );
+  }
+  return question.userAnswer[0] === question.correctAnswer[0];
+};
+
+// ✅ 計時器啟動時應該檢查是否已存在
+const startCountdown = () => {
+  if (timer) return; // 避免重複執行
+  timer = setInterval(() => {
+    if (timeLeft.value > 0) {
+      timeLeft.value--;
+    } else {
+      clearInterval(timer);
+      timer = null;
+      backtoList(); // 時間到，返回考試列表
+    }
+  }, 1000);
+};
+
+// ✅ 格式化時間顯示，改為 computed 避免重複計算
+const formattedTime = computed(() => {
+  const minutes = Math.floor(timeLeft.value / 60)
+    .toString()
+    .padStart(2, "0");
+  const seconds = (timeLeft.value % 60).toString().padStart(2, "0");
+  return `${minutes}:${seconds}`;
+});
+
+// ✅ 返回考試列表時應該確保計時器被清除
+const backtoList = () => {
+  if (timer) {
+    clearInterval(timer);
+    timer = null;
+  }
+  router.push("/user");
+};
+
+// 當組件掛載時開始計時
+onMounted(() => {
+  startCountdown();
+});
+
+// 當組件卸載時清除計時器，防止內存泄漏
+onUnmounted(() => {
+  if (timer) {
+    clearInterval(timer);
+    timer = null;
+  }
+  sessionStorage.removeItem("questions");
+  sessionStorage.removeItem("UserAnswers");
+  sessionStorage.removeItem("ExamResult");
+});
+</script>
 
 <style scoped>
 #app {
@@ -284,7 +548,7 @@ onUnmounted(() => {
 }
 
 .answer-status {
-  float: right;
+  /* float: right; */
   font-weight: bold;
   font-size: 16px;
 }

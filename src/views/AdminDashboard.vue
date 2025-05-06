@@ -35,7 +35,7 @@
         </button>
         <!-- <button @click="navigateTo('open_exam')">新增測驗</button> -->
         <button @click="navigateTo('view_exam_records')">測驗管理</button>
-        <button @click="navigateTo('score_list')">成績列表</button>
+        <!-- <button @click="navigateTo('score_list')">成績列表</button> -->
         <button @click="logout" class="logout-btn">登出</button>
       </div>
     </div>

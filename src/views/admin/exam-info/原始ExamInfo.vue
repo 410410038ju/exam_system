@@ -89,8 +89,8 @@
       </div>
 
       <div class="action-buttons">
-        <button class="btn" @click="openMakeupExam">設定補考測驗</button>
-        <button class="btn" @click="MakeupExam">開啟補考測驗</button>
+        <button class="btn" @click="MakeupExam">補考測驗</button>
+        <button class="btn" @click="openMakeupExam">開啟補考測驗</button>
         <button
           class="btn"
           @click="viewMakeupRecords"
@@ -104,11 +104,11 @@
         <button class="btn" @click="exportGrades">匯出成績</button>
       </div>
 
-      <!-- 成績表格 -->
+      <!-- 原始成績表格 -->
       <div class="exam-score" v-show="isOriginalScore">
         <!-- 搜尋欄位和搜尋按鈕 -->
         <div class="search-bar">
-          <h2>成績</h2>
+          <h2>原始成績</h2>
           <input
             type="text"
             v-model="searchQuery"
@@ -121,6 +121,14 @@
         <table class="exam-records-table">
           <thead>
             <tr>
+              <!-- 全選框 -->
+              <th>
+                <input
+                  type="checkbox"
+                  v-model="selectAll"
+                  @change="toggleSelectAll"
+                />全選
+              </th>
               <th>索引</th>
               <th>員工編號</th>
               <th>姓名</th>
@@ -132,6 +140,14 @@
           </thead>
           <tbody>
             <tr v-for="(record, index) in filteredRecords" :key="index">
+              <!-- 單個選取框 -->
+              <td>
+                <input
+                  type="checkbox"
+                  v-model="selectedRecords"
+                  :value="record.empId"
+                />
+              </td>
               <td>{{ index + 1 }}</td>
               <td>{{ record.empId }}</td>
               <td>{{ record.userName }}</td>
@@ -150,11 +166,11 @@
         </table>
       </div>
 
-      <!-- 補考名單表格 -->
+      <!-- 補考成績表格 -->
       <div class="exam-score" v-show="!isOriginalScore">
         <!-- 搜尋欄位和搜尋按鈕 -->
         <div class="search-bar">
-          <h2>補考名單</h2>
+          <h2>補考成績</h2>
           <input
             type="text"
             v-model="searchQuery"
@@ -167,13 +183,6 @@
         <table class="exam-records-table">
           <thead>
             <tr>
-              <th>
-                <input
-                  type="checkbox"
-                  v-model="selectAll"
-                  @change="toggleSelectAll"
-                />全選
-              </th>
               <th>索引</th>
               <th>員工編號</th>
               <th>姓名</th>
@@ -185,13 +194,6 @@
           </thead>
           <tbody>
             <tr v-for="(record, index) in makeupfilteredRecords" :key="index">
-              <td>
-                <input
-                  type="checkbox"
-                  v-model="selectedRecords"
-                  :value="record.empId"
-                />
-              </td>
               <td>{{ index + 1 }}</td>
               <td>{{ record.empId }}</td>
               <td>{{ record.userName }}</td>
@@ -249,49 +251,49 @@
       </div>
 
       <!-- 補考設定 Modal
-        <div v-if="showMakeupModal" class="makeup-modal-overlay">
-          <div class="makeup-modal">
-            <button @click="showMakeupModal = false" class="close-btn">×</button>
-            <h3>設定補考測驗</h3>
-            <div class="form-group">
-              <label>測驗名稱：</label>
-              <p class="exam-name">{{ exam.examName }}</p>
-            </div>
-            <div class="form-group">
-              <label>及格分數：</label>
-              <input
-                type="number"
-                v-model="makeupTargetScore"
-                min="1"
-                @keyup.enter="submitMakeupExam"
-              />
-            </div>
-            <div class="form-group">
-              <label>補考開始日期：</label>
-              <input type="date" v-model="makeupStartDate" class="date-input" />
-            </div>
-            <div class="form-group">
-              <label>補考結束日期：</label>
-              <input type="date" v-model="makeupEndDate" class="date-input" />
-            </div>
-            <div class="form-group">
-              <label>答題時間(分鐘)：</label>
-              <input
-                type="number"
-                v-model="makeupLimitTime"
-                min="1"
-                @keyup.enter="submitMakeupExam"
-              />
-            </div>
-            <div class="modal-actions">
-              <button @click="submitMakeupExam" class="confirm-btn">確認</button>
-              <button @click="showMakeupModal = false" class="cancel-btn">
-                取消
-              </button>
-            </div>
+      <div v-if="showMakeupModal" class="makeup-modal-overlay">
+        <div class="makeup-modal">
+          <button @click="showMakeupModal = false" class="close-btn">×</button>
+          <h3>設定補考測驗</h3>
+          <div class="form-group">
+            <label>測驗名稱：</label>
+            <p class="exam-name">{{ exam.examName }}</p>
+          </div>
+          <div class="form-group">
+            <label>及格分數：</label>
+            <input
+              type="number"
+              v-model="makeupTargetScore"
+              min="1"
+              @keyup.enter="submitMakeupExam"
+            />
+          </div>
+          <div class="form-group">
+            <label>補考開始日期：</label>
+            <input type="date" v-model="makeupStartDate" class="date-input" />
+          </div>
+          <div class="form-group">
+            <label>補考結束日期：</label>
+            <input type="date" v-model="makeupEndDate" class="date-input" />
+          </div>
+          <div class="form-group">
+            <label>答題時間(分鐘)：</label>
+            <input
+              type="number"
+              v-model="makeupLimitTime"
+              min="1"
+              @keyup.enter="submitMakeupExam"
+            />
+          </div>
+          <div class="modal-actions">
+            <button @click="submitMakeupExam" class="confirm-btn">確認</button>
+            <button @click="showMakeupModal = false" class="cancel-btn">
+              取消
+            </button>
           </div>
         </div>
-         -->
+      </div>
+       -->
 
       <!-- 補考設定(有選人設定) Modal -->
       <div v-if="showMakeupModal" class="makeup-modal-overlay">
@@ -379,7 +381,7 @@ const errorMsg = ref({
 });
 
 // 按鈕顯示的文字
-const score_btn_Text = ref("查看補考名單");
+const score_btn_Text = ref("查看補考紀錄");
 
 const isOriginalScore = ref(true); // 顯示哪個成績表格 預設是True: 原始，False:補考
 
@@ -459,28 +461,28 @@ const makeupfilteredRecords = ref(makeupRecords.value);
 // 全選/全不選功能(只選empId)
 const toggleSelectAll = () => {
   if (selectAll.value) {
-    selectedRecords.value = makeupfilteredRecords.value.map((record) => record.empId);
+    selectedRecords.value = filteredRecords.value.map((record) => record.empId);
   } else {
     selectedRecords.value = [];
   }
 };
 
 /*
-  // 全選/全不選功能(選擇整筆資料)
-  // 切換「全選」時
-  function toggleSelectAll() {
-    if (selectAll.value) {
-      selectedRecords.value = [...filteredRecords.value]
-    } else {
-      selectedRecords.value = []
-    }
+// 全選/全不選功能(選擇整筆資料)
+// 切換「全選」時
+function toggleSelectAll() {
+  if (selectAll.value) {
+    selectedRecords.value = [...filteredRecords.value]
+  } else {
+    selectedRecords.value = []
   }
-  
-  // 如果使用者單勾或取消勾選，反映到 selectAll 狀態
-  watch(selectedRecords, (newVal) => {
-    selectAll.value = newVal.length === filteredRecords.value.length
-  })
-  */
+}
+
+// 如果使用者單勾或取消勾選，反映到 selectAll 狀態
+watch(selectedRecords, (newVal) => {
+  selectAll.value = newVal.length === filteredRecords.value.length
+})
+*/
 
 // 狀態英文名稱轉中文名稱
 const getStatusName = (status) => {
@@ -515,17 +517,17 @@ const goBack = () => {
 
 // 修改考試期間
 /*
-  const confirmEdit = () => {
-    console.log("新的開始時間為：", newStartTime.value);
-    console.log("新的結束時間為：", newEndTime.value);
-    // 更新 exam.startDate 和 exam.endDate
-    exam.value.startDate = newStartTime.value;
-    exam.value.endDate = newEndTime.value;
-  
-    // 可以在此加上 axios 發送 API 更新時間
-    showModal.value = false;
-  };
-  */
+const confirmEdit = () => {
+  console.log("新的開始時間為：", newStartTime.value);
+  console.log("新的結束時間為：", newEndTime.value);
+  // 更新 exam.startDate 和 exam.endDate
+  exam.value.startDate = newStartTime.value;
+  exam.value.endDate = newEndTime.value;
+
+  // 可以在此加上 axios 發送 API 更新時間
+  showModal.value = false;
+};
+*/
 
 // 修改考試期間API
 const confirmEdit = async () => {
@@ -593,9 +595,9 @@ const openMakeupExam = () => {
 
 const submitMakeupExam = async () => {
   /*if (selectedRecords.value.length === 0) {
-      alert("請先選擇要補考的同仁");
-      return;
-    }*/
+    alert("請先選擇要補考的同仁");
+    return;
+  }*/
 
   if (
     !makeupLimitTime.value ||
@@ -693,9 +695,9 @@ const viewMakeupRecords = () => {
 
   // 根據當前顯示的 div 切換按鈕文字
   if (isOriginalScore.value) {
-    score_btn_Text.value = "查看補考名單";
+    score_btn_Text.value = "查看補考紀錄";
   } else {
-    score_btn_Text.value = "查看成績";
+    score_btn_Text.value = "查看原始成績";
   }
 };
 
@@ -768,10 +770,10 @@ body {
   background-color: #eee;
 
   /*  display: flex;
-    flex-direction: column;
-    align-items: center;
-    width: 100%;
-    min-height: 100vh;  */
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  min-height: 100vh;  */
 }
 
 .content {
@@ -943,8 +945,8 @@ body {
 }
 
 /* .exam-range-table tr:nth-child(even) {
-    background-color: #fcfcfc;
-  } */
+  background-color: #fcfcfc;
+} */
 
 .exam-range-table tr {
   background-color: white;
@@ -988,21 +990,21 @@ body {
 }
 
 /*
-  .btn:nth-child(1) {
-    background-color: #4caf50;
-    color: white;
-  }
-  
-  .btn:nth-child(2) {
-    background-color: #2196f3;
-    color: white;
-  }
-  
-  .btn:nth-child(3) {
-    background-color: #ff9800;
-    color: white;
-  }
-  */
+.btn:nth-child(1) {
+  background-color: #4caf50;
+  color: white;
+}
+
+.btn:nth-child(2) {
+  background-color: #2196f3;
+  color: white;
+}
+
+.btn:nth-child(3) {
+  background-color: #ff9800;
+  color: white;
+}
+*/
 
 .modal-overlay {
   position: fixed;
@@ -1062,11 +1064,11 @@ body {
   gap: 20px;
 }
 /*
-  .form-group {
-    margin-bottom: 16px;
-    display: flex;
-    flex-direction: column;
-  }*/
+.form-group {
+  margin-bottom: 16px;
+  display: flex;
+  flex-direction: column;
+}*/
 
 .makeup-modal-overlay {
   position: fixed;
