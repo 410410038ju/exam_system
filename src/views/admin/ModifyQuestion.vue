@@ -9,7 +9,7 @@
 
     <div class="search-container">
       <form @submit.prevent="searchQuestions" class="form">
-        <button @click="addQuestion" class="add-question-btn">
+        <button type="button" @click="addQuestion" class="add-question-btn">
           <i class="fa fa-plus"></i> 新增題目
         </button>
 
@@ -20,6 +20,68 @@
             <option value="true_false">是非題</option>
             <option value="single_choice">單選題</option>
             <option value="multiple_choice">複選題</option>
+          </select>
+        </div>
+
+        <div class="form-group" id="category-group">
+          <label for="category">業務種類</label>
+          <select
+            id="category"
+            v-model="selectedCategory"
+            @change="populateChapters()"
+            class="form-select"
+          >
+            <option value="">請選擇業務種類</option>
+            <option
+              v-for="category in categories"
+              :key="category.categoryId"
+              :value="category.categoryId"
+            >
+              {{ category.category }}
+            </option>
+          </select>
+        </div>
+
+        <div class="form-group" id="chapter-group">
+          <label for="chapter">測驗範圍（章）</label>
+          <select
+            id="chapter"
+            v-model="selectedChapter"
+            @change="populateParts()"
+            :disabled="!selectedCategory"
+            class="form-select"
+          >
+            <option value="">
+              {{ selectedCategory ? "請選擇章" : "請先選擇業務種類" }}
+            </option>
+            <option
+              v-for="chapter in chapters"
+              :key="chapter.chapterId"
+              :value="chapter.chapterId"
+            >
+              {{ chapter.chapter }}
+            </option>
+          </select>
+        </div>
+
+        <div class="form-group" id="part-group">
+          <label for="part">測驗範圍（節）</label>
+          <select
+            id="part"
+            v-model="selectedPart"
+            :disabled="!selectedChapter"
+            class="form-select"
+          >
+            <option value="">
+              {{ selectedChapter ? "請選擇節" : "請先選擇章" }}
+            </option>
+            <option
+              v-for="part in parts"
+              :key="part.partId"
+              :value="part.partId"
+            >
+              {{ part.part }}
+            </option>
           </select>
         </div>
 
@@ -326,14 +388,80 @@
     <div v-else-if="results.length === 0">沒有符合資料</div>
 
     <!-- 修改題目彈出視窗 -->
-    <div v-if="editingQuestion" class="modal-overlay" @click="cancelEdit">
-      <div class="modal-content" @click.stop>
+    <div v-if="editingQuestion" class="modal-overlay">
+      <div class="modal-content">
         <button class="close-btn" @click="cancelEdit">x</button>
         <h2>修改題目</h2>
 
+        <!-- 業務種類 -->
+        <div class="modal-form-group">
+          <label for="category-modal">業務種類</label>
+          <select
+            id="category-modal"
+            v-model="selectedCategoryModal"
+            @change="onCategoryChange"
+            class="form-select-modal"
+          >
+            <option value="">請選擇業務種類</option>
+            <option
+              v-for="category in categoriesModal"
+              :key="category.categoryId"
+              :value="category.categoryId"
+            >
+              {{ category.category }}
+            </option>
+          </select>
+        </div>
+
+        <!-- 章 -->
+        <div class="modal-form-group">
+          <label for="chapter-modal">測驗範圍(章)</label>
+          <select
+            id="chapter-modal"
+            v-model="selectedChapterModal"
+            @change="onChapterChange"
+            :disabled="!selectedCategoryModal"
+            class="form-select-modal"
+          >
+            <option value="">
+              {{ selectedCategoryModal ? "請選擇章" : "請先選擇業務種類" }}
+            </option>
+            <option
+              v-for="chapter in chaptersModal"
+              :key="chapter.chapterId"
+              :value="chapter.chapterId"
+            >
+              {{ chapter.chapter }}
+            </option>
+          </select>
+        </div>
+
+        <!-- 節 -->
+        <div class="modal-form-group">
+          <label for="part-modal">測驗範圍(節)</label>
+          <select
+            id="part-modal"
+            v-model="selectedPartModal"
+            @change="onPartChange"
+            :disabled="!selectedChapterModal"
+            class="form-select-modal"
+          >
+            <option value="">
+              {{ selectedChapterModal ? "請選擇節" : "請先選擇章" }}
+            </option>
+            <option
+              v-for="part in partsModal"
+              :key="part.partId"
+              :value="part.partId"
+            >
+              {{ part.part }}
+            </option>
+          </select>
+        </div>
+
         <!-- 顯示題型 -->
         <div class="modal-form-group question-type-div">
-          <label>題型</label>
+          <label class="modal-label">題型</label>
           <input
             type="text"
             :value="getTypeName(editingQuestion.questionType)"
@@ -344,8 +472,9 @@
 
         <!-- 題目 -->
         <div class="modal-form-group">
-          <label for="edit-question-text">題目</label>
+          <label for="edit-question-text" class="modal-label">題目</label>
           <textarea
+            id="edit-question-text"
             v-model="editingQuestion.question"
             placeholder="請輸入題目敘述"
             required
@@ -537,6 +666,22 @@ const errorMsg = ref({
   message: "",
 });
 
+const categories = ref([]); // 會從 API 取得資料
+const chapters = ref([]);
+const parts = ref([]);
+
+const selectedCategory = ref("");
+const selectedChapter = ref("");
+const selectedPart = ref("");
+
+const categoriesModal = ref([]); // 會從 API 取得資料
+const chaptersModal = ref([]);
+const partsModal = ref([]);
+
+const selectedCategoryModal = ref("");
+const selectedChapterModal = ref("");
+const selectedPartModal = ref("");
+
 // 題型英文名稱轉中文名稱
 const getTypeName = (type) => {
   switch (type) {
@@ -551,6 +696,141 @@ const getTypeName = (type) => {
   }
 };
 
+// 獲取分類、章節、節資料
+const fetchRangeData = async () => {
+  try {
+    const token = localStorage.getItem("authToken");
+
+    const response = await axios.get(
+      "http://172.16.46.163/csexam/admin/question/range",
+      {
+        headers: {
+          Authorization: `Bearer ${token}`, // 使用 token
+        },
+      }
+    );
+
+    if (response.data.code === "0000") {
+      // 處理回傳的資料
+      const rangeList = response.data.data.rangeList;
+      categories.value = rangeList.map((item) => ({
+        categoryId: item.categoryId,
+        category: item.category,
+        chapters: item.chapterList,
+      }));
+
+      categoriesModal.value = rangeList.map((item) => ({
+        categoryId: item.categoryId,
+        category: item.category,
+        chapters: item.chapterList,
+      }));
+
+      // 預設選擇第一個類別
+      /*if (categories.value.length > 0) {
+        selectedCategory.value = categories.value[0].categoryId;
+        populateChapters();
+      }*/
+      // 不做預設選擇，使用者自行選擇
+      selectedCategory.value = "";
+      selectedChapter.value = "";
+      selectedPart.value = "";
+      chapters.value = [];
+      parts.value = [];
+    } else {
+      alert("讀取題庫範圍失敗: " + response.data.message);
+    }
+  } catch (error) {
+    console.error("獲取分類、章節、節資料失敗：", error);
+    alert(
+      "讀取範圍資料失敗: " + (error?.response?.data?.message || "未知錯誤")
+    );
+    if (
+      error.response.data.message === "請求未提供token" ||
+      error.response.data.message === "token無效或已過期，請重新登入"
+    ) {
+      // 來自伺服器的錯誤回應（例如 404, 500 等）
+      errorMsg.value = {
+        status: error.response.status,
+        code: error.response.data.code,
+        message: error.response.data.message || "null",
+      };
+      showError.value = true;
+    }
+  }
+};
+
+// 更新章列表
+const populateChapters = () => {
+  const categoryId = selectedCategory.value;
+  const categoryData = categories.value.find(
+    (item) => item.categoryId === categoryId
+  );
+  chapters.value = categoryData ? categoryData.chapters : [];
+  selectedChapter.value = "";
+  parts.value = [];
+  selectedPart.value = "";
+};
+
+// 更新節列表
+const populateParts = () => {
+  const chapterId = selectedChapter.value;
+  const chapterData = chapters.value.find(
+    (item) => item.chapterId === chapterId
+  );
+
+  parts.value = chapterData ? chapterData.partList : [];
+  selectedPart.value = "";
+};
+
+// 更新Modal章列表
+const populateChaptersModal = () => {
+  const categoryId = selectedCategoryModal.value;
+  const categoryData = categoriesModal.value.find(
+    (item) => item.categoryId === categoryId
+  );
+  chaptersModal.value = categoryData ? categoryData.chapters : [];
+  selectedChapterModal.value = "";
+  partsModal.value = [];
+  selectedPartModal.value = "";
+};
+
+// 更新Modal節列表
+const populatePartsModal = () => {
+  const chapterId = selectedChapterModal.value;
+  const chapterData = chaptersModal.value.find(
+    (item) => item.chapterId === chapterId
+  );
+
+  partsModal.value = chapterData ? chapterData.partList : [];
+  selectedPartModal.value = "";
+};
+
+// 當選擇業務種類時
+const onCategoryChange = () => {
+  if (!editingQuestion.value) return;
+  editingQuestion.value.categoryId = selectedCategoryModal.value;
+  selectedChapterModal.value = "";
+  selectedPartModal.value = "";
+  editingQuestion.value.chapterId = null;
+  editingQuestion.value.partId = null;
+  populateChaptersModal(); // 你原本的函式
+};
+
+// 當選擇章時
+const onChapterChange = () => {
+  if (!editingQuestion.value) return;
+  editingQuestion.value.chapterId = selectedChapterModal.value;
+  selectedPartModal.value = "";
+  editingQuestion.value.partId = null;
+  populatePartsModal(); // 你原本的函式
+};
+
+// 當選擇節時
+const onPartChange = () => {
+  if (!editingQuestion.value) return;
+  editingQuestion.value.partId = selectedPartModal.value;
+};
+
 // 尋找正確答案
 const getCorrectOptions = (question) => {
   return question.optionList.filter((option) => option.answer);
@@ -560,6 +840,9 @@ const searchParams = ref({
   questionType: "", // 預設值
   creatorId: "",
   keyword: "",
+  categoryId: null,
+  chapterId: null,
+  partId: null,
   page: 1,
   size: 5,
   orderBy: "createDate",
@@ -703,7 +986,7 @@ const updateCorrectAnswer = (selectedOption) => {
   });
 };
 
-// 查詢題目API
+// 查詢所有題目API
 const searchQuestions = async () => {
   try {
     const token = localStorage.getItem("authToken");
@@ -723,6 +1006,20 @@ const searchQuestions = async () => {
     if (searchParams.value.orderBy) params.orderBy = searchParams.value.orderBy;
     if (searchParams.value.orderType)
       params.orderType = searchParams.value.orderType;
+
+    // ✅ 新增：加入分類（業務種類）、章、節 ID
+    if (selectedCategory.value) params.categoryId = selectedCategory.value;
+    if (selectedChapter.value) params.chapterId = selectedChapter.value;
+    if (selectedPart.value) params.partId = selectedPart.value;
+
+    /*
+    if (searchParams.value.categoryId)
+      params.categoryId = searchParams.value.categoryId;
+    if (searchParams.value.chapterId)
+      params.chapterId = searchParams.value.chapterId;
+    if (searchParams.value.partId)
+      params.partId = searchParams.value.partId;
+*/
 
     // 使用 axios 發送 GET 請求，並帶上 token 和必要的 params
     const response = await axios.get(
@@ -834,7 +1131,7 @@ const editQuestion = (question) => {
   }
 };
 
-// 編輯題目API
+// 編輯題目API (查詢單筆題目API)
 /*
 const editQuestion = async (question) => {
   try {
@@ -859,6 +1156,13 @@ const editQuestion = async (question) => {
     if (response.data.code === "0000") {
       // 使用深拷貝避免直接修改原始資料
       editingQuestion.value = { ...response.data.data };
+
+      // 更新業務種類、章節與節的值
+      selectedCategoryModal.value = editingQuestion.value.categoryId;
+      populateChaptersModal();
+      selectedChapterModal.value = editingQuestion.value.chapterId;
+      populatePartsModal(); 
+      selectedPartModal.value = editingQuestion.value.partId;
 
       // 初始化選中的答案（假設選項是正確答案）
       const correctOption = editingQuestion.value.optionList.find(
@@ -904,9 +1208,32 @@ const saveEdit = async () => {
   try {
     const token = localStorage.getItem("authToken");
 
+    if (
+      !editingQuestion.value.categoryId ||
+      !editingQuestion.value.chapterId ||
+      !editingQuestion.value.partId
+    ) {
+      alert("請確認業務種類、章、節都有選擇");
+      return;
+    }
+
+    // 欄位檢查中文提示
+    const missingFields = [];
+    if (!editingQuestion.value.categoryId) missingFields.push("業務種類");
+    if (!editingQuestion.value.chapterId) missingFields.push("章");
+    if (!editingQuestion.value.partId) missingFields.push("節");
+
+    if (missingFields.length > 0) {
+      alert(`請選擇以下欄位：${missingFields.join("、")}`);
+      return;
+    }
+
     // 構建需要傳送的資料格式
     const payload = {
       content: editingQuestion.value.question, // 對應到 question
+      categoryId: editingQuestion.value.categoryId, // 加上 categoryId
+      chapterId: editingQuestion.value.chapterId,   // 加上 chapterId
+      partId: editingQuestion.value.partId,         // 加上 partId
       optionItemList: editingQuestion.value.optionList.map(option => ({
         optionId: option.optionId, // 傳送選項 ID
         content: option.content,   // 選項內容
@@ -1025,6 +1352,10 @@ const handleRedirect = () => {
   showError.value = false; // 關閉錯誤視窗
   router.push("/"); // 跳轉到首頁
 };
+
+onMounted(() => {
+  // fetchRangeData(); // 初始化時獲取分類、章節、節資料
+});
 </script>
 
 <style scoped>
@@ -1122,7 +1453,7 @@ button {
   color: #333;
   margin-bottom: 8px;
   text-align: center;
-  margin-left: 10px;
+  /* margin-left: 10px; */
 }
 
 /* 輸入欄位與下拉選單 */
@@ -1228,7 +1559,7 @@ th i {
 }
 
 td {
-  padding: 0 12px;
+  padding: 6px 12px;
 }
 
 tr:nth-child(even) {
@@ -1322,7 +1653,7 @@ span[v-else] {
   position: relative; /* 讓關閉按鈕相對於此容器定位 */
   background-color: white;
   padding: 20px 30px;
-  border-radius: 12px; /* 更圓的邊角 */
+  border-radius: 2px;
   width: 600px;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
   text-align: center;
@@ -1331,6 +1662,8 @@ span[v-else] {
   flex-direction: column;
   align-items: stretch; /* 確保內部元素填滿 */
   text-align: center;
+  max-height: 80vh; /* 限制最大高度 */
+  overflow-y: auto; /* 超過時顯示垂直滾動條 */
 }
 
 .modal-content h2 {
@@ -1400,13 +1733,22 @@ span[v-else] {
 }
 
 .modal-form-group label {
-  flex-basis: 15%;
+  flex-basis: 20%;
+  margin: 0;
+}
+
+.modal-form-group .modal-label {
+  flex-basis: 14%;
   margin: 0;
 }
 
 .modal-form-group input,
 .modal-form-group textarea {
   flex-grow: 1; /* 讓內容區域填滿剩餘空間 */
+}
+
+.form-select-modal {
+  flex-grow: 1;
 }
 
 .close-btn {

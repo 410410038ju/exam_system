@@ -49,6 +49,7 @@
               </button>
             </p>
           </div>
+
           <table class="exam-range-table">
             <thead>
               <tr>
@@ -89,8 +90,8 @@
       </div>
 
       <div class="action-buttons">
-        <button class="btn" @click="openMakeupExam">設定補考測驗</button>
-        <button class="btn" @click="MakeupExam">開啟補考測驗</button>
+        <button class="btn" @click="setupMakeupExam">設定補考測驗</button>
+        <button class="btn" @click="openMakeupExam">開啟補考測驗</button>
         <button
           class="btn"
           @click="viewMakeupRecords"
@@ -178,8 +179,8 @@
               <th>員工編號</th>
               <th>姓名</th>
               <th>狀態</th>
-              <th>交卷時間</th>
-              <th>補考成績</th>
+              <th>第一次測驗交卷時間</th>
+              <th>第一次測驗成績</th>
               <th>操作</th>
             </tr>
           </thead>
@@ -187,9 +188,10 @@
             <tr v-for="(record, index) in makeupfilteredRecords" :key="index">
               <td>
                 <input
+                  v-if="record.status === 'pending'"
                   type="checkbox"
-                  v-model="selectedRecords"
-                  :value="record.empId"
+                  :checked="isSelected(record)"
+                  @change="toggleEmployeeSelection(record)"
                 />
               </td>
               <td>{{ index + 1 }}</td>
@@ -248,52 +250,51 @@
         </div>
       </div>
 
-      <!-- 補考設定 Modal
-        <div v-if="showMakeupModal" class="makeup-modal-overlay">
-          <div class="makeup-modal">
-            <button @click="showMakeupModal = false" class="close-btn">×</button>
-            <h3>設定補考測驗</h3>
-            <div class="form-group">
-              <label>測驗名稱：</label>
-              <p class="exam-name">{{ exam.examName }}</p>
-            </div>
-            <div class="form-group">
-              <label>及格分數：</label>
-              <input
-                type="number"
-                v-model="makeupTargetScore"
-                min="1"
-                @keyup.enter="submitMakeupExam"
-              />
-            </div>
-            <div class="form-group">
-              <label>補考開始日期：</label>
-              <input type="date" v-model="makeupStartDate" class="date-input" />
-            </div>
-            <div class="form-group">
-              <label>補考結束日期：</label>
-              <input type="date" v-model="makeupEndDate" class="date-input" />
-            </div>
-            <div class="form-group">
-              <label>答題時間(分鐘)：</label>
-              <input
-                type="number"
-                v-model="makeupLimitTime"
-                min="1"
-                @keyup.enter="submitMakeupExam"
-              />
-            </div>
-            <div class="modal-actions">
-              <button @click="submitMakeupExam" class="confirm-btn">確認</button>
-              <button @click="showMakeupModal = false" class="cancel-btn">
-                取消
-              </button>
-            </div>
+      <!-- 補考設定 Modal -->
+      <div v-if="showMakeupModal" class="makeup-modal-overlay">
+        <div class="makeup-modal">
+          <button @click="showMakeupModal = false" class="close-btn">×</button>
+          <h3>設定補考測驗</h3>
+          <div class="form-group">
+            <label>測驗名稱：</label>
+            <p class="exam-name">{{ exam.examName }}</p>
+          </div>
+          <div class="form-group">
+            <label>及格分數：</label>
+            <input
+              type="number"
+              v-model="makeupTargetScore"
+              min="1"
+              @keyup.enter="submitMakeupExam"
+            />
+          </div>
+          <div class="form-group">
+            <label>補考開始日期：</label>
+            <input type="date" v-model="makeupStartDate" class="date-input" />
+          </div>
+          <div class="form-group">
+            <label>補考結束日期：</label>
+            <input type="date" v-model="makeupEndDate" class="date-input" />
+          </div>
+          <div class="form-group">
+            <label>答題時間(分鐘)：</label>
+            <input
+              type="number"
+              v-model="makeupLimitTime"
+              min="1"
+              @keyup.enter="submitMakeupExam"
+            />
+          </div>
+          <div class="modal-actions">
+            <button @click="submitMakeupExam" class="confirm-btn">確認</button>
+            <button @click="showMakeupModal = false" class="cancel-btn">
+              取消
+            </button>
           </div>
         </div>
-         -->
+      </div>
 
-      <!-- 補考設定(有選人設定) Modal -->
+      <!-- 補考設定(有選人設定) Modal 
       <div v-if="showMakeupModal" class="makeup-modal-overlay">
         <div class="makeup-modal">
           <button @click="showMakeupModal = false" class="close-btn">×</button>
@@ -352,6 +353,64 @@
           </div>
         </div>
       </div>
+      -->
+
+      <!-- 選擇員工補考 modal -->
+      <div v-if="showSelectModal" class="modal-overlay">
+        <div class="modal">
+          <button @click="showSelectModal = false" class="close-btn">×</button>
+          <h3>選擇補考員工</h3>
+          <div
+            class="status-bar"
+            :class="{
+              'status-bar-selected': selectedRecords.length > 0,
+              'status-bar-unselected': selectedRecords.length === 0,
+            }"
+          >
+            <span v-if="selectedRecords.length > 0">
+              <i class="fas fa-check-circle"></i>
+              已選擇 {{ selectedRecords.length }} 名同仁，請確認已完成補考設定
+            </span>
+            <span v-else>
+              <i class="fas fa-exclamation-triangle"></i>
+              尚未選擇任何同仁
+            </span>
+          </div>
+          <table v-if="selectedRecords.length > 0" class="selected-table">
+            <thead>
+              <tr>
+                <th>員工編號</th>
+                <th>姓名</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="record in selectedRecords" :key="record.empId">
+                <td>{{ record.empId }}</td>
+                <td>{{ record.userName }}</td>
+              </tr>
+            </tbody>
+          </table>
+
+          <!-- <ul>
+            <li v-for="(record, index) in makeupfilteredRecords" :key="index">
+              <input
+                type="checkbox"
+                :value="record.empId"
+                v-model="selectedEmployees"
+              />
+              {{ record.userName }} (ID: {{ record.empId }})
+            </li>
+          </ul> -->
+          <div class="modal-actions">
+            <button @click="startMakeupExam" class="confirm-btn">
+              開啟補考
+            </button>
+            <button @click="showSelectModal = false" class="cancel-btn">
+              關閉
+            </button>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 </template>
@@ -392,6 +451,9 @@ const makeupLimitTime = ref("");
 const makeupStartDate = ref("");
 const makeupEndDate = ref("");
 const makeupTargetScore = ref("");
+
+const showSelectModal = ref(false); // 控制選擇員工 modal 顯示與否
+const selectedEmployees = ref([]); // 儲存選中的員工
 
 const exam = ref({});
 
@@ -450,18 +512,50 @@ const makeupRecords = ref([
   },
   // 可以添加更多假資料來測試顯示效果
 ]);
+// const makeupRecords = ref([]);
 
 // 搜尋欄位的輸入文字
 const searchQuery = ref("");
 const filteredRecords = ref(records.value);
 const makeupfilteredRecords = ref(makeupRecords.value);
 
+const isSelected = (record) => {
+  return selectedRecords.value.some(
+    (selected) => selected.empId === record.empId
+  );
+};
+
 // 全選/全不選功能(只選empId)
-const toggleSelectAll = () => {
+/*const toggleSelectAll = () => {
   if (selectAll.value) {
-    selectedRecords.value = makeupfilteredRecords.value.map((record) => record.empId);
+    selectedRecords.value = makeupfilteredRecords.value.map(
+      (record) => record.empId
+    );
   } else {
     selectedRecords.value = [];
+  }
+};*/
+// 全選/全不選功能
+const toggleSelectAll = () => {
+  if (selectAll.value) {
+    selectedRecords.value = makeupfilteredRecords.value
+      .filter((record) => record.status === "pending") // 加上這行過濾
+      .map((record) => ({ ...record }));
+  } else {
+    selectedRecords.value = [];
+  }
+};
+
+// 假設有一個方法用來處理選擇員工
+const toggleEmployeeSelection = (employee) => {
+  if (employee.status !== "pending") return;
+  const index = selectedRecords.value.findIndex(
+    (record) => record.empId === employee.empId
+  );
+  if (index === -1) {
+    selectedRecords.value.push(employee); // 如果沒選擇過，加入選擇列表
+  } else {
+    selectedRecords.value.splice(index, 1); // 如果已選擇過，移除
   }
 };
 
@@ -482,7 +576,7 @@ const toggleSelectAll = () => {
   })
   */
 
-// 狀態英文名稱轉中文名稱
+// 測驗狀態英文名稱轉中文名稱
 const getStatusName = (status) => {
   switch (status) {
     case "ongoing":
@@ -500,7 +594,9 @@ const getStatusName = (status) => {
 const getMakeupStatusName = (status) => {
   switch (status) {
     case "pending":
-      return "未繳";
+      return "待開啟";
+    case "ongoing":
+      return "進行中";
     case "done":
       return "已繳";
     default:
@@ -580,17 +676,57 @@ const confirmEdit = async () => {
   }
 };
 
-const MakeupExam = () => {
-  console.log("補考測驗");
-  alert("功能尚未實作");
+// 補考名單查詢API
+const fetchMakeupRecords = async () => {
+  const token = localStorage.getItem("authToken");
+  const groupId = exam.value.groupId;
+
+  try {
+    const response = await axios.get(
+      `http://172.16.46.163/csexam/admin/makeup-exam/all/${groupId}`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+
+    if (response.data.code === "0000") {
+      makeupRecords.value = response.data.data;
+      makeupfilteredRecords.value = response.data.data; // 若有搜尋功能需要用到
+    } else {
+      alert(response.data.message || "查詢補考名單失敗！");
+    }
+  } catch (error) {
+    console.error("補考名單查詢失敗", error);
+    alert("補考名單查詢失敗，請稍後再試");
+    if (
+      error.response?.data?.message === "請求未提供token" ||
+      error.response?.data?.message === "token無效或已過期，請重新登入"
+    ) {
+      errorMsg.value = {
+        status: error.response.status,
+        code: error.response.data.code,
+        message: error.response.data.message || "null",
+      };
+      showError.value = true;
+    }
+  }
 };
 
 const openMakeupExam = () => {
+  // console.log("補考測驗");
+  // alert("功能尚未實作");
+  showSelectModal.value = true; // 顯示選擇員工的 modal
+};
+
+const setupMakeupExam = () => {
   showMakeupModal.value = true;
   // console.log("開啟補考測驗");
   // alert("功能尚未實作");
 };
 
+// 新增補考考試API
 const submitMakeupExam = async () => {
   /*if (selectedRecords.value.length === 0) {
       alert("請先選擇要補考的同仁");
@@ -746,6 +882,7 @@ onMounted(() => {
     newStartTime.value = exam.value.startDate;
     newEndTime.value = exam.value.endDate;
   }
+  // fetchMakeupRecords();
 });
 </script>
 
@@ -920,8 +1057,10 @@ body {
 }
 
 .exam-range-table {
-  width: 50%;
-  max-width: 800px;
+  /* width: 50%;
+  max-width: 800px; */
+  width: 525px;
+  height: 200px;
   margin: 20px auto;
   border-collapse: collapse;
   font-size: 16px;
@@ -931,7 +1070,7 @@ body {
 
 .exam-range-table th,
 .exam-range-table td {
-  padding: 12px;
+  padding: 8px 12px;
   text-align: center;
   border: 1px solid #ccc; /* 輕微的淡邊框 */
 }
@@ -985,6 +1124,10 @@ body {
 .makeup-score {
   background-color: #ff9800; /* 補考紀錄顏色 */
   color: white;
+}
+
+.makeup-score:hover {
+  background-color: #bf7300;
 }
 
 /*
@@ -1130,6 +1273,31 @@ body {
 .status-bar-unselected i {
   font-size: 18px;
   color: #e44242;
+}
+
+.selected-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 1rem 0;
+  background-color: #f9f9f9;
+  border-radius: 0;
+  overflow: hidden;
+}
+
+.selected-table thead {
+  background-color: #3f51b5;
+  color: white;
+}
+
+.selected-table th,
+.selected-table td {
+  padding: 0.75rem 1rem;
+  text-align: center;
+  border: 1px solid #ddd;
+}
+
+.selected-table tbody tr:hover {
+  background-color: #f1f1f1;
 }
 
 .makeup-modal h3 {

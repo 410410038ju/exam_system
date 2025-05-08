@@ -81,6 +81,10 @@
           </tr>
         </thead>
         <tbody>
+          <!-- 檢查 exams 是否為空 -->
+          <tr v-if="exams.length === 0">
+            <td colspan="7" class="no-exams">沒有測驗</td>
+          </tr>
           <tr v-for="exam in exams" :key="exam.examId">
             <td>{{ exam.title }}</td>
             <td>{{ getKindName(exam.kind) }}</td>
@@ -315,6 +319,7 @@ const mockExams = [
     creatorId: "123456",
   },
 ];
+
 const exams = ref([]); // 存儲測驗資料
 
 const showPasswordModal = ref(false); // 控制修改密碼對話框顯示
@@ -761,6 +766,13 @@ table td:nth-child(1) {
 table th:nth-child(5),
 table td:nth-child(5) {
   width: 300px;
+}
+
+.no-exams {
+  text-align: center;
+  color: red;
+  font-size: 24px;
+  padding: 20px 0;
 }
 
 /* 提高按鈕的可讀性 */

@@ -34,8 +34,8 @@
       </div>
 
       <!-- 新增人員的懸浮視窗 (Modal) -->
-      <div v-if="showModal" class="modal-overlay" @click="closeAddModal">
-        <div class="modal-content" @click.stop>
+      <div v-if="showModal" class="modal-overlay">
+        <div class="modal-content">
           <button class="close-btn" @click="closeAddModal">x</button>
           <h2>新增人員</h2>
           <br />
@@ -107,8 +107,8 @@
       </div>
 
       <!-- 修改人員的懸浮視窗 (Modal) -->
-      <div v-if="showEditModal" class="modal-overlay" @click="closeEditModal">
-        <div class="modal-content" @click.stop>
+      <div v-if="showEditModal" class="modal-overlay">
+        <div class="modal-content">
           <button class="close-btn" @click="closeEditModal">x</button>
           <h2>修改人員資料</h2>
           <br />

@@ -1,4 +1,4 @@
-<!-- 沒有API 
+<!-- 沒有API -->
 <template>
   <div class="container">
     <div class="header">
@@ -187,7 +187,7 @@ onUnmounted(() => {
 </script>
 -->
 
-<!-- API -->
+<!-- API 
 <template>
   <div class="container">
     <div class="header">
@@ -199,7 +199,9 @@ onUnmounted(() => {
         <div class="time-left">剩餘時間： {{ formattedTime }}</div>
       </div>
       <div class="right-header">
-        <div class="exam-score">試卷得分 {{ score }}</div>
+        <div class="exam-score">
+          試卷得分 <span class="score-number">{{ score }}</span>
+        </div>
       </div>
     </div>
     <div class="exam-container">
@@ -212,7 +214,7 @@ onUnmounted(() => {
           >
             {{ isCorrect(question) ? "✅ 正確" : "❌ 錯誤" }}
           </span>
-          <span class="creator-p">{{ question.creatorId }}</span>
+          <span class="creator-p">出題者員編：{{ question.creatorId }}</span>
         </p>
         <p class="question-type">【{{ question.questionType }}】</p>
         <div class="options">
@@ -231,20 +233,15 @@ onUnmounted(() => {
             {{ String.fromCharCode(65 + i) }}. {{ option }}
           </label>
         </div>
+
         <div class="correct-answer">
           <p>
             正確答案：
             <span v-if="Array.isArray(question.correctAnswer)">
-              {{
-                question.correctAnswer
-                  .map(
-                    (ans) =>
-                      `${String.fromCharCode(
-                        65 + question.options.indexOf(ans)
-                      )}. ${ans}`
-                  )
-                  .join(", ")
-              }}
+              <div v-for="(ans, index) in question.correctAnswer" :key="index">
+                {{ String.fromCharCode(65 + question.options.indexOf(ans)) }}.
+                {{ ans }}
+              </div>
             </span>
             <span v-else>
               {{
@@ -448,7 +445,7 @@ onUnmounted(() => {
   sessionStorage.removeItem("ExamResult");
 });
 </script>
-
+-->
 <style scoped>
 #app {
   position: relative;
@@ -528,6 +525,11 @@ onUnmounted(() => {
   color: white;
 }
 
+.score-number {
+  font-size: 24px;
+  font-weight: bold;
+}
+
 .exam-container {
   position: relative; /* ✅ 讓它影響 .container 的高度 */
   width: 70%;
@@ -559,6 +561,13 @@ onUnmounted(() => {
   width: 10px;
 }
 
+.creator-p {
+  float: right;
+  font-size: 16px;
+  color: blue;
+  color: #7371fc;
+}
+
 .correct {
   color: green;
 }
@@ -586,17 +595,23 @@ onUnmounted(() => {
   margin-top: 10px;
   padding: 8px;
   border-radius: 5px;
-  background-color: #f6f6f6;
+  background-color: #f4f4f4;
 }
 
 .correct-answer p {
   margin: 5px 0;
   text-align: left;
   color: #7371fc;
+  color: blue;
 }
 
 .correct-answer p span {
   color: #7371fc;
+  color: blue;
+}
+
+.correct-answer div {
+  margin-bottom: 5px; /* 讓每個選項有點間隔 */
 }
 
 .correct {
