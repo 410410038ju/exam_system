@@ -1316,7 +1316,6 @@ const handleRedirect = () => {
 
 // 初始化
 onMounted(() => {
-  //checkLogin();
   loadUsers();
   filteredUsers.value = users.value;
 });

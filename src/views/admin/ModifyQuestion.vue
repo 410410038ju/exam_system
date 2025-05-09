@@ -1208,14 +1208,14 @@ const saveEdit = async () => {
   try {
     const token = localStorage.getItem("authToken");
 
-    if (
-      !editingQuestion.value.categoryId ||
-      !editingQuestion.value.chapterId ||
-      !editingQuestion.value.partId
-    ) {
-      alert("請確認業務種類、章、節都有選擇");
-      return;
-    }
+    // if (
+    //   !editingQuestion.value.categoryId ||
+    //   !editingQuestion.value.chapterId ||
+    //   !editingQuestion.value.partId
+    // ) {
+    //   alert("請確認業務種類、章、節都有選擇");
+    //   return;
+    // }
 
     // 欄位檢查中文提示
     const missingFields = [];
@@ -1654,7 +1654,7 @@ span[v-else] {
   background-color: white;
   padding: 20px 30px;
   border-radius: 2px;
-  width: 600px;
+  width: 700px;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
   text-align: center;
   box-sizing: border-box;

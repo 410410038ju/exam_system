@@ -125,13 +125,16 @@
               <th>索引</th>
               <th>員工編號</th>
               <th>姓名</th>
-              <th>交卷時間</th>
-              <th>成績</th>
-              <th>及格與否</th>
+              <th>第一次測驗交卷時間</th>
+              <th>第一次測驗成績</th>
+              <th>第一次測驗及格與否</th>
               <th>操作</th>
             </tr>
           </thead>
           <tbody>
+            <tr v-if="filteredRecords.length === 0">
+              <td colspan="7" class="text-center">沒有資料</td>
+            </tr>
             <tr v-for="(record, index) in filteredRecords" :key="index">
               <td>{{ index + 1 }}</td>
               <td>{{ record.empId }}</td>
@@ -185,6 +188,9 @@
             </tr>
           </thead>
           <tbody>
+            <tr v-if="makeupfilteredRecords.length === 0">
+              <td colspan="8" class="text-center">沒有資料</td>
+            </tr>
             <tr v-for="(record, index) in makeupfilteredRecords" :key="index">
               <td>
                 <input
@@ -199,15 +205,23 @@
               <td>{{ record.userName }}</td>
               <td>
                 <span
-                  :class="
-                    record.status === 'done' ? 'badge-green' : 'badge-red'
-                  "
+                  :class="{
+                    'badge-blue': record.status === 'ongoing',
+                    'badge-green': record.status === 'done',
+                    'badge-brown': record.status === 'pending',
+                  }"
                 >
                   <span
                     class="status-circle"
                     :style="{
                       backgroundColor:
-                        record.status === 'done' ? '#28a745' : '#dc3545',
+                        record.status === 'ongoing'
+                          ? '#456ee7'
+                          : record.status === 'done'
+                          ? '#28a745' // 已完成顯示綠色
+                          : record.status === 'pending'
+                          ? '#8e6034'
+                          : '#8e6034', // 待處理顯示黃色，預設顯示棕色
                     }"
                   ></span>
                   {{ getMakeupStatusName(record.status) }}
@@ -217,12 +231,8 @@
               <td>{{ record.submissionTime }}</td>
               <td>{{ record.score }}</td>
               <td>
-                <button
-                  class="view-record-btn"
-                  @click="viewAnswerRecord"
-                  v-if="record.status === 'done'"
-                >
-                  答題記錄
+                <button class="delete-makeup-btn" @click="deleteMakeup">
+                  刪除
                 </button>
               </td>
             </tr>
@@ -489,11 +499,15 @@ const records = ref([
   // 可以根據需要添加更多測試數據
 ]);
 
+// const records = ref([]);
+
 // 補考假資料
 const makeupRecords = ref([
   {
     empId: "2025001",
     userName: "張三",
+    submissionTime: "2025.04.16 10:30",
+    score: 42,
     status: "pending",
   },
   {
@@ -501,7 +515,7 @@ const makeupRecords = ref([
     userName: "李四",
     submissionTime: "2025.04.16 10:30",
     score: 78,
-    status: "done",
+    status: "ongoing",
   },
   {
     empId: "2025003",
@@ -512,6 +526,7 @@ const makeupRecords = ref([
   },
   // 可以添加更多假資料來測試顯示效果
 ]);
+
 // const makeupRecords = ref([]);
 
 // 搜尋欄位的輸入文字
@@ -596,9 +611,9 @@ const getMakeupStatusName = (status) => {
     case "pending":
       return "待開啟";
     case "ongoing":
-      return "進行中";
+      return "已開放補考"; //進行中(已開放補考)
     case "done":
-      return "已繳";
+      return "已繳交";
     default:
       return status;
   }
@@ -666,6 +681,43 @@ const confirmEdit = async () => {
       error.response.data.message === "token無效或已過期，請重新登入"
     ) {
       // 來自伺服器的錯誤回應（例如 404, 500 等）
+      errorMsg.value = {
+        status: error.response.status,
+        code: error.response.data.code,
+        message: error.response.data.message || "null",
+      };
+      showError.value = true;
+    }
+  }
+};
+
+// 查詢考試成績API
+const fetchRecords = async () => {
+  try {
+    const token = localStorage.getItem("authToken");
+    const groupId = exam.value.groupId;
+
+    const response = await axios.get(
+      `http://172.16.46.163/csexam/admin/score-manager/${groupId}`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+
+    if (response.data.code === "0000") {
+      records.value = response.data.data.scoreLists;
+    } else {
+      alert("成績資料加載失敗！");
+    }
+  } catch (error) {
+    console.error("載入成績資料失敗", error);
+    alert("無法載入成績資料，請稍後再試");
+    if (
+      error.response?.data?.message === "請求未提供token" ||
+      error.response?.data?.message === "token無效或已過期，請重新登入"
+    ) {
       errorMsg.value = {
         status: error.response.status,
         code: error.response.data.code,
@@ -823,6 +875,59 @@ const submitMakeupExam = async () => {
   showMakeupModal.value = false;
 };
 
+// 開啟補考考試API
+const startMakeupExam = async () => {
+  const token = localStorage.getItem("authToken");
+
+  // 檢查是否選擇了要進行補考的員工
+  if (selectedRecords.value.length === 0) {
+    alert("請選擇至少一位員工！");
+    return;
+  }
+
+  // 確保選擇了待補考的員工，並將其 failedListId 包裝成物件陣列
+  const failedListIds = selectedRecords.value.map((record) => ({
+    failedListId: record.failedListId,
+  }));
+
+  try {
+    const response = await axios.patch(
+      `http://172.16.46.163/csexam/admin/makeup-exam`,
+      {
+        failedListIds, // 傳送選中的員工的 failedListId 陣列
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+
+    if (response.data.code === "0000") {
+      alert("補考已成功開啟！");
+      showMakeupModal.value = false;
+      selectedRecords.value = []; // 清空選擇的員工列表
+      await fetchMakeupRecords(); // 重新獲取補考資料
+    } else {
+      alert("補考開啟失敗：" + (response.data.message || ""));
+    }
+  } catch (error) {
+    console.error("補考開啟失敗:", error);
+    alert("補考開啟失敗，請稍後再試");
+    if (
+      error.response?.data?.message === "請求未提供token" ||
+      error.response?.data?.message === "token無效或已過期，請重新登入"
+    ) {
+      errorMsg.value = {
+        status: error.response.status,
+        code: error.response.data.code,
+        message: error.response.data.message || "null",
+      };
+      showError.value = true;
+    }
+  }
+};
+
 const viewMakeupRecords = () => {
   // alert("功能尚未實作");
   isOriginalScore.value = !isOriginalScore.value;
@@ -882,6 +987,7 @@ onMounted(() => {
     newStartTime.value = exam.value.startDate;
     newEndTime.value = exam.value.endDate;
   }
+  // fetchRecords();
   // fetchMakeupRecords();
 });
 </script>
@@ -1117,12 +1223,16 @@ body {
 }
 
 .original-score {
-  background-color: #4caf50; /* 原始成績顏色 */
+  background-color: #a18cd6; /* 原始成績顏色 */
   color: white;
 }
 
+.original-score:hover {
+  background-color: #6e55ad;
+}
+
 .makeup-score {
-  background-color: #ff9800; /* 補考紀錄顏色 */
+  background-color: #ff9800; /* 補考記錄顏色 */
   color: white;
 }
 
@@ -1420,7 +1530,7 @@ body {
   background-color: #0e8d96;
 }
 
-/* 答題紀錄表格樣式 */
+/* 答題記錄表格樣式 */
 .exam-records-table {
   width: 100%;
   /* max-width: 800px; */
@@ -1445,6 +1555,12 @@ body {
   background-color: #fcfcfc;
 }
 
+.text-center {
+  color: #0c029a;
+  font-weight: 600;
+  font-size: 20px;
+}
+
 .text-green {
   color: #28a745; /* 比較柔和的綠色 */
   font-weight: bold;
@@ -1455,16 +1571,24 @@ body {
   font-weight: bold;
 }
 
-.badge-green {
-  color: #28a745; /* 文字顏色 */
+.badge-blue {
+  color: #456ee7; /* 文字顏色 */
   padding-left: 15px; /* 給文字留出空間，讓圓形不會被擠到 */
   font-weight: bold;
   font-size: 16px;
   position: relative; /* 用於定位圓形 */
 }
 
-.badge-red {
-  color: #dc3545; /* 文字顏色 */
+.badge-brown {
+  color: #8e6034; /* 文字顏色 */
+  padding-left: 15px; /* 給文字留出空間，讓圓形不會被擠到 */
+  font-weight: bold;
+  font-size: 16px;
+  position: relative; /* 用於定位圓形 */
+}
+
+.badge-green {
+  color: #28a745; /* 文字顏色 */
   padding-left: 15px; /* 給文字留出空間，讓圓形不會被擠到 */
   font-weight: bold;
   font-size: 16px;
@@ -1495,6 +1619,21 @@ body {
 
 .view-record-btn:hover {
   background-color: #1976d2;
+}
+
+.delete-makeup-btn {
+  padding: 6px 12px;
+  font-size: 14px;
+  background-color: #ff3f3f;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.delete-makeup-btn:hover {
+  background-color: #b70101;
 }
 
 @keyframes fadeIn {
